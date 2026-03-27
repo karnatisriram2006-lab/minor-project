@@ -1,0 +1,1443 @@
+{
+  "agra-1": {
+    "day1": [
+      {
+        "name": "Taj Mahal",
+        "city": "Agra",
+        "lat": 27.1751,
+        "lng": 78.0421,
+        "description": "UNESCO ivory-white marble mausoleum on the south bank of the Yamuna river.",
+        "type": "attraction",
+        "time": "10:00 AM"
+      },
+      {
+        "name": "Agra Fort",
+        "city": "Agra",
+        "lat": 27.1795,
+        "lng": 78.0211,
+        "description": "Historic fort in the city of Agra in India, the main residence of the Mughals.",
+        "type": "attraction",
+        "time": "10:00 AM"
+      }
+    ]
+  },
+  "mysore-1": {
+    "day1": [
+      {
+        "name": "Lalitha Maha Sthothram",
+        "lat": 12.34567,
+        "lng": 78.90123,
+        "description": "Hindu temple",
+        "type": "attraction",
+        "time": "09:00-17:0cur"
+      },
+      {
+        "name": "Jagadguru Shankaracharya Temple",
+        "lat": 12.34567,
+        "lng": 78.90123,
+        "description": "Hindu temple",
+        "type": "attraction",
+        "time": "10:00-18:00"
+      }
+    ]
+  },
+  "delhi-3": {
+    "day1": [
+      {
+        "name": "India Gate",
+        "lat": 28.6384,
+        "lng": 77.2249,
+        "description": "War Memorial",
+        "type": "attraction",
+        "time": "09:00-17:0cur"
+      },
+      {
+        "name": "Akshardham Temple",
+        "lat": 28.5622,
+        "lng": 77.2249,
+        "description": "Hindu Temple",
+        "type": "attraction",
+        "time": "10:00-18:00"
+      }
+    ],
+    "day2": [
+      {
+        "name": "Lodi Gardens",
+        "lat": 28.6172,
+        "lng": 77.2084,
+        "description": "Urban Park",
+        "type": "attraction",
+        "time": "09:00-17:00"
+      },
+      {
+        "name0": "Hauz Khas",
+        "lat": 28.5439,
+        "lng": 77.2097,
+        "description": "Historic Site",
+        "type": "attraction",
+        "time": "10:00-18:00"
+      }
+    ],
+    "day3": [
+      {
+        "name": "Qutub Minar",
+        "lat": 28.5444,
+        "lng": 77.1308,
+        "description": "Monument",
+        "type": "attraction",
+        "time": "09:00-17:00"
+      },
+      {
+        "name": "Gurudwara Bangla Sahib",
+        "lat": 28.5449,
+        "lng": 77.1314,
+        "description": "Sikh Temple",
+        "type": "attraction",
+        "time": "09:00-17:00"
+      }
+    ]
+  },
+  "hyderabad-7": {
+    "day1": [
+      {
+        "name": "Charminar",
+        "lat": 17.3851,
+        "lng": 78.4842,
+        "description": "Landmark",
+        "type": "attraction",
+        "time": "10:00 AM"
+      }
+    ],
+    "day2": [
+      {
+        "name": "Golconda Fort",
+        "lat": 17.4216,
+        "lng": 78.3967,
+        "description": "Historic Fort",
+        "type": "attraction",
+        "time": "11:00 AM"
+      }
+    ],
+    "day3": [
+      {
+        "name": "HITEC City",
+        "lat": 17.3851,
+        "lng": 78.4842,
+        "description": "Tech Hub",
+        "type": "attraction",
+        "time": "10:00 AM"
+      }
+    ],
+    "day4": [
+      {
+        "name": "Little Italy",
+        "lat": 17.3851,
+        "lng": 78.4842,
+        "description": "Cultural Area",
+        "type": "attraction",
+        "time": "11:00 AM"
+      }
+    ],
+    "day5": [
+      {
+        "name": "Hussain Sagar Lake",
+        "lat": 17.4086,
+        "lng": 78.2618,
+        "description": "Beautiful Lake",
+        "type": "attraction",
+        "time": "10:00 AM"
+      }
+    ],
+    "day6": [
+      {
+        "name": "Birla Mandir",
+        "lat": 17.4216,
+        "lng": 78.3967,
+        "description": "Historic Temple",
+        "type": "attraction",
+        "time": "11:00 AM"
+      }
+    ],
+    "day7": [
+      {
+        "name": "Golkonda Fort",
+        "lat": 17.4216,
+        "lng": 78.3967,
+        "description": "Historic Fort",
+        "type": "attraction",
+        "time": "10:00 AM"
+      }
+    ]
+  },
+  "agra-2": {
+    "day1": [
+      {
+        "name": "Taj Mahal",
+        "city": "Agra",
+        "lat": 27.1751,
+        "lng": 78.0421,
+        "description": "UNESCO ivory-white marble mausoleum on the south bank of the Yamuna river.",
+        "type": "attraction",
+        "time": "10:00 AM"
+      },
+      {
+        "name": "Agra Fort",
+        "city": "Agra",
+        "lat": 27.1795,
+        "lng": 78.0211,
+        "description": "Historic fort in the city of Agra in India, the main residence of the Mughals.",
+        "type": "attraction",
+        "time": "10:00 AM"
+      }
+    ],
+    "day2": [
+      {
+        "name": "Mehtab Bagh",
+        "city": "Agra",
+        "lat": 27.1917,
+        "lng": 78.0421,
+        "description": "Charbagh complex in Agra, north of the Taj Mahal and Agra Fort.",
+        "type": "attraction",
+        "time": "02:00 PM"
+      }
+    ]
+  },
+  "hyderabad-3": {
+    "day1": [
+      {
+        "name": "Charminar",
+        "lat": 17.3851,
+        "lng": 78.4842,
+        "description": "Historic monument",
+        "type": "attraction",
+        "time": "09:00-17:0 end"
+      },
+      {
+        "name": "Golconda Fort",
+        "lat": 17.4216,
+        "lng": 78.3985,
+        "description": "Ancient fort",
+        "type": "attraction",
+        "time": "09:00-17:00"
+      }
+    ],
+    "day2": [
+      {
+        "name": "Hussainiya",
+        "lat": 17.4095,
+        "lng": 78.4505,
+        "description": "Islamic center",
+        "type": "attraction",
+        "time": "09:00-17:00"
+      },
+      {
+        "name0": "Birla Science Museum",
+        "lat": 17.4095,
+        "lng": 78.4505,
+        "description": "Interactive museum",
+        "type": "attraction",
+        "time": "10:00-18:00"
+      }
+    ],
+    "day3": [
+      {
+        "name": "Begum Ali Bai Dargah",
+        "lat": 17.4195,
+        "lng": 78.4505,
+        "description": "Sufi shrine",
+        "type": "attraction",
+        "time": "09:00-17:00"
+      },
+      {
+        "name": "Little Italy",
+        "lat": 17.4195,
+        "lng": 78.4505,
+        "description": "Italian restaurant",
+        "type": "attraction",
+        "time": "12:00-22:00"
+      }
+    ]
+  },
+  "warangal-3": {
+    "day1": [
+      {
+        "name": "Queen Elizabeth Market",
+        "lat": -14.7325,
+        "lng": 170.6933,
+        "description": "Local market",
+        "type": "attraction",
+        "time": "morning"
+      },
+      {
+        "namein": "Warangal Fort",
+        "lat": -14.7325,
+        "lng": 170.6933,
+        "description": "Historic fort",
+        "type": "attraction",
+        "time": "afternoon"
+      }
+    ],
+    "day2": [
+      {
+        "name": "Vemana Museum",
+        "lat": -14.7325,
+        "lng": 170.6933,
+        "description": "Vemana's life",
+        "type": "attraction",
+        "time": "morning"
+      },
+      {
+        "name": "Kakatiya Konda Venkataramana Temple",
+        "lat": -14.7325,
+        "lng": 170.6933,
+        "description": "Ancient temple",
+        "type": "attraction",
+        "time": "afternoon"
+      }
+    ],
+    "day3": [
+      {
+        "name": "Warangal Railway Museum",
+        "lat": -14.7325,
+        "lng": 170.6933,
+        "description": "Railway history",
+        "type": "attraction",
+        "time": "morning"
+      },
+      {
+        "name": "Warangal Zoo",
+        "lat": -14.7325,
+        "lng": 170.6933,
+        "description": "Wildlife park",
+        "type": "attraction",
+        "time": "afternoon"
+      }
+    ]
+  },
+  "itinerary-agra-2-Medium-History": {
+    "itinerary": {
+      "day1": [
+        {
+          "name": "Taj Mahal Visit",
+          "description": "Majestic white marble mausoleum",
+          "time": "09:00 AM",
+          "type": "landmark"
+        },
+        {
+          "name": "Agra Fort Tour",
+          "description": "Mughal era fort with royal chambers",
+          "time": "11:00 AM",
+          "type": "culture"
+        },
+        {
+          "name": "Lunch at Laal Pistaal",
+          "description": "Traditional North Indian cuisine",
+          "time": "01:00 PM",
+          "type": "food"
+        },
+        {
+          "name": "Bijay Mahal",
+          "description": "Mughal era palace",
+          "time": "02:30 PM",
+          "type": "culture"
+        },
+        {
+          "name": "Dinner at Laal Pistaal",
+          "description": "Traditional North Indian cuisine",
+          "time": "07:00 PM",
+          "type": "food"
+        }
+      ],
+      "day2": [
+        {
+          "name": "Agra Fort Tour",
+          "description": "Mughal era fort with royal chambers",
+          "time": "09:00 AM",
+          "type": "culture"
+        },
+        {
+          "name": "Tomb of Itmad-ud-Daula",
+          "description": "Royal tomb of a Mughal noble",
+          "time": "11:00 AM",
+          "type": "culture"
+        },
+        {
+          "name": "Lunch at Laal Pistaal",
+          "description": "Traditional North Indian cuisine",
+          "time": "01:00 PM",
+          "type": "food"
+        },
+        {
+          "name0": "Akbar's Tomb",
+          "description": "Mughal era tomb",
+          "time": "02:30 PM",
+          "type": "culture"
+        },
+        {
+          "name": "Dinner at Laal Pistaal",
+          "description": "Traditional North Indian cuisine",
+          "time": "07:00 PM",
+          "type": "food"
+        }
+      ]
+    }
+  },
+  "itinerary-test-1-undefined-undefined": {
+    "itinerary": {
+      "day1": [
+        {
+          "name": "Golden Temple",
+          "description": "South Asia's largest and most visited gurdwara",
+          "time": "09:00 AM",
+          "type": "landmark"
+        },
+        {
+          "name": "Takht-e-Paharganj Market",
+          "description": "Historic market with local food stalls",
+          "time": "11:00 AM",
+          "type": "food"
+        },
+        {
+          "name": "Langar",
+          "description": "Free communal meal at Golden Temple",
+          "time": "01:00 PM",
+          "type": "culture"
+        },
+        {
+          "name": "Gurdwara Bangla Sahib",
+          "description": "Historic gurdwara with beautiful architecture",
+          "time": "03:00 PM",
+          "type": "landmark"
+        },
+        {
+          "name": "Dinner at Sarabjit",
+          "description": "Traditional Punjabi restaurant",
+          "time": "07:00 PM",
+          "type": "food"
+        }
+      ],
+      "day2": [
+        {
+          "name": "Jallianwala Bagh Museum",
+          "description": "Historic site with museum",
+          "time": "09:00 AM",
+          "type": "culture"
+        },
+        {
+          "name": "Lodi Garden",
+          "description": "Beautiful Mughal-era garden",
+          "time": "11:00 AM",
+          "type": "culture"
+        },
+        {
+          "name": "Dastarkian",
+          "description": "Traditional Punjabi dinner",
+          "time": "07:00 PM",
+          "type": "food"
+        }
+      ]
+    }
+  },
+  "itinerary-delhi-2-medium-culture,sightseeing,food": {
+    "itinerary": {
+      "day1": [
+        {
+          "name": "Golden Temple",
+          "description": "Sikh temple in Delhi",
+          "time": "09:00 AM",
+          "type": "landmark"
+        },
+        {
+          "name": "Gurudwara Bangla Sahib",
+          "description": "Sikh temple with langar",
+          "time": "11:00 AM",
+          "type": "culture"
+        },
+        {
+          "name": "Chandi Mandir",
+          "description": "Hindu temple with intricate carvings",
+          "time": "01:00 PM",
+          "type": "culture"
+        },
+        {
+          "name": "Dilli Haat",
+          "description": "Market for local crafts and food",
+          "time": "03:00 PM",
+          "type": "food"
+        },
+        {
+          "name": "Lodi Garden",
+          "description": "Historic garden with tombs",
+          "time": "05:00 PM",
+          "type": "culture"
+        }
+      ],
+      "day2": [
+        {
+          "name": "Laxminarayan Temple",
+          "description": "Hindu temple with beautiful architecture",
+          "time": "09:00 AM",
+          "type": "culture"
+        },
+        {
+          "name": "Chirag Peeth",
+          "description": "Hindu temple with a large fire",
+          "time": "11:00 AM",
+          "type": "culture"
+        },
+        {
+          "name0": "Hauz Khas Market",
+          "description": "Market with local food and crafts",
+          "time": "01:00 PM",
+          "type": "food"
+        },
+        {
+          "name": "Jama Masjid",
+          "description": "Mosque with historical significance",
+          "time": "03:00 PM",
+          "type": "culture"
+        },
+        {
+          "name": "Qutub Minar",
+          "description": "Historic minaret with panoramic views",
+          "time": "05:00 PM",
+          "type": "landmark"
+        }
+      ]
+    }
+  },
+  "itinerary-hyderabad-2-medium-culture,sightseeing,food": {
+    "itinerary": {
+      "day1": [
+        {
+          "name": "Charminar",
+          "description": "Iconic monument",
+          "time": "10:00 AM",
+          "type": "landmark"
+        },
+        {
+          "name": "Hyderabad Bazaar",
+          "description": "Local market for food",
+          "time": "12:00 PM",
+          "type": "food"
+        },
+        {
+          "name": "HITEC City",
+          "description": "Technology hub",
+          "time": "02:00 PM",
+          "type": "culture"
+        },
+        {
+          "name": "Begum Ali Shah Bano Memorial",
+          "description": "Historical site",
+          "time": "04:00 PM",
+          "type": "culture"
+        }
+      ],
+      "day2": [
+        {
+          "name": "Golconda Fort",
+          "description": "Historic fort",
+          "time": "09:00 AM",
+          "type": "landmark"
+        },
+        {
+          "name": "Hyderabad Palace",
+          "description": "Royal residence",
+          "time": "11:00 AM",
+          "type": "culture"
+        },
+        {
+          "name": "Buffet Lunch",
+          "description": "Local cuisine",
+          "time": "01:00 PM",
+          "type": "food"
+        },
+        {
+          "name": "Little Italy",
+          "description": "Italian restaurant",
+          "time": "07:00 PM",
+          "type": "food"
+        }
+      ]
+    }
+  },
+  "itinerary-delhi-3-Medium-": {
+    "itinerary": {
+      "day1": [
+        {
+          "name": "Red Fort",
+          "description": "Historic fort",
+          "time": "10:00 AM",
+          "type": "landmark",
+          "lat": 28.6695,
+          "lng": 77.226
+        },
+        {
+          "name": "Jantar Mantar",
+          "description": "Astronomical observatory",
+          "time": "01:00 PM",
+          "type": "culture",
+          "lat": 28.6695,
+          "lng": 77.226
+        },
+        {
+          "name": "Lodi Garden",
+          "description": "Quiet garden",
+          "time": "03:00 PM",
+          "type": "culture",
+          "lat": 28.6695,
+          "lng": 77.226
+        },
+        {
+          "name": "Ghanta Ghar",
+          "description": "Sunrise and sunset view",
+          "time": "06:00 PM",
+          "type": "culture",
+          "lat": 28.6695,
+          "lng": 77.226
+        }
+      ],
+      "day2": [
+        {
+          "name": "Laxminarayan Temple",
+          "description": "Ancient temple",
+          "time": "09:00 AM",
+          "type": "culture",
+          "lat": 28.6695,
+          "lng": 77.226
+        },
+        {
+          "name": "Chandni Chowk",
+          "description": "Market area",
+          "time": "11:00 AM",
+          "type": "culture",
+          "lat": 28.6695,
+          "lng": 77.226
+        },
+        {
+          "name0": "IIT Delhi",
+          "description": "Technical university",
+          "time": "02:00 PM",
+          "type": "education",
+          "lat": 28.6695,
+          "lng": 77.226
+        },
+        {
+          "name": "Jama Masjid",
+          "description": "Large mosque",
+          "time": "05:00 PM",
+          "type": "culture",
+          "lat": 28.6695,
+          "lng": 77.226
+        }
+      ],
+      "day3": [
+        {
+          "name": "Akshardham Temple",
+          "description": "Spiritual temple",
+          "time": "09:00 AM",
+          "type": "culture",
+          "lat": 28.6695,
+          "lng": 77.226
+        },
+        {
+          "name": "Hauz Khas",
+          "description": "Historic site",
+          "time": "11:00 AM",
+          "type": "culture",
+          "lat": 28.6695,
+          "lng": 77.226
+        },
+        {
+          "name": "Lajpat Nagar",
+          "description": "Market area",
+          "time": "02:00 PM",
+          "type": "culture",
+          "lat": 28.6695,
+          "lng": 77.226
+        },
+        {
+          "name": "Teen Kanya",
+          "description": "Art gallery",
+          "time": "06:00 PM",
+          "type": "culture",
+          "lat": 28.6695,
+          "lng": 77.226
+        }
+      ]
+    }
+  },
+  "itinerary-delhi-3-Medium-Culture, History, Food": {
+    "itinerary": {
+      "day1": [
+        {
+          "name": "Red Fort",
+          "description": "Historic fort",
+          "time": "10:00 AM",
+          "type": "landmark",
+          "lat": 28.6695,
+          "lng": 77.226
+        },
+        {
+          "name": "Old Delhi Market",
+          "description": "Bustling bazaar",
+          "time": "01:00 PM",
+          "type": "food",
+          "lat": 28.6695,
+          "lng": 77.226
+        },
+        {
+          "name": "Jama Masjid",
+          "description": "Iconic mosque",
+          "time": "03:00 PM",
+          "type": "culture",
+          "lat": 28.6695,
+          "lng": 77.226
+        }
+      ],
+      "day2": [
+        {
+          "name": "Lodi Garden",
+          "description": "Quiet oasis",
+          "time": "09:00 AM",
+          "type": "culture",
+          "lat": 28.6695,
+          "lng": 77.226
+        },
+        {
+          "name": "Chandni Chowk",
+          "description": "Marketplace",
+          "time": "11:00 AM",
+          "type": "culture",
+          "lat": 28.6695,
+          "lng": 77.226
+        },
+        {
+          "name0": "Ghanta Ghar",
+          "description": "Sunrise viewpoint",
+          "time": "06:00 AM",
+          "type": "culture",
+          "lat": 28.6695,
+          "lng": 77.226
+        }
+      ],
+      "day3": [
+        {
+          "name": "Hauz Khas Market",
+          "description": "Food hub",
+          "time": "09:00 AM",
+          "type": "food",
+          "lat": 28.6695,
+          "lng": 77.226
+        },
+        {
+          "name": "Qutub Minar",
+          "description": "World heritage site",
+          "time": "10:00 AM",
+          "type": "landmark",
+          "lat": 28.6695,
+          "lng": 77.226
+        },
+        {
+          "name": "Iftaar at Jama Masjid",
+          "description": "Dinner with friends",
+          "time": "08:00 PM",
+          "type": "food",
+          "lat": 28.6695,
+          "lng": 77.226
+        }
+      ]
+    }
+  },
+  "itinerary-agra-2-medium-culture,sightseeing,food": {
+    "itinerary": {
+      "day1": [
+        {
+          "name": "Taj Mahal",
+          "description": "Beautiful monument",
+          "time": "09:00 AM",
+          "type": "landmark",
+          "lat": 27.1751,
+          "lng": 78.0421
+        },
+        {
+          "name": "Agra Fort",
+          "description": "Historic fort",
+          "time": "11:30 AM",
+          "type": "culture",
+          "lat": 27.1796,
+          "lng": 78.0211
+        },
+        {
+          "name": "Lunch at Dasaprakash",
+          "description": "South Indian food",
+          "time": "01:30 PM",
+          "type": "food",
+          "lat": 27.1833,
+          "lng": 78.0073
+        },
+        {
+          "name": "Fatehpur Sikri",
+          "description": "Abandoned city",
+          "time": "03:30 PM",
+          "type": "culture",
+          "lat": 27.0937,
+          "lng": 77.6603
+        }
+      ],
+      "day2": [
+        {
+          "name": "Itmad-Ud-Daulah",
+          "description": "Beautiful tomb",
+          "time": "09:00 AM",
+          "type": "landmark",
+          "lat": 27.2045,
+          "lng": 78.0262
+        },
+        {
+          "name": "Akbar's Mausoleum",
+          "description": "Historic mausoleum",
+          "time": "11:00 AM",
+          "type": "culture",
+          "lat": 27.2253,
+          "lng": 77.9513
+        },
+        {
+          "name": "Lunch at Pinch of Spice",
+          "description": "Indian cuisine",
+          "time": "01:00 PM",
+          "type": "food",
+          "lat": 27.1833,
+          "lng": 78.0073
+        },
+        {
+          "name": "Mehtab Bagh",
+          "description": "Beautiful garden",
+          "time": "03:00 PM",
+          "type": "landmark",
+          "lat": 27.1764,
+          "lng": 78.0614
+        }
+      ]
+    }
+  },
+  "itinerary-agra-2-high-culture,sightseeing,food": {
+    "itinerary": {
+      "day1": [
+        {
+          "name": "Taj Mahal",
+          "description": "Beautiful monument",
+          "time": "09:00 AM",
+          "type": "landmark",
+          "lat": 27.1751,
+          "lng": 78.0421
+        },
+        {
+          "name": "Agra Fort",
+          "description": "Historic fort",
+          "time": "11:30 AM",
+          "type": "culture",
+          "lat": 27.1796,
+          "lng": 78.0211
+        },
+        {
+          "name": "Lunch at Pinch of Spice",
+          "description": "Delicious food",
+          "time": "01:30 PM",
+          "type": "food",
+          "lat": 27.1833,
+          "lng": 78.0073
+        },
+        {
+          "name": "Fatehpur Sikri",
+          "description": "Ancient city",
+          "time": "03:30 PM",
+          "type": "culture",
+          "lat": 27.0937,
+          "lng": 77.6603
+        }
+      ],
+      "day2": [
+        {
+          "name": "Itmad-Ud-Daulah",
+          "description": "Beautiful tomb",
+          "time": "09:30 AM",
+          "type": "landmark",
+          "lat": 27.2049,
+          "lng": 78.0169
+        },
+        {
+          "name": "Akbar's Mausoleum",
+          "description": "Historic mausoleum",
+          "time": "11:30 AM",
+          "type": "culture",
+          "lat": 27.2253,
+          "lng": 77.9508
+        },
+        {
+          "name": "Lunch at Dasaprakash",
+          "description": "South Indian food",
+          "time": "01:00 PM",
+          "type": "food",
+          "lat": 27.1833,
+          "lng": 78.0073
+        },
+        {
+          "name": "Sunset at Yamuna River",
+          "description": "Scenic view",
+          "time": "05:00 PM",
+          "type": "sightseeing",
+          "lat": 27.1833,
+          "lng": 78.0211
+        }
+      ]
+    }
+  },
+  "itinerary-hyderabad-3-Medium-Culture, History, Food": {
+    "itinerary": {
+      "day1": [
+        {
+          "name": "Charminar",
+          "description": "Historic Monument",
+          "time": "09:00 AM",
+          "type": "landmark",
+          "lat": 17.3616,
+          "lng": 78.4747
+        },
+        {
+          "name": "Laad Bazaar",
+          "description": "Shopping Street",
+          "time": "11:00 AM",
+          "type": "culture",
+          "lat": 17.3622,
+          "lng": 78.4753
+        },
+        {
+          "name": "Hyderabadi Biryani",
+          "description": "Local Cuisine",
+          "time": "01:00 PM",
+          "type": "food",
+          "lat": 17.385,
+          "lng": 78.4867
+        },
+        {
+          "name": "Salar Jung Museum",
+          "description": "Art Gallery",
+          "time": "03:00 PM",
+          "type": "culture",
+          "lat": 17.3803,
+          "lng": 78.4823
+        }
+      ],
+      "day2": [
+        {
+          "name": "Golconda Fort",
+          "description": "Historic Fort",
+          "time": "09:30 AM",
+          "type": "landmark",
+          "lat": 17.3853,
+          "lng": 78.4024
+        },
+        {
+          "name": "Qutub Shahi Tombs",
+          "description": "Royal Tombs",
+          "time": "11:30 AM",
+          "type": "history",
+          "lat": 17.3944,
+          "lng": 78.3992
+        },
+        {
+          "name": "Chowki Dinner",
+          "description": "Local Food",
+          "time": "07:00 PM",
+          "type": "food",
+          "lat": 17.4376,
+          "lng": 78.4483
+        },
+        {
+          "name": "Hussain Sagar Lake",
+          "description": "Scenic Lake",
+          "time": "09:00 PM",
+          "type": "landmark",
+          "lat": 17.4344,
+          "lng": 78.4983
+        }
+      ],
+      "day3": [
+        {
+          "name": "Birla Mandir",
+          "description": "Hindu Temple",
+          "time": "08:00 AM",
+          "type": "culture",
+          "lat": 17.4123,
+          "lng": 78.4693
+        },
+        {
+          "name": "Ramoji Film City",
+          "description": "Film Studio",
+          "time": "10:00 AM",
+          "type": "culture",
+          "lat": 17.2543,
+          "lng": 78.6767
+        },
+        {
+          "name": "Shadab Restaurant",
+          "description": "Local Cuisine",
+          "time": "01:00 PM",
+          "type": "food",
+          "lat": 17.3667,
+          "lng": 78.4744
+        },
+        {
+          "name": "Lumbini Park",
+          "description": "Public Park",
+          "time": "04:00 PM",
+          "type": "landmark",
+          "lat": 17.4144,
+          "lng": 78.4922
+        }
+      ]
+    }
+  },
+  "itinerary-agra-2-medium-Culture, Sightseeing, Food": {
+    "itinerary": {
+      "day1": [
+        {
+          "name": "Taj Mahal",
+          "description": "Beautiful monument",
+          "time": "09:00 AM",
+          "type": "landmark",
+          "lat": 27.1751,
+          "lng": 78.0421
+        },
+        {
+          "name": "Agra Fort",
+          "description": "Historic fort",
+          "time": "11:30 AM",
+          "type": "culture",
+          "lat": 27.1796,
+          "lng": 78.0211
+        },
+        {
+          "name": "Lunch at Dasaprakash",
+          "description": "South Indian food",
+          "time": "01:30 PM",
+          "type": "food",
+          "lat": 27.1833,
+          "lng": 78.0073
+        },
+        {
+          "name": "Fatehpur Sikri",
+          "description": "Abandoned city",
+          "time": "03:30 PM",
+          "type": "landmark",
+          "lat": 27.0937,
+          "lng": 77.6603
+        }
+      ],
+      "day2": [
+        {
+          "name": "Itmad-Ud-Daulah",
+          "description": "Beautiful tomb",
+          "time": "09:00 AM",
+          "type": "culture",
+          "lat": 27.2045,
+          "lng": 78.0169
+        },
+        {
+          "name": "Akbar's Mausoleum",
+          "description": "Historic mausoleum",
+          "time": "11:00 AM",
+          "type": "culture",
+          "lat": 27.2253,
+          "lng": 77.9513
+        },
+        {
+          "name": "Lunch at Pinch of Spice",
+          "description": "Indian cuisine",
+          "time": "01:00 PM",
+          "type": "food",
+          "lat": 27.1839,
+          "lng": 78.0071
+        },
+        {
+          "name": "Mehtab Bagh",
+          "description": "Beautiful garden",
+          "time": "03:00 PM",
+          "type": "landmark",
+          "lat": 27.1833,
+          "lng": 78.0467
+        }
+      ]
+    }
+  },
+  "itinerary-agra-5-Luxury-Culture, History, Food": {
+    "itinerary": {
+      "day1": [
+        {
+          "name": "Taj Mahal",
+          "description": "White Marble Beauty",
+          "time": "09:00 AM",
+          "type": "landmark",
+          "lat": 27.1751,
+          "lng": 78.0421
+        },
+        {
+          "name": "Agra Fort",
+          "description": "Mughal Architecture",
+          "time": "11:00 AM",
+          "type": "culture",
+          "lat": 27.1796,
+          "lng": 78.0211
+        },
+        {
+          "name": "Local Street Food",
+          "description": "Savor Indian Flavors",
+          "time": "07:00 PM",
+          "type": "food",
+          "lat": 27.1833,
+          "lng": 78.0167
+        }
+      ],
+      "day2": [
+        {
+          "name": "Fatehpur Sikri",
+          "description": "Abandoned City",
+          "time": "09:30 AM",
+          "type": "history",
+          "lat": 27.0933,
+          "lng": 77.6603
+        },
+        {
+          "name": "Akbar's Mausoleum",
+          "description": "Mughal Emperor",
+          "time": "12:00 PM",
+          "type": "culture",
+          "lat": 27.2258,
+          "lng": 77.7514
+        },
+        {
+          "name": "Fine Dining Experience",
+          "description": "Luxury Cuisine",
+          "time": "08:00 PM",
+          "type": "food",
+          "lat": 27.1917,
+          "lng": 78.0278
+        }
+      ],
+      "day3": [
+        {
+          "name": "Itmad-Ud-Daulah",
+          "description": "Baby Taj",
+          "time": "10:00 AM",
+          "type": "landmark",
+          "lat": 27.2042,
+          "lng": 78.0264
+        },
+        {
+          "name": "Mehtab Bagh",
+          "description": "Moonlight Garden",
+          "time": "04:00 PM",
+          "type": "culture",
+          "lat": 27.1744,
+          "lng": 78.0464
+        },
+        {
+          "name": "Sunset View",
+          "description": "Taj Mahal Glow",
+          "time": "06:00 PM",
+          "type": "landmark",
+          "lat": 27.1751,
+          "lng": 78.0421
+        }
+      ],
+      "day4": [
+        {
+          "name": "Agra Museum",
+          "description": "Mughal Artifacts",
+          "time": "09:30 AM",
+          "type": "history",
+          "lat": 27.1796,
+          "lng": 78.0211
+        },
+        {
+          "name": "Kinari Bazaar",
+          "description": "Local Shopping",
+          "time": "11:30 AM",
+          "type": "culture",
+          "lat": 27.1833,
+          "lng": 78.0167
+        },
+        {
+          "name": "Cocktail Party",
+          "description": "Luxury Evening",
+          "time": "07:30 PM",
+          "type": "food",
+          "lat": 27.1917,
+          "lng": 78.0278
+        }
+      ],
+      "day5": [
+        {
+          "name": "Yamuna River",
+          "description": "Scenic Boat Ride",
+          "time": "08:00 AM",
+          "type": "landmark",
+          "lat": 27.1751,
+          "lng": 78.0421
+        },
+        {
+          "name": "Sur Sarovar Bird Sanctuary",
+          "description": "Nature Walk",
+          "time": "10:00 AM",
+          "type": "culture",
+          "lat": 27.2167,
+          "lng": 77.6333
+        },
+        {
+          "name": "Farewell Dinner",
+          "description": "Indian Cuisine",
+          "time": "07:00 PM",
+          "type": "food",
+          "lat": 27.1833,
+          "lng": 78.0167
+        }
+      ]
+    }
+  },
+  "itinerary-jaipur-3-Luxury-Culture, History, Food": {
+    "itinerary": {
+      "day1": [
+        {
+          "name": "Amber Fort",
+          "description": "Historic Fort",
+          "time": "09:00 AM",
+          "type": "landmark",
+          "lat": 26.9859,
+          "lng": 75.8503
+        },
+        {
+          "name": "Rajasthani Lunch",
+          "description": "Local Cuisine",
+          "time": "01:00 PM",
+          "type": "food",
+          "lat": 26.9124,
+          "lng": 75.7873
+        },
+        {
+          "name": "City Palace",
+          "description": "Royal Palace",
+          "time": "03:00 PM",
+          "type": "culture",
+          "lat": 26.9253,
+          "lng": 75.8235
+        }
+      ],
+      "day2": [
+        {
+          "name": "Hawa Mahal",
+          "description": "Palace Winds",
+          "time": "09:30 AM",
+          "type": "landmark",
+          "lat": 26.9236,
+          "lng": 75.8264
+        },
+        {
+          "name": "Johri Bazaar",
+          "description": "Local Market",
+          "time": "11:30 AM",
+          "type": "culture",
+          "lat": 26.9222,
+          "lng": 75.8273
+        },
+        {
+          "name": "Chokhi Dhani Dinner",
+          "description": "Rajasthani Food",
+          "time": "07:00 PM",
+          "type": "food",
+          "lat": 26.7994,
+          "lng": 75.7604
+        }
+      ],
+      "day3": [
+        {
+          "name": "Jal Mahal",
+          "description": "Water Palace",
+          "time": "08:00 AM",
+          "type": "landmark",
+          "lat": 26.9543,
+          "lng": 75.8511
+        },
+        {
+          "name": "Albert Hall Museum",
+          "description": "Art Museum",
+          "time": "10:00 AM",
+          "type": "culture",
+          "lat": 26.9077,
+          "lng": 75.8014
+        },
+        {
+          "name": "Ginger Restaurant",
+          "description": "Fine Dining",
+          "time": "01:00 PM",
+          "type": "food",
+          "lat": 26.9124,
+          "lng": 75.7873
+        }
+      ]
+    }
+  },
+  "itinerary-jaipur-1-Luxury-History": {
+    "itinerary": {
+      "day1": [
+        {
+          "name": "Amber Fort",
+          "description": "Historic royal fort",
+          "time": "09:00 AM",
+          "type": "landmark",
+          "lat": 26.9853,
+          "lng": 75.8503
+        },
+        {
+          "name": "Hawa Mahal",
+          "description": "Palace of winds",
+          "time": "11:30 AM",
+          "type": "landmark",
+          "lat": 26.9233,
+          "lng": 75.8278
+        },
+        {
+          "name": "Lunch at Rajput Room",
+          "description": "Royal cuisine",
+          "time": "01:30 PM",
+          "type": "food",
+          "lat": 26.9067,
+          "lng": 75.8194
+        },
+        {
+          "name": "City Palace",
+          "description": "Royal residence",
+          "time": "03:30 PM",
+          "type": "culture",
+          "lat": 26.9257,
+          "lng": 75.8283
+        },
+        {
+          "name": "Dinner at Chokhi Dhani",
+          "description": "Traditional dinner",
+          "time": "07:30 PM",
+          "type": "food",
+          "lat": 26.7953,
+          "lng": 75.7467
+        }
+      ]
+    }
+  },
+  "itinerary-hyderabad-3-Luxury-Culture, History, Food": {
+    "itinerary": {
+      "day1": [
+        {
+          "name": "Charminar",
+          "description": "Historic Monument",
+          "time": "09:00 AM",
+          "type": "landmark",
+          "lat": 17.3616,
+          "lng": 78.4747
+        },
+        {
+          "name": "Laad Bazaar",
+          "description": "Shopping Street",
+          "time": "11:00 AM",
+          "type": "culture",
+          "lat": 17.3623,
+          "lng": 78.4753
+        },
+        {
+          "name": "Hyderabadi Biryani",
+          "description": "Local Cuisine",
+          "time": "01:00 PM",
+          "type": "food",
+          "lat": 17.3944,
+          "lng": 78.4853
+        },
+        {
+          "name": "Salar Jung Museum",
+          "description": "Art Gallery",
+          "time": "03:00 PM",
+          "type": "culture",
+          "lat": 17.3803,
+          "lng": 78.4803
+        }
+      ],
+      "day2": [
+        {
+          "name": "Golconda Fort",
+          "description": "Historic Fort",
+          "time": "09:30 AM",
+          "type": "landmark",
+          "lat": 17.385,
+          "lng": 78.4043
+        },
+        {
+          "name": "Qutub Shahi Tombs",
+          "description": "Royal Tombs",
+          "time": "11:30 AM",
+          "type": "history",
+          "lat": 17.3977,
+          "lng": 78.4023
+        },
+        {
+          "name": "Chichonda Restaurant",
+          "description": "Fine Dining",
+          "time": "01:30 PM",
+          "type": "food",
+          "lat": 17.4222,
+          "lng": 78.4577
+        },
+        {
+          "name": "Hussain Sagar Lake",
+          "description": "Scenic Lake",
+          "time": "04:00 PM",
+          "type": "landmark",
+          "lat": 17.4123,
+          "lng": 78.4983
+        }
+      ],
+      "day3": [
+        {
+          "name": "Falaknuma Palace",
+          "description": "Luxury Hotel",
+          "time": "10:00 AM",
+          "type": "culture",
+          "lat": 17.3108,
+          "lng": 78.4577
+        },
+        {
+          "name": "Birla Mandir",
+          "description": "Hindu Temple",
+          "time": "12:00 PM",
+          "type": "culture",
+          "lat": 17.4123,
+          "lng": 78.4983
+        },
+        {
+          "name": "Shadab Restaurant",
+          "description": "Local Cuisine",
+          "time": "02:00 PM",
+          "type": "food",
+          "lat": 17.3944,
+          "lng": 78.4853
+        },
+        {
+          "name": "Taramati Baradari",
+          "description": "Historic Venue",
+          "time": "05:00 PM",
+          "type": "history",
+          "lat": 17.3514,
+          "lng": 78.3953
+        }
+      ]
+    }
+  }
+}

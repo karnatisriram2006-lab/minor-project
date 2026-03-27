@@ -1,0 +1,107 @@
+[
+    {
+        "name": "Taj Mahal",
+        "city": "Agra",
+        "lat": 27.1751,
+        "lng": 78.0421,
+        "description": "UNESCO ivory-white marble mausoleum on the south bank of the Yamuna river."
+    },
+    {
+        "name": "Agra Fort",
+        "city": "Agra",
+        "lat": 27.1795,
+        "lng": 78.0211,
+        "description": "Historic fort in the city of Agra in India, the main residence of the Mughals."
+    },
+    {
+        "name": "Mehtab Bagh",
+        "city": "Agra",
+        "lat": 27.1917,
+        "lng": 78.0421,
+        "description": "Charbagh complex in Agra, north of the Taj Mahal and Agra Fort."
+    },
+    {
+        "name": "Charminar",
+        "city": "Hyderabad",
+        "lat": 17.3616,
+        "lng": 78.4747,
+        "description": "Mosque and monument, known as the 'Arc de Triomphe of the East'."
+    },
+    {
+        "name": "Golconda Fort",
+        "city": "Hyderabad",
+        "lat": 17.3833,
+        "lng": 78.4011,
+        "description": "Fortified citadel and an early capital city of the Qutb Shahi dynasty."
+    },
+    {
+        "name": "Salar Jung Museum",
+        "city": "Hyderabad",
+        "lat": 17.3713,
+        "lng": 78.4804,
+        "description": "Art museum located at Dar-ul-Shifa, on the southern bank of the Musi River."
+    },
+    {
+        "name": "Hawa Mahal",
+        "city": "Jaipur",
+        "lat": 26.9239,
+        "lng": 75.8267,
+        "description": "Palace of Winds, built from red and pink sandstone."
+    },
+    {
+        "name": "Amer Fort",
+        "city": "Jaipur",
+        "lat": 26.9855,
+        "lng": 75.8513,
+        "description": "Magnificent fort known for its artistic Hindu style elements."
+    },
+    {
+        "name": "City Palace",
+        "city": "Jaipur",
+        "lat": 26.9258,
+        "lng": 75.8236,
+        "description": "Palatial complex in Jaipur, including Chandra Mahal and Mubarak Mahal."
+    },
+    {
+        "name": "Gateway of India",
+        "city": "Mumbai",
+        "lat": 18.922,
+        "lng": 72.8347,
+        "description": "Arch-monument built during the 20th century in Bombay."
+    },
+    {
+        "name": "Marine Drive",
+        "city": "Mumbai",
+        "lat": 18.9431,
+        "lng": 72.823,
+        "description": "3.6-kilometre-long Promenade along the Netaji Subhash Chandra Bose Road."
+    },
+    {
+        "name": "Elephanta Caves",
+        "city": "Mumbai",
+        "lat": 18.9633,
+        "lng": 72.9315,
+        "description": "UNESCO World Heritage Site with temple caves dedicated to Lord Shiva."
+    },
+    {
+        "name": "Red Fort",
+        "city": "Delhi",
+        "lat": 28.6562,
+        "lng": 77.241,
+        "description": "Historic fort in the city of Delhi that served as the residence of the Mughal Emperors."
+    },
+    {
+        "name": "India Gate",
+        "city": "Delhi",
+        "lat": 28.6129,
+        "lng": 77.2295,
+        "description": "War memorial located astride the Rajpath, on the eastern edge of New Delhi."
+    },
+    {
+        "name": "Qutub Minar",
+        "city": "Delhi",
+        "lat": 28.5244,
+        "lng": 77.1855,
+        "description": "UNESCO World Heritage Site, a 73-metre minaret that forms part of the Qutb complex."
+    }
+]

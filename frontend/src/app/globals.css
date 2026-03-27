@@ -1,0 +1,165 @@
+@import "tailwindcss";
+@config "../../tailwind.config.ts";
+
+@theme {
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-background: #F8F6F3;
+  --color-foreground: #0B2A4A;
+  --color-primary: #0B2A4A;
+  --color-secondary: #F97316;
+  --color-accent: #F97316;
+  
+  --shadow-soft-sm: 0 4px 12px rgba(11, 42, 74, 0.03);
+  --shadow-soft-md: 0 8px 32px rgba(11, 42, 74, 0.06);
+  --shadow-soft-lg: 0 16px 48px rgba(11, 42, 74, 0.1);
+  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+
+  --radius-xl: 32px;
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.2);
+}
+
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+}
+
+
+@layer base {
+  :root {
+    --background: #F8F6F3;
+    --foreground: #0B2A4A;
+    --card: #FFFFFF;
+    --card-foreground: #0B2A4A;
+    --popover: #FFFFFF;
+    --popover-foreground: #0B2A4A;
+    --primary: #0B2A4A;
+    --primary-foreground: #F8F6F3;
+    --secondary: #F97316;
+    --secondary-foreground: #FFFFFF;
+    --muted: #F1F1F1;
+    --muted-foreground: #71717A;
+    --accent: #F97316;
+    --accent-foreground: #FFFFFF;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: #E2E8F0;
+    --input: #E2E8F0;
+    --ring: #0B2A4A;
+    --radius: 24px;
+  }
+
+  .dark {
+    --background: #0B2A4A;
+    --foreground: #F8F6F3;
+    --card: #0F345A;
+    --card-foreground: #F8F6F3;
+    /* ... other dark variables if needed, but primary focus is warm light mode ... */
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+    background-image: 
+      radial-gradient(circle at 2px 2px, rgba(11, 42, 74, 0.05) 1px, transparent 0);
+    background-size: 40px 40px;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif font-black tracking-tight;
+  }
+}
+
+@layer components {
+  .heritage-card {
+    @apply bg-[#0B1120]/40 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl border border-white/5 p-6 transition-all hover:shadow-[0_8px_30px_rgba(255,255,255,0.04)] text-white;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-primary-foreground px-6 py-3 rounded-full font-bold transition-all hover:opacity-90 active:scale-95;
+  }
+
+  .btn-accent {
+    @apply bg-accent text-white px-6 py-3 rounded-full font-bold transition-all hover:bg-orange-600 active:scale-95;
+  }
+
+  .active-nav-item {
+    @apply bg-accent text-white rounded-xl shadow-soft-sm;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .noise-overlay {
+    position: relative;
+  }
+  .noise-overlay::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0.04;
+    z-index: 10;
+    background-image: url("https://www.transparenttextures.com/patterns/stardust.png");
+  }
+
+  .glass-3d {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 
+      0 4px 24px -1px rgba(0, 0, 0, 0.2),
+      inset 0 0 20px 0 rgba(255, 255, 255, 0.02);
+  }
+
+  .glow-primary {
+    box-shadow: 0 0 40px -10px var(--color-primary);
+  }
+  
+  .glow-accent {
+    box-shadow: 0 0 40px -10px var(--color-accent);
+  }
+
+  @keyframes aurora {
+    from {
+      transform: rotate(0deg) scale(1);
+    }
+    to {
+      transform: rotate(360deg) scale(1.2);
+    }
+  }
+
+  .animate-aurora {
+    animation: aurora 20s linear infinite;
+  }
+}
+
+/* Custom Scrollbar for Dark Theme */
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #020617;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(249, 115, 22, 0.2);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(249, 115, 22, 0.4);
+}

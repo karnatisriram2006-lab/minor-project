@@ -1,0 +1,39 @@
+
+> frontend@0.1.0 dev
+> next dev
+
+ ⚠ Port 3000 is in use, trying 3001 instead.
+  ▲ Next.js 14.2.15
+  - Local:        http://localhost:3001
+
+ ✓ Starting...
+ ✓ Ready in 4.6s
+ ○ Compiling / ...
+ ✓ Compiled / in 9.1s (1779 modules)
+ GET / 200 in 9598ms
+ ✓ Compiled in 970ms (877 modules)
+ ✓ Compiled in 1064ms (877 modules)
+ ✓ Compiled in 688ms (877 modules)
+ ○ Compiling /trip-planner ...
+ ✓ Compiled /trip-planner in 1555ms (1312 modules)
+ GET /trip-planner 200 in 1814ms
+ ✓ Compiled in 1937ms (896 modules)
+ ✓ Compiled in 909ms (896 modules)
+ ✓ Compiled in 2.1s (896 modules)
+ ✓ Compiled in 2.2s (896 modules)
+ ✓ Compiled in 1613ms (896 modules)
+ ✓ Compiled in 2.5s (896 modules)
+ ✓ Compiled in 1289ms (896 modules)
+ ✓ Compiled in 4.6s (883 modules)
+ ✓ Compiled in 6.4s (883 modules)
+ ⨯ ./src/components/Map/LeafletMapHero.tsx
+Error: Failed to read source code from D:\Minorproject\frontend\src\components\Map\LeafletMapHero.tsx
+
+Caused by:
+    The system cannot find the file specified. (os error 2)
+
+Import trace for requested module:
+./src/components/Map/LeafletMapHero.tsx
+./src/app/page.tsx
+ ✓ Compiled in 1965ms (896 modules)
+ ✓ Compiled in 1015ms (896 modules)
