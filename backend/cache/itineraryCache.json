@@ -1439,5 +1439,275 @@
         }
       ]
     }
+  },
+  "itinerary-warangal-3-Budget-Culture, History, Food": {
+    "itinerary": {
+      "day1": [
+        {
+          "name": "Warangal Fort",
+          "description": "Historic Fort",
+          "time": "09:00 AM",
+          "type": "landmark",
+          "lat": 17.9772,
+          "lng": 79.5967
+        },
+        {
+          "name": "Local Cuisine",
+          "description": "Telangana Food",
+          "time": "01:00 PM",
+          "type": "food",
+          "lat": 17.9773,
+          "lng": 79.5965
+        },
+        {
+          "name": "Bhadrakali Temple",
+          "description": "Ancient Temple",
+          "time": "04:00 PM",
+          "type": "culture",
+          "lat": 17.9933,
+          "lng": 79.5903
+        }
+      ],
+      "day2": [
+        {
+          "name": "Thousand Pillar Temple",
+          "description": "Historic Temple",
+          "time": "08:00 AM",
+          "type": "culture",
+          "lat": 17.9934,
+          "lng": 79.5902
+        },
+        {
+          "name": "Warangal Museum",
+          "description": "Local History",
+          "time": "11:00 AM",
+          "type": "history",
+          "lat": 17.9771,
+          "lng": 79.5966
+        },
+        {
+          "name": "Street Food",
+          "description": "Local Snacks",
+          "time": "07:00 PM",
+          "type": "food",
+          "lat": 17.9772,
+          "lng": 79.5967
+        }
+      ],
+      "day3": [
+        {
+          "name": "Ramappa Temple",
+          "description": "UNESCO Temple",
+          "time": "09:00 AM",
+          "type": "culture",
+          "lat": 18.2523,
+          "lng": 79.9433
+        },
+        {
+          "name": "Laknavaram Lake",
+          "description": "Scenic Lake",
+          "time": "02:00 PM",
+          "type": "landmark",
+          "lat": 18.0333,
+          "lng": 79.7833
+        },
+        {
+          "name": "Local Shopping",
+          "description": "Handicrafts",
+          "time": "05:00 PM",
+          "type": "culture",
+          "lat": 17.9773,
+          "lng": 79.5965
+        }
+      ]
+    }
+  },
+  "itinerary-chouttupal-3-Luxury-Culture, History, Food": {
+    "itinerary": {
+      "day1": [
+        {
+          "name": "Chouttupal Fort",
+          "description": "Historic Fort",
+          "time": "09:00 AM",
+          "type": "landmark",
+          "lat": 22.5739,
+          "lng": 87.6828
+        },
+        {
+          "name": "Local Cuisine",
+          "description": "Indian Food",
+          "time": "01:00 PM",
+          "type": "food",
+          "lat": 22.5733,
+          "lng": 87.6832
+        },
+        {
+          "name": "Folk Dance",
+          "description": "Cultural Show",
+          "time": "07:00 PM",
+          "type": "culture",
+          "lat": 22.5741,
+          "lng": 87.6825
+        }
+      ],
+      "day2": [
+        {
+          "name": "Chouttupal Museum",
+          "description": "History Museum",
+          "time": "10:00 AM",
+          "type": "culture",
+          "lat": 22.5729,
+          "lng": 87.6838
+        },
+        {
+          "name": "Street Food",
+          "description": "Local Snacks",
+          "time": "12:30 PM",
+          "type": "food",
+          "lat": 22.5735,
+          "lng": 87.6829
+        },
+        {
+          "name": "Temple Visit",
+          "description": "Religious Site",
+          "time": "04:00 PM",
+          "type": "landmark",
+          "lat": 22.5751,
+          "lng": 87.6819
+        }
+      ],
+      "day3": [
+        {
+          "name": "Village Tour",
+          "description": "Rural Life",
+          "time": "09:30 AM",
+          "type": "culture",
+          "lat": 22.5719,
+          "lng": 87.6845
+        },
+        {
+          "name": "Handicraft Shop",
+          "description": "Local Crafts",
+          "time": "11:30 AM",
+          "type": "culture",
+          "lat": 22.5725,
+          "lng": 87.6831
+        },
+        {
+          "name": "Farewell Dinner",
+          "description": "Luxury Dining",
+          "time": "08:00 PM",
+          "type": "food",
+          "lat": 22.5748,
+          "lng": 87.6822
+        }
+      ]
+    }
+  },
+  "itinerary-hyderbad-3-Luxury-Culture, History, Food": {
+    "itinerary": {
+      "day1": [
+        {
+          "name": "Charminar",
+          "description": "Historic Monument",
+          "time": "09:00 AM",
+          "type": "landmark",
+          "lat": 17.3616,
+          "lng": 78.4747
+        },
+        {
+          "name": "Laad Bazaar",
+          "description": "Local Shopping",
+          "time": "11:00 AM",
+          "type": "culture",
+          "lat": 17.3622,
+          "lng": 78.4753
+        },
+        {
+          "name": "Hyderabadi Biryani",
+          "description": "Local Cuisine",
+          "time": "01:00 PM",
+          "type": "food",
+          "lat": 17.3944,
+          "lng": 78.4853
+        },
+        {
+          "name": "Salar Jung Museum",
+          "description": "Art Gallery",
+          "time": "03:00 PM",
+          "type": "culture",
+          "lat": 17.3803,
+          "lng": 78.4803
+        }
+      ],
+      "day2": [
+        {
+          "name": "Golconda Fort",
+          "description": "Historic Fort",
+          "time": "09:30 AM",
+          "type": "landmark",
+          "lat": 17.385,
+          "lng": 78.4043
+        },
+        {
+          "name": "Qutub Shahi Tombs",
+          "description": "Royal Tombs",
+          "time": "11:30 AM",
+          "type": "history",
+          "lat": 17.4022,
+          "lng": 78.3992
+        },
+        {
+          "name": "Chowki Dhani",
+          "description": "Rajasthani Food",
+          "time": "07:00 PM",
+          "type": "food",
+          "lat": 17.4222,
+          "lng": 78.3131
+        },
+        {
+          "name": "Hussain Sagar Lake",
+          "description": "Lake View",
+          "time": "09:00 PM",
+          "type": "landmark",
+          "lat": 17.4123,
+          "lng": 78.4983
+        }
+      ],
+      "day3": [
+        {
+          "name": "Falaknuma Palace",
+          "description": "Royal Palace",
+          "time": "10:00 AM",
+          "type": "landmark",
+          "lat": 17.3103,
+          "lng": 78.4367
+        },
+        {
+          "name": "Birla Mandir",
+          "description": "Hindu Temple",
+          "time": "12:00 PM",
+          "type": "culture",
+          "lat": 17.4129,
+          "lng": 78.4984
+        },
+        {
+          "name": "Shilparamam",
+          "description": "Craft Village",
+          "time": "02:00 PM",
+          "type": "culture",
+          "lat": 17.4575,
+          "lng": 78.3355
+        },
+        {
+          "name": "Taramati Baradari",
+          "description": "Historic Baradari",
+          "time": "04:00 PM",
+          "type": "history",
+          "lat": 17.3519,
+          "lng": 78.3958
+        }
+      ]
+    }
   }
 }
