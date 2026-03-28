@@ -54,62 +54,54 @@ export default function Dashboard() {
   ])
 
   return (
-    <div className="max-w-[1600px] mx-auto p-6 md:p-12 space-y-12 bg-[#020617] text-white selection:bg-primary/20 font-sans noise-overlay min-h-screen">
+    <div className="max-w-[1600px] mx-auto p-6 md:p-12 pt-28 md:pt-32 space-y-12 bg-white text-[#222222] font-sans min-h-screen">
       
-      {/* Cinematic Background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10 bg-gradient-to-br from-[#020617] via-[#0B1120] to-[#020617]">
-          <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-cyan-900/5 rounded-full blur-[160px] animate-pulse" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-orange-900/5 rounded-full blur-[120px] animate-pulse [animation-delay:-4s]" />
-      </div>
-
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 relative z-10 w-full">
-        <div className="space-y-4">
-          <p className="text-[11px] font-black uppercase tracking-[0.4em] text-primary/80">Strategic Overview</p>
-          <h1 className="text-5xl md:text-6xl font-black font-serif text-white leading-tight italic">Namaste, {displayName}</h1>
-          <p className="text-white/40 font-medium max-w-xl text-sm md:text-base">
-            Your high-fidelity journey through the Golden Triangle is <span className="text-primary font-bold">85% optimized</span>. Explore your personalized logistical insights below.
+        <div className="space-y-2">
+          <p className="text-sm font-semibold tracking-wide text-gray-500">Trip Overview</p>
+          <h1 className="text-4xl md:text-5xl font-bold text-[#222222] tracking-tight">Namaste, {displayName}</h1>
+          <p className="text-gray-500 font-medium max-w-xl text-base">
+            Your journey through the Golden Triangle is looking great. Check your latest updates below.
           </p>
         </div>
-        <div className="bg-[#0B1120]/60 backdrop-blur-3xl px-6 py-3 rounded-full shadow-2xl border border-white/5 flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_10px_rgba(249,115,22,0.8)]" />
-          <span className="text-xs md:text-[13px] font-bold text-white/80">Jaipur Standard Time: 10:45 AM</span>
+        <div className="bg-gray-50 px-6 py-2 rounded-full border border-gray-200 flex items-center gap-3">
+          <div className="w-2 h-2 rounded-full bg-[#FF385C]" />
+          <span className="text-sm font-medium text-gray-600">Jaipur: 10:45 AM</span>
         </div>
       </div>
 
       {/* Main Dashboard Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-10 relative z-10">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 relative z-10">
         
-        {/* Center Content: Heritage Guide AI */}
+        {/* Center Content: AI Travel Assistant */}
         <div className="lg:col-span-8 space-y-8">
-          <div className="heritage-card p-0 overflow-hidden flex flex-col h-[600px] border-white/10">
-            <div className="p-8 border-b border-white/5 flex items-center justify-between bg-white/[0.01] sticky top-0 z-10">
+          <div className="airbnb-card p-0 overflow-hidden flex flex-col h-[600px]">
+            <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-primary border border-white/10 glow-primary">
+                <div className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center text-[#FF385C]">
                   <Sparkles className="h-6 w-6" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-3 mb-1">
-                    <h3 className="text-xl font-black font-serif text-white italic">Heritage Guide AI</h3>
+                  <div className="flex items-center gap-3">
+                    <h3 className="text-xl font-bold text-[#222222]">AI Travel Assistant</h3>
                     <div className="flex gap-2">
-                      <span className="text-[9px] font-black uppercase tracking-wider bg-primary/20 text-primary px-2 py-0.5 rounded-sm border border-primary/20">Real-time Translation</span>
-                      <span className="text-[9px] font-black uppercase tracking-wider bg-white/5 text-white/50 px-2 py-0.5 rounded-sm border border-white/10">History Expert</span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider bg-red-50 text-[#FF385C] px-2 py-0.5 rounded-md border border-red-100">Live Help</span>
                     </div>
                   </div>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" className="text-white/20 hover:text-white hover:bg-white/5">
+              <Button variant="ghost" size="icon" className="text-gray-400 hover:text-[#222222]">
                 <MoreVertical className="h-5 w-5" />
               </Button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-8 space-y-8 scroll-smooth">
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth">
               {messages.map((msg, idx) => (
                 <div key={idx} className={cn("flex flex-col", msg.role === 'user' ? "items-end" : "items-start")}>
                   {msg.translation && (
-                    <div className="flex items-center gap-2 mb-3">
-                       <div className="w-6 h-[1px] bg-primary/40" />
-                       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">{msg.translation}</span>
+                    <div className="flex items-center gap-2 mb-2">
+                       <span className="text-[10px] font-bold text-[#FF385C]">{msg.translation}</span>
                     </div>
                   )}
                   <motion.div 
@@ -117,10 +109,10 @@ export default function Dashboard() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     className={cn(
-                      "max-w-[85%] p-6 rounded-[2rem] shadow-2xl text-sm leading-relaxed border",
+                      "max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed",
                       msg.role === 'user' 
-                        ? "bg-[#1E293B] text-white rounded-tr-none border-white/10" 
-                        : "bg-[#0B1120]/80 border-white/5 text-white/90 rounded-tl-none font-medium italic"
+                        ? "bg-[#222222] text-white rounded-tr-sm" 
+                        : "bg-gray-100 text-gray-800 rounded-tl-sm font-medium"
                     )}
                   >
                     {msg.text}
@@ -129,301 +121,256 @@ export default function Dashboard() {
               ))}
             </div>
 
-            <div className="p-6 border-t border-white/5 flex items-center gap-4 bg-white/[0.01]">
+            <div className="p-6 border-t border-gray-100 flex items-center gap-4 bg-white">
               <div className="flex-1 relative group">
                 <input 
                   type="text" 
-                  placeholder="Ask about local history, customs, or hidden gems..." 
-                  className="w-full bg-[#0B1120] h-16 rounded-2xl pl-8 pr-16 text-sm font-medium border border-white/10 shadow-inner focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all text-white placeholder:text-white/20"
+                  placeholder="Ask about local history, food, or tips..." 
+                  className="w-full bg-gray-50 h-14 rounded-xl pl-6 pr-16 text-sm font-medium border border-gray-200 focus:outline-none focus:border-[#FF385C] focus:ring-2 focus:ring-[#FF385C]/10 transition-all text-[#222222] placeholder:text-gray-400"
                 />
-                <div className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-white/20 tracking-widest uppercase pointer-events-none">
-                  AI Protocol V2
-                </div>
               </div>
-              <Button className="h-16 w-16 rounded-2xl bg-[#0F172A] hover:bg-[#1E293B] text-primary border border-white/10 shadow-2xl transform transition-all active:scale-90 hover:scale-[1.05] group overflow-hidden">
-                <Send className="h-5 w-5 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+              <Button className="h-14 w-14 rounded-xl bg-[#FF385C] hover:bg-[#E31C5F] text-white shadow-md active:scale-90 transform transition-all group overflow-hidden">
+                <Send className="h-5 w-5" />
               </Button>
             </div>
           </div>
 
-          {/* Fiscal & Capital Distribution Row */}
+          {/* Budget & Activities Row */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-             {/* Fiscal Setup */}
-             <div className="heritage-card space-y-6 relative overflow-hidden group">
-                <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-colors" />
-                <div className="flex items-center justify-between relative z-10">
+             {/* Budget Tracking */}
+             <div className="airbnb-card space-y-6">
+                <div className="flex items-center justify-between">
                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-primary shadow-2xl">
+                      <div className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-[#FF385C]">
                          <Wallet className="h-6 w-6" />
                       </div>
                       <div>
-                         <h4 className="text-xl font-black font-serif text-white italic leading-none">Fiscal Setup</h4>
-                         <p className="text-[10px] font-black uppercase tracking-widest text-white/30 mt-1">Budget Thresholds</p>
+                         <h4 className="text-lg font-bold text-[#222222]">Budget Activity</h4>
+                         <p className="text-xs text-gray-500">Current Spending</p>
                       </div>
                    </div>
-                   <Button variant="ghost" size="icon" className="text-white/20 hover:text-primary transition-colors hover:bg-white/5">
-                      <Target className="h-4 w-4" />
-                   </Button>
                 </div>
 
-                <div className="space-y-4 relative z-10">
+                <div className="space-y-4">
                    <div className="flex justify-between items-end">
-                      <span className="text-3xl font-black font-serif text-white italic">₹45,200.00</span>
-                      <span className="text-[10px] font-black text-primary uppercase tracking-widest">+12% vs Standard</span>
+                      <span className="text-2xl font-bold text-[#222222]">₹45,200.00</span>
+                      <span className="text-xs font-bold text-green-600">On Track</span>
                    </div>
-                   <div className="w-full h-3 bg-[#020617] rounded-full overflow-hidden shadow-inner border border-white/5">
+                   <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                       <motion.div 
                         initial={{ width: 0 }}
                         whileInView={{ width: "75%" }}
                         transition={{ duration: 1.5, ease: "easeOut" }}
-                        className="h-full bg-gradient-to-r from-primary to-orange-400" 
+                        className="h-full bg-[#FF385C]" 
                       />
                    </div>
-                   <p className="text-[11px] font-medium text-white/40 leading-relaxed italic">
-                      "Leveraged luxury tier allocation for heritage stay in Amber."
+                   <p className="text-xs text-gray-500 leading-relaxed italic">
+                      Most of your budget is allocated to heritage stays.
                    </p>
                 </div>
              </div>
 
-             {/* Capital Distribution */}
-             <div className="heritage-card space-y-6 relative overflow-hidden group">
-                <div className="flex items-center justify-between relative z-10">
+             {/* Itinerary Highlights */}
+             <div className="airbnb-card space-y-6">
+                <div className="flex items-center justify-between">
                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-2xl glow-primary">
+                      <div className="w-12 h-12 rounded-xl bg-[#00A699] flex items-center justify-center text-white">
                          <Route className="h-6 w-6" />
                       </div>
                       <div>
-                         <h4 className="text-xl font-black font-serif text-white italic leading-none">Capital Distribution</h4>
-                         <p className="text-[10px] font-black uppercase tracking-widest text-white/30 mt-1">Asset Allocation</p>
+                         <h4 className="text-lg font-bold text-[#222222]">Trip Progress</h4>
+                         <p className="text-xs text-gray-500">Upcoming Highlights</p>
                       </div>
-                   </div>
-                   <div className="flex -space-x-2">
-                      {[1, 2, 3].map(i => (
-                        <div key={i} className="w-6 h-6 rounded-full border-2 border-[#0B1120] bg-white/10 text-white/50 text-[8px] font-black flex items-center justify-center">N{i}</div>
-                      ))}
                    </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 relative z-10">
+                <div className="grid grid-cols-3 gap-2">
                    {[
-                     { label: "Logistics", val: "40%", color: "bg-primary" },
-                     { label: "Heritage", val: "35%", color: "bg-white/20" },
-                     { label: "Experiential", val: "25%", color: "bg-white/5" }
+                     { label: "Travel", val: "40%", color: "bg-[#FF385C]" },
+                     { label: "Stays", val: "35%", color: "bg-[#00A699]" },
+                     { label: "Excursions", val: "25%", color: "bg-gray-200" }
                    ].map(item => (
                      <div key={item.label} className="space-y-2">
                         <div className={cn("h-1 w-full rounded-full", item.color)} />
-                        <p className="text-[9px] font-black uppercase tracking-tighter text-white/40">{item.label}</p>
-                        <p className="text-xs font-black text-white leading-none">{item.val}</p>
+                        <p className="text-[10px] font-bold text-gray-400">{item.label}</p>
+                        <p className="text-xs font-bold text-[#222222]">{item.val}</p>
                      </div>
                    ))}
                 </div>
 
-                <Button className="w-full h-12 rounded-xl bg-[#0F172A] hover:bg-[#1E293B] border border-white/5 text-primary/80 hover:text-primary font-black text-[10px] uppercase tracking-[0.2em] shadow-2xl transition-all flex items-center justify-center gap-2 group/btn relative overflow-hidden">
-                   <div className="absolute inset-0 bg-primary/10 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500" />
-                   <Sparkles className="h-3 w-3 relative z-10" />
-                   <span className="relative z-10">Run Optimization</span>
+                <Button className="w-full h-10 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-200 text-[#222222] font-bold text-xs transition-all flex items-center justify-center gap-2">
+                   <span>Details</span>
                 </Button>
              </div>
           </div>
         </div>
 
-        {/* Right Panel: Companion Matches & Strategy */}
-        <div className="xl:col-span-4 flex flex-col gap-10">
-          <div className="heritage-card group">
-            <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/5">
+        {/* Right Panel: Companions */}
+        <div className="xl:col-span-4 flex flex-col gap-8">
+          <div className="airbnb-card">
+            <div className="flex items-center justify-between mb-8">
               <div>
-                <h3 className="text-2xl font-black font-serif text-white italic leading-none">Companion Matches</h3>
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/30 mt-2">Logistical Synergy</p>
+                <h3 className="text-xl font-bold text-[#222222]">Nearby Travelers</h3>
+                <p className="text-xs text-gray-500 mt-1">Found based on your itinerary</p>
               </div>
-              <span className="text-[10px] font-black uppercase tracking-widest bg-primary/20 text-primary border border-primary/20 px-3 py-1.5 rounded-full shadow-2xl">4 New</span>
             </div>
 
-            <div className="space-y-8">
+            <div className="space-y-6">
               {[
                 { name: "Aditi Rao", status: "Arriving in Jaipur tomorrow", tags: ["Foodie", "Photography"], match: "98%", avatar: "/avatars/aditi.jpg" },
                 { name: "Rohan Mehta", status: "Exploring Amer Fort today", tags: ["Solo", "History"], match: "85%", avatar: "/avatars/rohan.jpg" },
                 { name: "Sana Khan", status: "Looking for a yoga retreat", tags: ["Wellness"], match: "72%", avatar: "/avatars/sana.jpg" }
               ].map((companion, i) => (
-                <div key={i} className="flex items-center gap-5 group/item cursor-pointer hover:translate-x-2 transition-all duration-300">
+                <div key={i} className="flex items-center gap-4 group/item cursor-pointer hover:bg-gray-50 p-2 -mx-2 rounded-xl transition-all">
                   <div className="relative shrink-0">
-                    <Avatar className="h-16 w-16 border-4 border-[#0B1120] shadow-2xl group-hover/item:border-primary transition-colors duration-500">
+                    <Avatar className="h-14 w-14 border-2 border-white shadow-sm">
                       <AvatarImage src={companion.avatar} />
-                      <AvatarFallback className="bg-white/5 text-white font-black text-lg">{companion.name[0]}</AvatarFallback>
+                      <AvatarFallback className="bg-gray-100 text-[#FF385C] font-bold">{companion.name[0]}</AvatarFallback>
                     </Avatar>
-                    <div className="absolute -bottom-1 -right-1 bg-primary text-white text-[9px] font-black px-2 py-0.5 rounded-full border-2 border-[#0B1120] shadow-xl">
-                      {companion.match}
-                    </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-black text-white text-base mb-1 tracking-tight truncate">{companion.name}</h4>
-                    <p className="text-[11px] font-medium text-white/40 leading-tight mb-3 line-clamp-1 italic">{companion.status}</p>
-                    <div className="flex flex-wrap gap-2">
+                    <h4 className="font-bold text-[#222222] text-sm">{companion.name}</h4>
+                    <p className="text-xs text-gray-500 line-clamp-1">{companion.status}</p>
+                    <div className="flex gap-2 mt-2">
                        {companion.tags.map(tag => (
-                         <span key={tag} className="text-[9px] font-black uppercase tracking-widest text-white/50 bg-white/5 border border-white/5 px-2 py-0.5 rounded-md">{tag}</span>
+                         <span key={tag} className="text-[10px] font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">{tag}</span>
                        ))}
                     </div>
                   </div>
-                  <ChevronRight className="h-4 w-4 text-white/10 group-hover/item:text-primary transition-colors" />
+                  <ChevronRight className="h-4 w-4 text-gray-300 group-hover/item:text-[#FF385C]" />
                 </div>
               ))}
             </div>
 
-            <Button variant="outline" className="w-full mt-10 h-16 rounded-2xl border-2 border-white/5 text-white/40 font-black text-[10px] uppercase tracking-[0.3em] hover:border-primary/50 hover:text-primary hover:bg-primary/5 transition-all">
-              Broaden Strategic Search
+            <Button variant="outline" className="w-full mt-8 border-gray-200 text-gray-600 font-bold text-xs hover:bg-gray-50">
+              Find more people
             </Button>
           </div>
 
-          {/* Target/Goal Widget */}
-          <div className="heritage-card bg-primary text-white p-12 flex flex-col items-center justify-center gap-8 overflow-hidden relative group/goal border-primary/20 glow-primary">
-             <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-[#020617]/50 opacity-0 group-hover/goal:opacity-100 transition-opacity duration-1000" />
-             <div className="absolute inset-0 border-[30px] border-white/5 rounded-full -m-16 group-hover/goal:scale-110 transition-transform duration-1000" />
-             
-             <div className="w-24 h-24 rounded-full border-2 border-white/20 flex items-center justify-center relative z-10 box-content">
-                <div className="w-20 h-20 rounded-full border-4 border-white flex items-center justify-center bg-white/10 backdrop-blur-sm animate-pulse">
-                   <Target className="h-10 w-10 text-white" />
-                </div>
-             </div>
-
-             <div className="text-center relative z-10 space-y-3">
-                <h4 className="text-3xl font-black font-serif italic mb-2 tracking-tight">The Golden Goal</h4>
-                <p className="text-xs font-medium text-white/70 leading-relaxed px-4 max-w-xs mx-auto">
-                   Calibrate your sequence: Visit 5 heritage nodes in Jaipur to unlock <span className="text-white font-black italic">Royal Explorer Phase 1</span>.
+          {/* Goal Insight */}
+          <div className="airbnb-card bg-[#FF385C] text-white border-none">
+             <div className="text-center space-y-4 py-4">
+                <Target className="h-10 w-10 text-white mx-auto" />
+                <h4 className="text-2xl font-bold italic">Next Milestone</h4>
+                <p className="text-sm font-medium text-white/90 px-4">
+                   Visit 5 more landmarks in Jaipur to unlock your <span className="font-bold underline decoration-2 underline-offset-4">Explorer Badge</span>.
                 </p>
+                <Button className="w-full bg-white hover:bg-gray-100 text-[#FF385C] rounded-xl h-12 font-bold text-sm mt-4">
+                   View Progress
+                </Button>
              </div>
-
-             <Button className="w-full bg-[#020617] hover:bg-[#0B1120] text-white rounded-2xl h-16 font-black text-[10px] uppercase tracking-[0.3em] relative z-10 shadow-2xl transform transition-all active:scale-95 group/btn-goal overflow-hidden border border-white/10">
-                <div className="absolute inset-0 bg-white/5 -translate-x-full group-hover/btn-goal:translate-x-full transition-transform duration-700" />
-                Track Logistical Progress
-             </Button>
           </div>
         </div>
       </div>
 
       {/* The Journey Ahead Section */}
-      <div className="space-y-16 pt-12 pb-24 relative z-10">
-        <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-white/5 pb-10 gap-6">
+      <div className="space-y-12 pt-8 pb-20">
+        <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-gray-100 pb-8 gap-4">
            <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.4em] text-primary mb-4">Chronology</p>
-              <h2 className="text-5xl md:text-6xl font-black font-serif text-white italic leading-none">The Journey Ahead</h2>
+              <p className="text-sm font-bold text-[#FF385C] mb-2">Upcoming Schedule</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-[#222222]">Your Itinerary</h2>
            </div>
-           <Button variant="link" className="text-white font-black uppercase tracking-[0.2em] text-[10px] bg-white/5 px-8 py-4 rounded-full shadow-2xl border border-white/10 hover:bg-primary hover:border-primary transition-all">
-              Manifest Full Itinerary
+           <Button variant="outline" className="border-gray-200 text-gray-600 font-bold text-sm">
+              View Full Planner
            </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 lg:gap-24">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
            {/* Day 1 Section */}
-           <div className="space-y-10 group/day">
+           <div className="space-y-8">
               <div className="flex items-center gap-4">
-                 <div className="w-12 h-12 rounded-2xl bg-primary/20 border border-primary/20 text-primary flex flex-col items-center justify-center shadow-2xl glow-primary">
-                    <span className="text-[8px] font-black leading-none opacity-80">OCT</span>
-                    <span className="text-lg font-black leading-none mt-1">14</span>
+                 <div className="w-12 h-12 rounded-xl bg-red-50 text-[#FF385C] flex flex-col items-center justify-center font-bold border border-red-100">
+                    <span className="text-[10px] uppercase opacity-80">OCT</span>
+                    <span className="text-lg">14</span>
                  </div>
                  <div>
-                    <span className="text-[11px] font-black uppercase tracking-[0.3em] text-primary">Strategic Sequence 01</span>
-                    <h3 className="text-4xl font-black font-serif text-white mt-1">The Pink City Dawn</h3>
+                    <h3 className="text-2xl font-bold text-[#222222]">The Pink City Dawn</h3>
                  </div>
               </div>
               
-              <div className="space-y-6 relative pl-8 border-l-2 border-white/10">
+              <div className="space-y-6 relative pl-8 border-l border-gray-100">
                  {[
-                   { time: "06:00", title: "Sunrise at Jal Mahal", desc: "Best lighting for photographic telemetry" },
-                   { time: "09:30", title: "Guided Heritage Walk: Johari Bazaar Protocol" },
-                   { time: "13:00", title: "Rajasthani Gastronomy: LMB Deployment" }
+                   { time: "06:00", title: "Sunrise at Jal Mahal", desc: "Arrive early for the best view" },
+                   { time: "09:30", title: "Guided Walk: Johari Bazaar", desc: "Local craft and jewelry tour" },
+                   { time: "13:00", title: "Lunch at LMB", desc: "Classic Rajasthani flavors" }
                  ].map((item, i) => (
                    <motion.div 
                      key={i} 
                      initial={{ opacity: 0, x: -10 }}
                      whileInView={{ opacity: 1, x: 0 }}
                      transition={{ delay: i * 0.1 }}
-                     className="flex gap-8 group/item hover:translate-x-2 transition-transform cursor-pointer relative"
+                     className="flex gap-6 group/item cursor-pointer relative"
                    >
-                      <div className="absolute -left-[37px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[#0B1120] border-4 border-white/20 group-hover/item:border-primary group-hover/item:scale-125 transition-all shadow-2xl" />
-                      <span className="text-base font-black text-white/30 group-hover/item:text-primary transition-colors font-serif w-12">{item.time}</span>
+                      <div className="absolute -left-[37px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white border-2 border-gray-200 group-hover/item:border-[#FF385C] transition-all" />
+                      <span className="text-sm font-bold text-gray-300 group-hover/item:text-[#FF385C] w-10">{item.time}</span>
                       <div className="space-y-1">
-                        <p className="text-base font-black text-white group-hover/item:text-primary transition-colors tracking-tight">
+                        <p className="text-base font-bold text-[#222222] group-hover/item:text-[#FF385C] transition-colors">
                           {item.title}
                         </p>
-                        {item.desc && <p className="text-xs font-medium text-white/40 italic group-hover/item:text-white/80 transition-colors">{item.desc}</p>}
+                        {item.desc && <p className="text-xs text-gray-400">{item.desc}</p>}
                       </div>
                    </motion.div>
                  ))}
               </div>
 
-              <div className="h-80 rounded-[2.5rem] bg-[#0B1120] overflow-hidden border border-white/10 group/img cursor-pointer shadow-2xl transform transition-all hover:scale-[1.02] hover:border-primary/40 hover:shadow-[0_0_40px_rgba(249,115,22,0.2)]">
+              <div className="h-64 rounded-3xl overflow-hidden border border-gray-100 shadow-sm group/img cursor-pointer">
                  <img 
                    src="https://images.unsplash.com/photo-1599661046289-e31897846e41?w=800&auto=format&fit=crop&q=80" 
                    alt="Jaipur Heritage" 
-                   className="w-full h-full object-cover grayscale-[0.8] mix-blend-screen opacity-60 group-hover/img:grayscale-0 group-hover/img:opacity-100 group-hover/img:scale-110 transition-all duration-1000 ease-out"
+                   className="w-full h-full object-cover group-hover/img:scale-105 transition-all duration-700 ease-out"
                  />
               </div>
            </div>
 
            {/* Day 2 Section */}
-           <div className="space-y-10 group/day">
+           <div className="space-y-8">
               <div className="flex items-center gap-4">
-                 <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 text-white/60 flex flex-col items-center justify-center shadow-2xl">
-                    <span className="text-[8px] font-black leading-none opacity-60">OCT</span>
-                    <span className="text-lg font-black leading-none mt-1">15</span>
+                 <div className="w-12 h-12 rounded-xl bg-gray-50 text-gray-400 flex flex-col items-center justify-center font-bold border border-gray-100">
+                    <span className="text-[10px] uppercase opacity-80">OCT</span>
+                    <span className="text-lg">15</span>
                  </div>
                  <div>
-                    <span className="text-[11px] font-black uppercase tracking-[0.3em] text-white/30">Strategic Sequence 02</span>
-                    <h3 className="text-4xl font-black font-serif text-white mt-1">Fortress Heights</h3>
+                    <h3 className="text-2xl font-bold text-[#222222]">Fortress Heights</h3>
                  </div>
               </div>
 
-              <div className="space-y-6 relative pl-8 border-l-2 border-white/5">
+              <div className="space-y-6 relative pl-8 border-l border-gray-100">
                  {[
-                   { time: "08:00", title: "Amer Fort: High-Altitude Logistics" },
-                   { time: "12:00", title: "Nahargarh Fort: Panoramic Surveillance" }
+                   { time: "08:00", title: "Amer Fort Exploration", desc: "Recommended time: 3 hours" },
+                   { time: "12:00", title: "Views from Nahargarh", desc: "Lunch with a panoramic view" }
                  ].map((item, i) => (
-                  <motion.div 
-                    key={i} 
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                    className="flex gap-8 group/item hover:translate-x-2 transition-transform cursor-pointer relative"
-                  >
-                     <div className="absolute -left-[37px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[#0B1120] border-4 border-white/10 group-hover/item:border-white/40 group-hover/item:scale-125 transition-all shadow-2xl" />
-                     <span className="text-base font-black text-white/20 group-hover/item:text-white/60 transition-colors font-serif w-12">{item.time}</span>
-                     <p className="text-base font-black text-white/60 group-hover/item:text-white transition-colors tracking-tight">{item.title}</p>
-                  </motion.div>
+                   <motion.div 
+                     key={i} 
+                     initial={{ opacity: 0, x: -10 }}
+                     whileInView={{ opacity: 1, x: 0 }}
+                     transition={{ delay: i * 0.1 }}
+                     className="flex gap-6 group/item cursor-pointer relative"
+                   >
+                      <div className="absolute -left-[37px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white border-2 border-gray-200 transition-all" />
+                      <span className="text-sm font-bold text-gray-300 w-10">{item.time}</span>
+                      <p className="text-base font-bold text-[#222222]">{item.title}</p>
+                   </motion.div>
                  ))}
               </div>
 
-              <div className="h-80 rounded-[2.5rem] bg-[#0B1120]/40 backdrop-blur-3xl p-12 flex items-center justify-center border border-white/5 group/placeholder cursor-pointer overflow-hidden shadow-2xl relative glass-3d">
-                 <div className="absolute inset-0 bg-primary/5 group-hover/placeholder:bg-primary/10 transition-colors duration-700" />
-                 <div className="text-center relative z-10 opacity-40 group-hover/placeholder:opacity-100 group-hover/placeholder:scale-x-110 transition-all duration-700">
-                    <Clock className="h-16 w-16 mx-auto mb-6 text-primary animate-pulse" />
-                    <p className="font-serif italic font-black text-3xl text-white leading-none">Optimal Path Loading...</p>
-                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 mt-4">Real-time Telemetry Active</p>
+              <div className="h-64 rounded-3xl bg-gray-50 flex items-center justify-center border border-gray-100 shadow-sm">
+                 <div className="text-center opacity-40">
+                    <Clock className="h-10 w-10 mx-auto mb-4 text-gray-300" />
+                    <p className="font-bold text-lg text-[#222222]">More coming soon</p>
                  </div>
               </div>
            </div>
         </div>
       </div>
 
-      {/* Footer Branding */}
-      <footer className="pt-24 pb-12 border-t border-white/5 flex flex-col items-center gap-10 relative z-10">
-         <div className="flex flex-wrap justify-center gap-12 text-[10px] font-black uppercase tracking-[0.4em] text-white/30">
-            <span className="hover:text-primary cursor-pointer transition-colors relative group/link">
-               Privacy
-               <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-primary transition-all group-hover/link:w-full" />
-            </span>
-            <span className="hover:text-primary cursor-pointer transition-colors relative group/link">
-               Terms
-               <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-primary transition-all group-hover/link:w-full" />
-            </span>
-            <span className="hover:text-primary cursor-pointer transition-colors relative group/link">
-               Heritage Protocol
-               <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-primary transition-all group-hover/link:w-full" />
-            </span>
+      {/* Footer */}
+      <footer className="pt-16 pb-8 border-t border-gray-100 flex flex-col items-center gap-8">
+         <div className="flex flex-wrap justify-center gap-10 text-xs font-bold text-gray-400">
+            <span className="hover:text-[#FF385C] cursor-pointer transition-colors">Privacy</span>
+            <span className="hover:text-[#FF385C] cursor-pointer transition-colors">Terms</span>
+            <span className="hover:text-[#FF385C] cursor-pointer transition-colors">Support</span>
          </div>
-         <div className="flex flex-col items-center gap-2">
-            <div className="w-12 h-[1px] bg-white/10 mb-4" />
-            <p className="text-[11px] font-black text-white/20 tracking-[0.5em]">MODERN HERITAGE COLLECTIVE</p>
-            <p className="text-[9px] font-bold text-white/10 uppercase tracking-widest">Digital Odyssey Series © 2024</p>
-         </div>
+         <p className="text-[10px] font-bold text-gray-300 tracking-[0.2em] uppercase">© 2024 Luxury Travel Collective</p>
       </footer>
     </div>
   )

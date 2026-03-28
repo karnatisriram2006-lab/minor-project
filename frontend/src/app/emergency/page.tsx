@@ -15,10 +15,10 @@ export default function EmergencyHelp() {
 
   const emergencyData = {
     general: [
-      { name: "National Emergency", number: "112", icon: AlertCircle, color: "text-rose-500" },
-      { name: "Police Matrix", number: "100", icon: ShieldAlert, color: "text-blue-500" },
-      { name: "Ambulance Node", number: "102", icon: Ambulance, color: "text-emerald-500" },
-      { name: "Tourist Support", number: "1363", icon: Phone, color: "text-primary" },
+      { name: "National Emergency", number: "112", icon: AlertCircle, color: "text-[#FF385C]" },
+      { name: "Police Service", number: "100", icon: ShieldAlert, color: "text-[#FF385C]" },
+      { name: "Ambulance", number: "102", icon: Ambulance, color: "text-[#00A699]" },
+      { name: "Tourist Support", number: "1363", icon: Phone, color: "text-gray-600" },
     ],
     hospitals: [
       { name: "AIIMS New Delhi", phone: "+91-11-26588500", address: "Ansari Nagar, New Delhi" },
@@ -33,102 +33,99 @@ export default function EmergencyHelp() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-primary/20 pt-32 pb-48 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-white text-[#222222] selection:bg-[#FF385C]/10 pt-32 pb-48 relative overflow-hidden font-sans">
       
-      {/* Aurora Blobs */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
-          <div className="absolute top-1/4 -right-1/4 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] animate-aurora" />
-          <div className="absolute bottom-1/4 -left-1/4 w-[500px] h-[500px] bg-accent/10 rounded-full blur-[100px] animate-aurora [animation-delay:-5s]" />
-      </div>
+      {/* Background Accents */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10 bg-gradient-to-tr from-red-50/20 via-white to-gray-50/10" />
 
-      <div className="container mx-auto px-6 max-w-5xl relative z-10 space-y-20">
+      <div className="container mx-auto px-6 max-w-5xl relative z-10 space-y-16">
         
-        <div className="text-center space-y-8">
+        <div className="text-center space-y-6">
           <motion.div 
-            initial={{ opacity: 0, scale: 0.8 }}
+            initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-primary/10 text-primary w-24 h-24 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 shadow-3xl shadow-primary/20 border border-primary/20 animate-pulse"
+            className="bg-[#FF385C]/5 text-[#FF385C] w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-[#FF385C]/10 shadow-sm"
           >
-            <ShieldAlert className="h-12 w-12" />
+            <ShieldAlert className="h-8 w-8" />
           </motion.div>
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="space-y-4"
+            className="space-y-3"
           >
-            <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-none italic">
-               Emergency <br /><span className="text-primary text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-400">Assistance.</span>
+            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter leading-tight text-[#222222]">
+               Emergency <span className="text-[#FF385C]">Assistance</span>
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-2xl mx-auto leading-relaxed">
-              Rapid access to high-priority safety nodes across the sub-continent. Keep this matrix synchronized during traversal.
+            <p className="text-lg md:text-xl text-gray-500 font-medium max-w-2xl mx-auto leading-relaxed">
+              Immediate access to critical safety and support services during your travels.
             </p>
           </motion.div>
         </div>
 
-        <div className="space-y-16">
+        <div className="space-y-12">
           
           <motion.div 
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="relative max-w-2xl mx-auto"
           >
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-primary" />
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input 
-              placeholder="Search Security Nodes..." 
+              placeholder="Search services and locations..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-16 h-20 rounded-3xl text-xl font-black bg-card/50 border-border focus:ring-4 focus:ring-primary/10 transition-all shadow-4xl glass-3d placeholder:text-muted-foreground/30 uppercase tracking-widest"
+              className="pl-14 h-16 rounded-2xl text-base font-semibold bg-white border-gray-100 shadow-sm focus:ring-4 focus:ring-[#FF385C]/5 transition-all transition-shadow"
             />
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {emergencyData.general.map((contact, i) => {
               const Icon = contact.icon
               return (
                 <motion.div
                   key={i}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: i * 0.1 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
                 >
-                  <Card className="bg-card rounded-[3rem] border-border hover:border-primary/20 hover:shadow-4xl transition-all duration-500 text-center py-12 px-8 cursor-pointer group glass-3d">
-                    <div className="w-16 h-16 bg-primary/5 rounded-[1.5rem] flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:rotate-6 transition-transform shadow-xl border border-primary/10">
-                      <Icon className="h-8 w-8 text-primary" />
+                  <Card className="bg-white rounded-2xl border-gray-100 hover:border-[#FF385C]/20 hover:shadow-xl transition-all duration-300 text-center py-10 px-6 cursor-pointer group shadow-sm">
+                    <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform border border-gray-100">
+                      <Icon className={cn("h-6 w-6", contact.color)} />
                     </div>
-                    <h3 className="font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60 mb-2 group-hover:text-primary transition-colors">{contact.name}</h3>
-                    <p className="text-4xl font-black tracking-tighter text-foreground group-hover:scale-110 transition-all duration-500">{contact.number}</p>
+                    <h3 className="font-bold text-xs uppercase tracking-wider text-gray-500 mb-1">{contact.name}</h3>
+                    <p className="text-3xl font-extrabold tracking-tighter text-[#222222]">{contact.number}</p>
                   </Card>
                 </motion.div>
               )
             })}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <motion.div
-              initial={{ opacity: 0, x: -30 }}
+              initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
+              transition={{ delay: 0.3 }}
             >
-              <Card className="bg-card rounded-[4rem] border-border shadow-4xl overflow-hidden glass-3d">
-                <CardHeader className="flex flex-row items-center gap-6 p-12 border-b border-border">
-                  <div className="p-4 bg-accent/10 rounded-[1.5rem] text-accent border border-accent/20">
-                    <Ambulance className="h-8 w-8" />
+              <Card className="bg-white rounded-[2rem] border-gray-100 shadow-sm overflow-hidden">
+                <CardHeader className="flex flex-row items-center gap-4 p-8 border-b border-gray-50">
+                  <div className="p-3 bg-teal-50 rounded-xl text-[#00A699]">
+                    <Ambulance className="h-6 w-6" />
                   </div>
-                  <CardTitle className="text-3xl font-black tracking-tighter italic">Alpha Medical Nodes</CardTitle>
+                  <CardTitle className="text-2xl font-bold">Medical Centers</CardTitle>
                 </CardHeader>
-                <CardContent className="p-8">
+                <CardContent className="p-6">
                   <Accordion type="single" collapsible className="w-full">
                     {emergencyData.hospitals.map((hosp, i) => (
-                      <AccordionItem key={i} value={`hosp-${i}`} className="border-border px-4 transition-all hover:bg-muted/30 rounded-2xl mb-4">
-                        <AccordionTrigger className="hover:no-underline font-black text-foreground hover:text-primary py-6 text-lg tracking-tight cursor-pointer">
+                      <AccordionItem key={i} value={`hosp-${i}`} className="border-gray-50 px-4 hover:bg-gray-50/50 rounded-xl mb-2">
+                        <AccordionTrigger className="hover:no-underline font-bold text-[#222222] hover:text-[#FF385C] py-4 text-base tracking-tight transition-colors">
                           {hosp.name}
                         </AccordionTrigger>
-                        <AccordionContent className="text-muted-foreground space-y-6 pb-10">
-                          <div className="space-y-4">
-                             <p className="flex items-center gap-4 font-black text-[10px] uppercase tracking-[0.2em]"><Phone className="h-4 w-4 text-accent" /> {hosp.phone}</p>
-                             <p className="flex items-center gap-4 font-black text-[10px] uppercase tracking-[0.2em]"><MapPin className="h-4 w-4 text-accent" /> {hosp.address}</p>
+                        <AccordionContent className="text-gray-500 space-y-4 pb-6">
+                          <div className="space-y-2">
+                             <p className="flex items-center gap-3 text-sm font-medium"><Phone className="h-4 w-4 text-[#00A699]" /> {hosp.phone}</p>
+                             <p className="flex items-center gap-3 text-sm font-medium"><MapPin className="h-4 w-4 text-[#00A699]" /> {hosp.address}</p>
                           </div>
-                          <Button className="w-full h-14 rounded-2xl font-black bg-accent hover:bg-teal-600 text-white shadow-2xl shadow-accent/20 transition-all hover:scale-[1.03]">Initialize Contact</Button>
+                          <Button className="w-full h-12 rounded-xl font-bold bg-[#00A699] hover:bg-[#008C82] text-white shadow-sm transition-all active:scale-[0.98]">Call Hospital</Button>
                         </AccordionContent>
                       </AccordionItem>
                     ))}
@@ -138,30 +135,30 @@ export default function EmergencyHelp() {
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, x: 30 }}
+              initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 }}
+              transition={{ delay: 0.4 }}
             >
-              <Card className="bg-card rounded-[4rem] border-border shadow-4xl overflow-hidden glass-3d">
-                <CardHeader className="flex flex-row items-center gap-6 p-12 border-b border-border">
-                  <div className="p-4 bg-primary/10 rounded-[1.5rem] text-primary border border-primary/20">
-                    <Building2 className="h-8 w-8" />
+              <Card className="bg-white rounded-[2rem] border-gray-100 shadow-sm overflow-hidden">
+                <CardHeader className="flex flex-row items-center gap-4 p-8 border-b border-gray-50">
+                  <div className="p-3 bg-red-50 rounded-xl text-[#FF385C]">
+                    <Building2 className="h-6 w-6" />
                   </div>
-                  <CardTitle className="text-3xl font-black tracking-tighter italic">Diplomatic Outposts</CardTitle>
+                  <CardTitle className="text-2xl font-bold">Embassies</CardTitle>
                 </CardHeader>
-                <CardContent className="p-8">
+                <CardContent className="p-6">
                   <Accordion type="single" collapsible className="w-full">
                     {emergencyData.embassies.map((emb, i) => (
-                      <AccordionItem key={i} value={`emb-${i}`} className="border-border px-4 transition-all hover:bg-muted/30 rounded-2xl mb-4">
-                        <AccordionTrigger className="hover:no-underline font-black text-foreground hover:text-primary py-6 text-lg tracking-tight cursor-pointer">
+                      <AccordionItem key={i} value={`emb-${i}`} className="border-gray-50 px-4 hover:bg-gray-50/50 rounded-xl mb-2">
+                        <AccordionTrigger className="hover:no-underline font-bold text-[#222222] hover:text-[#FF385C] py-4 text-base tracking-tight transition-colors">
                           {emb.name}
                         </AccordionTrigger>
-                        <AccordionContent className="text-muted-foreground space-y-6 pb-10">
-                          <div className="space-y-4">
-                             <p className="flex items-center gap-4 font-black text-[10px] uppercase tracking-[0.2em]"><Phone className="h-4 w-4 text-primary" /> {emb.phone}</p>
-                             <p className="flex items-center gap-4 font-black text-[10px] uppercase tracking-[0.2em]"><MapPin className="h-4 w-4 text-primary" /> {emb.address}</p>
+                        <AccordionContent className="text-gray-500 space-y-4 pb-6">
+                          <div className="space-y-2">
+                             <p className="flex items-center gap-3 text-sm font-medium"><Phone className="h-4 w-4 text-[#FF385C]" /> {emb.phone}</p>
+                             <p className="flex items-center gap-3 text-sm font-medium"><MapPin className="h-4 w-4 text-[#FF385C]" /> {emb.address}</p>
                           </div>
-                          <Button className="w-full h-14 rounded-2xl font-black bg-primary hover:bg-orange-600 text-white shadow-2xl shadow-primary/20 transition-all hover:scale-[1.03]">Request Traversal Aid</Button>
+                          <Button className="w-full h-12 rounded-xl font-bold bg-[#FF385C] hover:bg-[#E31C5F] text-white shadow-sm transition-all active:scale-[0.98]">Contact Embassy</Button>
                         </AccordionContent>
                       </AccordionItem>
                     ))}

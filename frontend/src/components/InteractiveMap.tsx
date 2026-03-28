@@ -1,11 +1,19 @@
 "use client"
 
 import React, { useEffect, useState, useMemo } from "react"
-import { Map, Marker, useMap } from "react-map-gl/maplibre"
-import DeckGL from "@deck.gl/react"
+import { Map, Marker, useMap, useControl } from "react-map-gl/maplibre"
+import maplibregl from "maplibre-gl"
+import { MapboxOverlay, MapboxOverlayProps } from "@deck.gl/mapbox"
 import { PathLayer } from "@deck.gl/layers"
 import "maplibre-gl/dist/maplibre-gl.css"
 import { motion, AnimatePresence } from "framer-motion"
+
+// Helper component for DeckGL Overlay in MapLibre
+function DeckGLOverlay(props: MapboxOverlayProps) {
+  const overlay = useControl<MapboxOverlay>(() => new MapboxOverlay(props))
+  overlay.setProps(props)
+  return null
+}
 
 // MapLibre configuration for OpenStreetMap
 const MAP_STYLE = {
@@ -146,98 +154,101 @@ export default function InteractiveMap({ points = [], center = [20.5937, 78.9629
 
   const layers = [
     new PathLayer({
-      id: 'route-path-glow',
+      id: "route-path-glow",
       data: [{ path: visibleRoute }],
       getPath: (d: any) => d.path,
-      getColor: [249, 115, 22, 50],
-      getWidth: 12,
-      widthUnits: 'pixels',
+      getColor: [255, 56, 92, 40], // #FF385C Rausch Red with low opacity
+      getWidth: 10,
+      widthUnits: "pixels",
       jointRounded: true,
       capRounded: true,
     }),
     new PathLayer({
-      id: 'route-path',
+      id: "route-path",
       data: [{ path: visibleRoute }],
       getPath: (d: any) => d.path,
-      getColor: [249, 115, 22, 255], // #F97316 Saffron
-      getWidth: 4,
-      widthUnits: 'pixels',
+      getColor: [255, 56, 92, 255], // #FF385C Rausch Red
+      getWidth: 3,
+      widthUnits: "pixels",
       jointRounded: true,
       capRounded: true,
-    })
+    }),
   ]
 
   return (
-    <div className="h-full w-full relative group">
-      {/* Dark placeholder shown on server / before mount */}
+    <div className="h-full w-full relative group bg-white">
+      {/* Light placeholder shown on server / before mount */}
       {!isMounted ? (
-        <div className="absolute inset-0 bg-[#020617] flex items-center justify-center">
-          <div className="w-12 h-12 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+        <div className="absolute inset-0 bg-gray-50 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full border-4 border-[#FF385C] border-t-transparent animate-spin" />
         </div>
       ) : (
-      <div className="absolute inset-0 grayscale-[0.2] contrast-[1.1] saturate-[0.8] brightness-[1.0]">
-        <DeckGL
-          initialViewState={INITIAL_VIEW_STATE}
-          controller={true}
-          layers={layers}
-          style={{ width: "100%", height: "100%" }}
-        >
-          <Map
-            mapStyle={MAP_STYLE as any}
+        <div className="absolute inset-0">
+          <Map 
+            mapLib={maplibregl}
+            initialViewState={INITIAL_VIEW_STATE}
+            mapStyle={MAP_STYLE as any} 
+            style={{ width: "100%", height: "100%" }}
             reuseMaps
           >
+            {/* Standard DeckGL Overlay */}
+            <DeckGLOverlay layers={layers} />
+
+            {/* Custom Markers */}
             {points.map((loc, idx) => (
-              <Marker key={`${loc.id}-${idx}`} longitude={loc.lng} latitude={loc.lat} anchor="bottom">
+              <Marker key={`${loc.id}-${idx}`} longitude={loc.lng} latitude={loc.lat} anchor="center">
                 <div className="relative group/marker cursor-pointer">
                   {/* Marker Pin Visual */}
                   <div className="w-8 h-8 flex items-center justify-center relative">
-                    <div className="absolute w-4 h-4 bg-accent/30 rounded-full animate-ping" />
-                    <div className="relative w-3 h-3 bg-accent border-2 border-white rounded-full shadow-[0_0_10px_2px_rgba(249,115,22,0.6)]" />
+                    <div className="absolute w-4 h-4 bg-[#FF385C]/20 rounded-full animate-ping" />
+                    <div className="relative w-3 h-3 bg-[#FF385C] border-2 border-white rounded-full shadow-lg" />
                   </div>
-                  
+
                   {/* HTML Popup on Hover */}
-                  <div className="absolute bottom-10 left-1/2 -translate-x-1/2 opacity-0 group-hover/marker:opacity-100 transition-opacity pointer-events-none z-50">
-                    <div className="bg-[#0B1120]/90 backdrop-blur-md rounded-2xl p-4 w-48 border border-white/5 shadow-2xl">
-                       <h4 className="text-white font-black font-serif italic text-sm">{loc.name}</h4>
-                       <p className="text-[10px] text-white/40 font-medium leading-relaxed mt-1 line-clamp-3">{loc.description}</p>
-                       <div className="pt-2 mt-2 border-t border-white/5 flex justify-between items-center">
-                          <span className="text-[8px] font-black uppercase tracking-widest text-primary">Node Active</span>
-                          <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_10px_2px_rgba(249,115,22,0.5)]" />
-                       </div>
+                  <div className="absolute bottom-10 left-1/2 -translate-x-1/2 opacity-0 group-hover/marker:opacity-100 transition-all transform group-hover/marker:-translate-y-1 pointer-events-none z-50">
+                    <div className="bg-white rounded-xl p-3 w-44 border border-gray-100 shadow-xl">
+                      <h4 className="text-[#222222] font-bold text-xs">{loc.name}</h4>
+                      <p className="text-[10px] text-gray-500 font-medium leading-relaxed mt-1 line-clamp-2">
+                        {loc.description}
+                      </p>
+                      <div className="pt-2 mt-2 border-t border-gray-50 flex justify-between items-center">
+                          <span className="text-[9px] font-bold uppercase tracking-wider text-[#FF385C]">
+                            Activity
+                          </span>
+                        </div>
                     </div>
                   </div>
                 </div>
               </Marker>
             ))}
+            
             <MapController points={points} />
           </Map>
-        </DeckGL>
-      </div>
-      )} {/* end isMounted */}
+        </div>
+      )}
 
       {/* Dynamic Overlay for Routing State */}
       <AnimatePresence>
         {loadingRoute && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute top-10 right-10 z-30 bg-[#0B1120]/90 backdrop-blur-md px-4 py-2 rounded-xl border border-white/5 shadow-2xl flex items-center gap-2"
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="absolute top-8 right-8 z-30 bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl border border-gray-100 shadow-lg flex items-center gap-2"
           >
-             <div className="w-2 h-2 rounded-full bg-primary animate-ping" />
-             <span className="text-[10px] font-black uppercase tracking-widest text-white/60">Recalibrating Path...</span>
+            <div className="w-2 h-2 rounded-full bg-[#FF385C] animate-pulse" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-600">
+              Updating route...
+            </span>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Map Overlay Vignette Gradient */}
-      <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_150px_rgba(2,6,23,0.6)] z-10" />
-      
       {/* Zoom Info Badge */}
-      <div className="absolute bottom-8 right-8 z-20 flex flex-col gap-2">
-         <div className="bg-[#0B1120]/90 backdrop-blur-md px-4 py-2 rounded-xl border border-white/5 shadow-2xl text-[10px] font-black uppercase tracking-widest text-white/40">
-            Spatial Depth: {INITIAL_VIEW_STATE.zoom.toFixed(1)}
-         </div>
+      <div className="absolute bottom-8 right-8 z-20">
+        <div className="bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-gray-100 shadow-sm text-[9px] font-bold uppercase tracking-wider text-gray-400">
+          Zoom: {INITIAL_VIEW_STATE.zoom.toFixed(1)}
+        </div>
       </div>
     </div>
   )

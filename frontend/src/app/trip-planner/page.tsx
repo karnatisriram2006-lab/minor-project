@@ -130,30 +130,28 @@ export default function TripPlanner() {
   }, [itinerary])
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)] overflow-hidden">
+    <div className="flex flex-col h-screen pt-20 overflow-hidden bg-white text-[#222222]">
       
-      {/* 1. Header Area - Matching Screen 2/3 */}
-      <div className="h-20 border-b border-white/5 bg-[#020617] px-12 flex items-center justify-between z-20 shrink-0 text-white">
+      {/* 1. Header Area - Airbnb style */}
+      <div className="h-20 border-b border-gray-100 bg-white px-12 flex items-center justify-between z-20 shrink-0">
         <div className="flex items-center gap-6">
-           <h2 className="text-3xl font-black font-serif text-white italic">Planner</h2>
-           <div className="h-6 w-[1px] bg-white/5" />
+           <h2 className="text-2xl font-bold text-[#222222]">Trip Planner</h2>
+           <div className="h-6 w-[1px] bg-gray-100" />
            <div className="flex gap-4">
-              <span className="text-[10px] font-black uppercase tracking-widest text-accent bg-accent/10 px-3 py-1 rounded">Heritage AI</span>
-              <span className="text-[10px] font-black uppercase tracking-widest text-white/40 px-3 py-1 rounded">V1.2 Stable</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider bg-red-50 text-[#FF385C] px-3 py-1 rounded-md border border-red-100">AI Assistant</span>
            </div>
         </div>
 
         <div className="flex items-center gap-4">
            <div className="flex -space-x-3">
               {[1, 2, 3].map(i => (
-                <Avatar key={i} className="h-8 w-8 border-2 border-[#020617]">
-                  <AvatarFallback className="bg-[#0B1120] text-white/80 text-[10px] font-bold">U{i}</AvatarFallback>
+                <Avatar key={i} className="h-8 w-8 border-2 border-white shadow-sm">
+                  <AvatarFallback className="bg-gray-100 text-[#FF385C] text-[10px] font-bold">U{i}</AvatarFallback>
                 </Avatar>
               ))}
-              <div className="h-8 w-8 rounded-full bg-accent text-white border-2 border-[#020617] flex items-center justify-center text-[10px] font-black">+2</div>
            </div>
-           <Button className="h-10 rounded-full bg-white/10 text-white font-bold text-xs px-6 shadow-2xl hover:bg-white/20 transition-all border border-white/5">
-              Invite Peers
+           <Button className="h-10 rounded-xl bg-[#222222] text-white font-bold text-xs px-6 hover:bg-black transition-all">
+              Invite friends
            </Button>
         </div>
       </div>
@@ -162,84 +160,84 @@ export default function TripPlanner() {
         
         {/* 2. Left Panel: Config or Itinerary Timeline */}
         <div className={cn(
-          "w-full lg:w-[450px] xl:w-[500px] bg-[#0B1120]/80 backdrop-blur-xl border-r border-white/5 flex flex-col z-10 transition-all duration-700 overflow-y-auto text-white",
+          "w-full lg:w-[450px] xl:w-[500px] bg-white border-r border-gray-100 flex flex-col z-10 transition-all duration-700 overflow-y-auto",
           itinerary ? "translate-x-0" : "translate-x-0"
         )}>
           {!itinerary ? (
-            <div className="min-h-full flex flex-col justify-center p-8 lg:p-10 space-y-6 bg-transparent">
-               <div className="space-y-3 text-center">
+            <div className="min-h-full flex flex-col justify-center p-8 lg:p-10 space-y-8 bg-transparent">
+               <div className="space-y-2 text-center">
                   <motion.h1 
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-4xl lg:text-5xl font-black font-serif text-white tracking-tight"
+                    className="text-3xl lg:text-4xl font-bold text-[#222222] tracking-tight"
                   >
-                    Define Your <span className="text-primary italic">Odyssey</span>
+                    Plan your next <span className="text-[#FF385C]">Adventure</span>
                   </motion.h1>
                   <motion.p 
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="text-xs font-medium text-white/40 max-w-xs mx-auto leading-relaxed"
+                    className="text-sm font-medium text-gray-500 max-w-xs mx-auto leading-relaxed"
                   >
-                    Input parameters to orchestrate a high-order travel sequence across the sub-continent.
+                    Tell us where you want to go and what you love. We'll handle the rest.
                   </motion.p>
                </div>
 
-               <form onSubmit={handleGenerate} className="space-y-8 max-w-md mx-auto w-full">
-                  <div className="space-y-6">
-                    <div className="space-y-3">
-                       <Label className="text-[11px] font-black uppercase tracking-[0.2em] text-white/40 ml-4 group-focus-within:text-primary transition-colors">Destination Node</Label>
+               <form onSubmit={handleGenerate} className="space-y-6 max-w-md mx-auto w-full">
+                  <div className="space-y-5">
+                    <div className="space-y-2">
+                       <Label className="text-xs font-bold text-gray-700 ml-1">Destination</Label>
                        <div className="relative group">
-                          <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-primary group-focus-within:scale-110 transition-transform" />
+                          <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#FF385C]" />
                           <input 
                             value={formData.city}
                             onChange={(e) => setFormData({...formData, city: e.target.value})}
-                            className="w-full bg-[#020617] h-18 rounded-2xl pl-16 pr-8 font-black text-lg text-white border border-white/10 shadow-inner focus:outline-none focus:ring-4 ring-primary/10 transition-all placeholder:text-white/20"
-                            placeholder="e.g. Jaipur"
+                            className="w-full bg-gray-50 h-14 rounded-xl pl-14 pr-6 font-semibold text-base text-[#222222] border border-gray-200 focus:outline-none focus:border-[#FF385C] focus:ring-2 focus:ring-[#FF385C]/10 transition-all placeholder:text-gray-300"
+                            placeholder="e.g. Jaipur, India"
                           />
                        </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                       <div className="space-y-3">
-                          <Label className="text-[11px] font-black uppercase tracking-[0.2em] text-white/40 ml-4 group-focus-within:text-primary transition-colors">Duration</Label>
+                       <div className="space-y-2">
+                          <Label className="text-xs font-bold text-gray-700 ml-1">Days</Label>
                           <div className="relative group">
-                             <Calendar className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-white/30 group-focus-within:text-primary transition-colors" />
+                             <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#FF385C]" />
                              <input 
                                type="number"
                                value={formData.days}
                                onChange={(e) => setFormData({...formData, days: e.target.value})}
-                               className="w-full bg-[#020617] h-16 rounded-[1.5rem] pl-16 pr-6 font-black text-base text-white border border-white/10 shadow-inner focus:outline-none focus:ring-4 ring-primary/10 transition-all"
+                               className="w-full bg-gray-50 h-14 rounded-xl pl-14 pr-6 font-semibold text-base text-[#222222] border border-gray-200 focus:outline-none focus:border-[#FF385C] focus:ring-2 focus:ring-[#FF385C]/10 transition-all"
                              />
                           </div>
                        </div>
-                       <div className="space-y-3">
-                          <Label className="text-[11px] font-black uppercase tracking-[0.2em] text-white/40 ml-4 group-focus-within:text-primary transition-colors">Tier</Label>
+                       <div className="space-y-2">
+                          <Label className="text-xs font-bold text-gray-700 ml-1">Budget</Label>
                           <div className="relative group">
-                             <Wallet className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-white/30 group-focus-within:text-primary transition-colors" />
+                             <Wallet className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#FF385C]" />
                              <select 
                                value={formData.budget}
                                onChange={(e) => setFormData({...formData, budget: e.target.value})}
-                               className="w-full bg-[#020617] h-16 rounded-[1.5rem] pl-16 pr-10 font-black text-base text-white border border-white/10 shadow-inner focus:outline-none focus:ring-4 ring-primary/10 transition-all appearance-none cursor-pointer"
+                               className="w-full bg-gray-50 h-14 rounded-xl pl-14 pr-10 font-semibold text-base text-[#222222] border border-gray-200 focus:outline-none focus:border-[#FF385C] focus:ring-2 focus:ring-[#FF385C]/10 transition-all appearance-none cursor-pointer"
                              >
-                               <option className="bg-[#0B1120] text-white">Budget</option>
-                               <option className="bg-[#0B1120] text-white">Standard</option>
-                               <option className="bg-[#0B1120] text-white">Luxury</option>
+                               <option>Budget</option>
+                               <option>Standard</option>
+                               <option>Luxury</option>
                              </select>
-                             <ChevronRight className="absolute right-6 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20 pointer-events-none rotate-90" />
+                             <ChevronRight className="absolute right-5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none rotate-90" />
                           </div>
                        </div>
                     </div>
 
-                    <div className="space-y-3">
-                       <Label className="text-[11px] font-black uppercase tracking-[0.2em] text-white/40 ml-4 group-focus-within:text-primary transition-colors">Core Interests</Label>
+                    <div className="space-y-2">
+                       <Label className="text-xs font-bold text-gray-700 ml-1">Interests</Label>
                        <div className="relative group">
-                        <Sparkles className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-white/30 group-focus-within:text-primary transition-colors" />
+                        <Sparkles className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#FF385C]" />
                         <input 
                            value={formData.interests}
                            onChange={(e) => setFormData({...formData, interests: e.target.value})}
-                           className="w-full bg-[#020617] h-16 rounded-[1.5rem] pl-16 pr-8 font-bold text-sm text-white border border-white/10 shadow-inner focus:outline-none focus:ring-4 ring-primary/10 transition-all placeholder:text-white/20"
-                           placeholder="History, Art, Local Food..."
+                           className="w-full bg-gray-50 h-14 rounded-xl pl-14 pr-6 font-semibold text-sm text-[#222222] border border-gray-200 focus:outline-none focus:border-[#FF385C] focus:ring-2 focus:ring-[#FF385C]/10 transition-all placeholder:text-gray-300"
+                           placeholder="Culture, Food, History..."
                         />
                        </div>
                     </div>
@@ -248,78 +246,74 @@ export default function TripPlanner() {
                   <Button 
                     type="submit" 
                     disabled={loading}
-                    className="w-full h-20 rounded-[2rem] bg-primary hover:bg-orange-600 text-white font-black text-xl shadow-2xl transition-all hover:scale-[1.02] active:scale-95 group overflow-hidden relative"
+                    className="w-full h-16 rounded-xl bg-[#FF385C] hover:bg-[#E31C5F] text-white font-bold text-lg shadow-lg shadow-red-200 transition-all active:scale-95 group relative overflow-hidden"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer" />
                     {loading ? (
-                       <div className="flex items-center gap-4 relative z-10">
-                          <div className="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin" />
-                          <span className="uppercase tracking-[0.3em] text-[10px] font-black">Orchestrating Logic...</span>
+                       <div className="flex items-center gap-3">
+                          <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                          <span className="text-sm uppercase tracking-widest font-bold">Planning...</span>
                        </div>
                     ) : (
-                       <div className="flex items-center gap-4 relative z-10">
-                          <Sparkles className="h-6 w-6 animate-pulse text-white/50" />
-                          <span className="uppercase tracking-[0.3em] text-[10px] font-black glow-primary">Generate Odyssey</span>
+                       <div className="flex items-center gap-3">
+                          <Sparkles className="h-5 w-5" />
+                          <span className="text-sm uppercase tracking-widest font-bold">Create Itinerary</span>
                        </div>
                     )}
                   </Button>
                </form>
 
-               <div className="p-8 rounded-[2.5rem] bg-white/5 border border-white/5 flex items-center gap-6 max-w-md mx-auto">
-                  <div className="w-14 h-14 shrink-0 rounded-2xl bg-[#020617] flex items-center justify-center shadow-2xl text-primary border border-white/10">
+               <div className="p-6 rounded-2xl bg-gray-50 border border-gray-100 flex items-center gap-4 max-w-md mx-auto">
+                  <div className="w-12 h-12 shrink-0 rounded-xl bg-[#FF385C]/10 flex items-center justify-center text-[#FF385C]">
                     <Info className="h-6 w-6" />
                   </div>
-                  <p className="text-xs font-medium text-white/40 leading-relaxed italic">
-                    "Our AI models are trained on exclusive heritage archives and real-time transit telemetry to ensure 100% authenticity."
+                  <p className="text-xs font-medium text-gray-500 leading-relaxed italic">
+                    "Our AI uses verified local insights to create an authentic experience just for you."
                   </p>
                </div>
             </div>
           ) : (
-            <div className="flex flex-col h-full bg-transparent">
-               <div className="p-10 border-b border-white/5 shrink-0 bg-transparent">
+            <div className="flex flex-col h-full bg-white">
+               <div className="p-8 border-b border-gray-100 shrink-0">
                   <div className="flex items-center justify-between mb-2">
-                    <h2 className="text-4xl font-black font-serif text-white italic">The Timeline</h2>
-                    <Button variant="ghost" size="icon" onClick={() => setItinerary(null)} className="text-white/20 hover:text-primary">
+                    <h2 className="text-3xl font-bold text-[#222222]">The Timeline</h2>
+                    <Button variant="ghost" size="icon" onClick={() => setItinerary(null)} className="text-gray-400 hover:text-[#FF385C]">
                        <ChevronRight className="h-5 w-5 rotate-180" />
                     </Button>
                   </div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Node: {formData.city} • Sequence Locked</p>
+                  <p className="text-xs font-bold uppercase tracking-wider text-[#FF385C]">Exploring {formData.city}</p>
                </div>
 
-               <div className="flex-1 overflow-y-auto p-10 space-y-12">
-                  <div className="absolute left-[54px] top-40 bottom-10 w-[1px] bg-white/5" />
-                  
+               <div className="flex-1 overflow-y-auto p-8 space-y-10">
                   {Object.entries(itinerary).map(([day, activities]: [string, any], idx) => (
-                    <div key={day} className="relative pl-16">
+                    <div key={day} className="relative pl-12 border-l border-gray-100 last:border-l-transparent">
                        {/* Day Circle */}
-                       <div className="absolute left-0 top-0 w-10 h-10 rounded-xl bg-primary text-white flex flex-col items-center justify-center z-10 border-4 border-[#0B1120] shadow-2xl">
-                          <span className="text-[8px] font-black leading-none opacity-60">D</span>
-                          <span className="text-sm font-black leading-none">{idx + 1}</span>
+                       <div className="absolute -left-[17px] top-0 w-8 h-8 rounded-full bg-[#FF385C] text-white flex items-center justify-center z-10 font-bold text-sm shadow-md">
+                          {idx + 1}
                        </div>
 
                        <div className="space-y-6">
                           {activities.map((act: any, aIdx: number) => (
                             <motion.div 
-                              key={aIdx}
-                              initial={{ opacity: 0, x: -10 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              className="group heritage-card p-6 border-l-4 border-l-primary hover:border-l-primary active:scale-[0.98] transition-all"
+                               key={aIdx}
+                               initial={{ opacity: 0, y: 10 }}
+                               animate={{ opacity: 1, y: 0 }}
+                               className="group airbnb-card px-5 py-4 hover:border-[#FF385C]/30 active:scale-[0.98] transition-all"
                             >
-                               <div className="flex items-center justify-between mb-4">
-                                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary">
+                               <div className="flex items-center justify-between mb-3 text-[10px] font-bold uppercase tracking-wider">
+                                  <div className="flex items-center gap-2 text-[#FF385C]">
                                      <Clock className="h-3 w-3" />
                                      <span>{act.time}</span>
                                   </div>
                                   {act.status && (
-                                    <span className="text-[8px] font-black uppercase tracking-widest bg-white/10 text-emerald-400 px-2 py-0.5 rounded-full border border-white/20 glow-primary">{act.status}</span>
+                                    <span className="bg-green-50 text-green-600 px-2 py-0.5 rounded-full border border-green-100">{act.status}</span>
                                   )}
                                </div>
-                               <h3 className="text-xl font-black font-serif text-white mb-2 group-hover:text-primary transition-colors">{act.name}</h3>
-                               <p className="text-[11px] font-medium text-white/40 leading-relaxed line-clamp-2">{act.description}</p>
+                               <h3 className="text-lg font-bold text-[#222222] mb-1 group-hover:text-[#FF385C] transition-colors">{act.name}</h3>
+                               <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{act.description}</p>
                                
-                               <div className="mt-4 flex items-center justify-between border-t border-white/5 pt-4">
-                                  <span className="text-[9px] font-black uppercase tracking-widest text-white/20">{act.type}</span>
-                                  <Button variant="ghost" size="icon" className="w-6 h-6 rounded-full text-white/20 group-hover:text-white">
+                               <div className="mt-4 flex items-center justify-between border-t border-gray-50 pt-3">
+                                  <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">{act.type}</span>
+                                  <Button variant="ghost" size="icon" className="w-6 h-6 rounded-full text-gray-300 group-hover:text-gray-600">
                                      <MoreVertical className="h-3 w-3" />
                                   </Button>
                                </div>
@@ -330,36 +324,36 @@ export default function TripPlanner() {
                   ))}
                </div>
 
-               <div className="p-10 border-t border-white/5 shrink-0">
-                  <Button className="w-full h-16 rounded-2xl bg-white/10 text-white hover:bg-white/20 font-black text-xs uppercase tracking-widest shadow-2xl hover:opacity-90 active:scale-95 transition-all text-white border border-white/5">
-                     Download Full Ledger
+               <div className="p-8 border-t border-gray-100 shrink-0">
+                  <Button className="w-full h-12 rounded-xl bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200 font-bold text-xs uppercase tracking-widest transition-all">
+                     Export as PDF
                   </Button>
                </div>
             </div>
           )}
         </div>
 
-        {/* 3. Main Center/Right Area: Interactive Visualization (The Map) */}
-        <div className="flex-1 bg-[#020617] relative">
+        {/* 3. Main Center/Right Area: Map */}
+        <div className="flex-1 bg-gray-50 relative">
           <InteractiveMap points={mapPoints} />
           
           {/* Overlay UI elements for the map */}
-          <div className="absolute top-10 left-10 z-20 space-y-4">
-             <div className="bg-[#0B1120]/90 backdrop-blur-md p-4 rounded-[1.5rem] border border-white/5 shadow-2xl flex items-center gap-4 text-white">
-                <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white glow-primary">
+          <div className="absolute top-8 left-8 z-20 space-y-4">
+             <div className="bg-white p-3 rounded-2xl border border-gray-200 shadow-xl flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-[#00A699] flex items-center justify-center text-white shadow-sm">
                    <Navigation className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Current Anchor</p>
-                  <p className="text-sm font-black text-white">Jaipur Spatial Node</p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Viewing</p>
+                  <p className="text-sm font-bold text-[#222222]">{formData.city}</p>
                 </div>
              </div>
 
              <div className="flex gap-2">
-                <Button variant="outline" size="icon" className="bg-[#0B1120]/90 backdrop-blur-md w-12 h-12 rounded-xl border border-white/5 shadow-2xl text-white/40 hover:text-primary transition-all hover:bg-white/10 hover:border-primary/20">
+                <Button variant="ghost" size="icon" className="bg-white w-12 h-12 rounded-xl border border-gray-200 shadow-lg text-gray-400 hover:text-[#FF385C]">
                    <LayoutGrid className="h-5 w-5" />
                 </Button>
-                <Button variant="outline" size="icon" className="bg-[#0B1120]/90 backdrop-blur-md w-12 h-12 rounded-xl border border-white/5 shadow-2xl text-white/40 hover:text-primary transition-all hover:bg-white/10 hover:border-primary/20">
+                <Button variant="ghost" size="icon" className="bg-white w-12 h-12 rounded-xl border border-gray-200 shadow-lg text-gray-400 hover:text-[#FF385C]">
                    <Maximize2 className="h-5 w-5" />
                 </Button>
              </div>
@@ -367,11 +361,11 @@ export default function TripPlanner() {
 
           {!itinerary && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-               <div className="bg-[#020617]/60 backdrop-blur-3xl p-20 rounded-full border-2 border-dashed border-white/10 flex flex-col items-center text-white/90 glass-3d">
-                  <div className="w-32 h-32 rounded-full border-4 border-white/5 flex items-center justify-center mb-8">
-                     <div className="w-16 h-16 rounded-full border-4 border-primary border-t-transparent animate-spin glow-primary" />
+               <div className="bg-white/90 backdrop-blur-md p-16 rounded-3xl border border-gray-100 flex flex-col items-center shadow-2xl">
+                  <div className="w-24 h-24 rounded-full border border-gray-100 flex items-center justify-center mb-6">
+                     <div className="w-12 h-12 rounded-full border-4 border-[#FF385C] border-t-transparent animate-spin" />
                   </div>
-                  <h3 className="text-3xl font-black font-serif text-white/30 select-none">Awaiting Parameters...</h3>
+                  <h3 className="text-2xl font-bold text-gray-300 select-none">Enter your trip details</h3>
                </div>
             </div>
           )}
@@ -388,7 +382,7 @@ function LayoutGrid({ className }: { className?: string }) {
       viewBox="0 0 24 24" 
       fill="none" 
       stroke="currentColor" 
-      strokeWidth="2.5" 
+      strokeWidth="2" 
       strokeLinecap="round" 
       strokeLinejoin="round"
     >

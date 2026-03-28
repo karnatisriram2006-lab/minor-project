@@ -4,8 +4,8 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
-import ChatBot from "@/components/ChatBot";
 import { cn } from "@/lib/utils";
+import dynamic from "next/dynamic";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-serif" });
@@ -16,6 +16,7 @@ export const metadata: Metadata = {
 };
 
 import { AuthProvider } from "@/context/AuthContext";
+import ChatBotWrapper from "@/components/ChatBotWrapper";
 
 export default function RootLayout({
   children,
@@ -24,11 +25,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className={cn(inter.variable, playfair.variable)}>
-      <body className="min-h-screen font-sans bg-[#020617] text-white antialiased selection:bg-primary/20">
+      <body className="min-h-screen font-sans bg-white text-[#222222] antialiased selection:bg-[#FF385C]/10">
         <AuthProvider>
           <ThemeProvider
             attribute="class"
-            defaultTheme="dark"
+            defaultTheme="light"
             enableSystem
             disableTransitionOnChange
           >
@@ -39,7 +40,7 @@ export default function RootLayout({
                 <main className="flex-1">
                   {children}
                 </main>
-                <ChatBot />
+                <ChatBotWrapper />
               </div>
             </div>
           </ThemeProvider>

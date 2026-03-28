@@ -51,41 +51,33 @@ export default function Navbar() {
 
   return (
     <header className={cn(
-      "h-24 fixed top-0 left-0 right-0 z-[100] px-12 flex items-center justify-between transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
-      isScrolled 
-        ? "bg-[#0B1120]/95 backdrop-blur-3xl border-b border-white/5 py-3 shadow-2xl" 
-        : (isAuthPage ? "bg-transparent py-8" : "bg-[#0B1120]/90 backdrop-blur-xl border-b border-white/5 py-8 shadow-sm")
+      "h-20 fixed top-0 left-0 right-0 z-[100] px-8 flex items-center justify-between transition-all duration-500 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm",
+      isScrolled && "shadow-md"
     )}>
       {/* Branding */}
-      <div className="flex items-center gap-16">
+      <div className="flex items-center gap-12">
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="relative">
-            <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full scale-0 group-hover:scale-150 transition-transform duration-700" />
-            <span className={cn(
-              "text-3xl font-black font-serif tracking-tighter italic transition-all duration-700 text-white",
-              !isScrolled && isAuthPage ? "scale-110" : "scale-100"
-            )}>
-              Heritage AI
-            </span>
-          </div>
+          <span className="text-2xl font-black tracking-tighter text-[#FF385C]">
+            YĀTRĀ
+          </span>
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden lg:flex items-center gap-10">
+        <nav className="hidden lg:flex items-center gap-8">
           {navItems.map((item) => {
             const isActive = pathname === item.href
             return (
               <Link key={item.name} href={item.href} className="relative group">
                 <span className={cn(
-                  "text-[13px] font-black uppercase tracking-[0.3em] transition-all duration-500",
-                  isActive ? "text-primary" : "text-white/70 group-hover:text-white group-hover:tracking-[0.4em]"
+                  "text-[11px] font-bold uppercase tracking-widest transition-all duration-300",
+                  isActive ? "text-[#222222]" : "text-gray-400 hover:text-[#222222]"
                 )}>
                   {item.name}
                 </span>
                 {isActive && (
                   <motion.div 
                     layoutId="nav-underline"
-                    className="absolute -bottom-4 left-0 right-0 h-[2px] rounded-full bg-primary glow-primary"
+                    className="absolute -bottom-7 left-0 right-0 h-[2px] rounded-full bg-[#222222]"
                   />
                 )}
               </Link>
@@ -95,14 +87,14 @@ export default function Navbar() {
       </div>
 
       {/* Right Side Actions */}
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-4">
         {user ? (
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <div className="flex flex-col items-end hidden md:flex">
-              <span className="text-[10px] font-black uppercase tracking-widest opacity-40 text-white">
-                Neural Link Active
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#FF385C]">
+                Pro Traveler
               </span>
-              <span className="text-xs font-bold italic text-white/80">
+              <span className="text-xs font-bold text-[#222222]">
                 {user.displayName || user.email?.split('@')[0]}
               </span>
             </div>
@@ -111,29 +103,29 @@ export default function Navbar() {
               onClick={handleLogout}
               variant="ghost" 
               size="icon" 
-              className="rounded-full h-12 w-12 transition-all duration-500 hover:rotate-90 text-white/70 hover:text-red-400 hover:bg-white/5"
+              className="rounded-full h-10 w-10 text-gray-400 hover:text-[#FF385C] hover:bg-gray-50"
             >
-              <LogOut className="h-5 w-5" />
+              <LogOut className="h-4 w-4" />
             </Button>
             
-            <div className="ml-2 pl-4 border-l border-white/10">
+            <div className="ml-1 pl-4 border-l border-gray-100">
               <Link href="/dashboard">
-                <Button size="icon" className="h-12 w-12 bg-primary text-white hover:bg-orange-600 rounded-full transition-all duration-500 shadow-2xl shadow-primary/40 hover:scale-110 active:scale-95">
-                  <User className="h-5 w-5" />
+                <Button size="icon" className="h-10 w-10 bg-[#FF385C] text-white hover:bg-[#E31C5F] rounded-full shadow-md transition-all active:scale-95">
+                  <User className="h-4 w-4" />
                 </Button>
               </Link>
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-4">
              <Link href="/login">
-                <Button variant="ghost" className="text-xs font-black uppercase tracking-[0.4em] transition-all duration-500 text-white/70 hover:text-white">
-                   Identify
+                <Button variant="ghost" className="text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-[#222222]">
+                   Log In
                 </Button>
              </Link>
              <Link href="/register">
-                <Button className="bg-[#0F172A] hover:bg-[#1E293B] text-white rounded-full px-10 h-14 text-[11px] font-black uppercase tracking-[0.4em] border border-white/10 shadow-2xl shadow-black/40 transition-all duration-500 hover:scale-105 active:scale-95">
-                   Join Matrix
+                <Button className="bg-[#FF385C] hover:bg-[#E31C5F] text-white rounded-full px-8 h-12 text-[11px] font-bold uppercase tracking-widest shadow-md transition-all active:scale-95">
+                   Sign Up
                 </Button>
              </Link>
           </div>

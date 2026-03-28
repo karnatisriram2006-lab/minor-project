@@ -62,89 +62,86 @@ export default function RoutePlanner() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-primary/20 pt-32 pb-48 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-white text-[#222222] selection:bg-[#FF385C]/10 pt-32 pb-48 relative overflow-hidden font-sans">
       
-      {/* Aurora Blobs */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
-          <div className="absolute top-1/4 -left-1/4 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] animate-aurora" />
-          <div className="absolute bottom-1/4 -right-1/4 w-[500px] h-[500px] bg-accent/10 rounded-full blur-[100px] animate-aurora [animation-delay:-5s]" />
-      </div>
+      {/* Background Accents */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10 bg-gradient-to-tr from-red-50/20 via-white to-gray-50/10" />
 
-      <div className="container mx-auto px-6 max-w-7xl relative z-10 space-y-20">
+      <div className="container mx-auto px-6 max-w-7xl relative z-10 space-y-16">
         
-        <div className="text-center space-y-8">
+        <div className="text-center space-y-6">
           <motion.div 
-            initial={{ opacity: 0, scale: 0.8 }}
+            initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-primary/10 text-primary w-24 h-24 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 shadow-3xl shadow-primary/20 border border-primary/20"
+            className="bg-[#FF385C]/5 text-[#FF385C] w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-[#FF385C]/10 shadow-sm"
           >
-            <Navigation className="h-12 w-12" />
+            <Navigation className="h-8 w-8" />
           </motion.div>
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="space-y-4"
+            className="space-y-3"
           >
-            <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-none italic">
-               Neural <br /><span className="text-primary text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-400">Router.</span>
+            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter leading-tight text-[#222222]">
+               Route <span className="text-[#FF385C]">Planner</span>
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-2xl mx-auto leading-relaxed">
-              Calculate hyper-efficient traversal vectors across spatial nodes. Save temporal bandwidth with intelligent orchestration.
+            <p className="text-lg md:text-xl text-gray-500 font-medium max-w-2xl mx-auto leading-relaxed">
+              Organize your trip efficiently with our smart route optimization tool.
             </p>
           </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start pt-8">
           
           {/* Input Panel */}
           <motion.div 
-            initial={{ opacity: 0, x: -30 }}
+            initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
-            className="lg:col-span-12 xl:col-span-4 space-y-12"
+            className="lg:col-span-12 xl:col-span-4 space-y-8"
           >
-            <Card className="bg-card rounded-[3.5rem] border-border shadow-4xl glass-3d overflow-hidden h-fit">
-              <CardHeader className="p-12 border-b border-border space-y-2">
+            <Card className="bg-white rounded-[2rem] border-gray-100 shadow-sm overflow-hidden h-fit">
+              <CardHeader className="p-10 border-b border-gray-50">
                 <div className="flex justify-between items-center">
-                   <CardTitle className="text-3xl font-black tracking-tighter italic">Spatial Nodes</CardTitle>
-                   <div className="bg-muted px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-muted-foreground"> {places.length} Detected </div>
+                   <CardTitle className="text-xl font-bold">Destinations</CardTitle>
+                   <div className="bg-gray-50 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest text-gray-400"> {places.length} Items </div>
                 </div>
-                <CardDescription className="text-muted-foreground font-medium uppercase text-[10px] tracking-[0.3em]">Trajectory Modulation</CardDescription>
+                <CardDescription className="text-xs font-semibold uppercase tracking-widest text-gray-400">Manage your locations</CardDescription>
               </CardHeader>
-              <CardContent className="p-12 space-y-10">
-                <form onSubmit={handleAddPlace} className="flex gap-4">
+              <CardContent className="p-10 space-y-8">
+                <form onSubmit={handleAddPlace} className="flex gap-3">
                   <Input 
-                    placeholder="Identify Spatial Entity..." 
+                    placeholder="Add a new place..." 
                     value={newPlace}
                     onChange={(e) => setNewPlace(e.target.value)}
-                    className="bg-background rounded-2xl h-18 font-black text-sm focus:ring-4 focus:ring-primary/10 border-border transition-all px-6 tracking-widest uppercase placeholder:text-muted-foreground/30 flex-1"
+                    className="bg-white rounded-xl h-14 font-bold text-sm focus:ring-4 focus:ring-[#FF385C]/5 border-gray-100 transition-all px-5 shadow-sm flex-1"
                   />
-                  <Button type="submit" size="icon" className="bg-primary text-white hover:bg-orange-600 rounded-2xl h-18 w-18 cursor-pointer shadow-2xl shadow-primary/20 shrink-0 transition-all hover:scale-110 hover:rotate-6">
-                    <Plus className="h-6 w-6" />
+                  <Button type="submit" size="icon" className="bg-[#FF385C] text-white hover:bg-[#E31C5F] rounded-xl h-14 w-14 cursor-pointer shadow-sm shrink-0 transition-all active:scale-95">
+                    <Plus className="h-5 w-5" />
                   </Button>
                 </form>
 
-                <div className="space-y-4 max-h-[400px] overflow-y-auto pr-4 custom-scrollbar">
+                <div className="space-y-3 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
                   <AnimatePresence mode="popLayout">
                     {places.map((place, index) => (
                       <motion.div 
                         key={place.id} 
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        className="flex items-center justify-between p-6 bg-muted/30 rounded-[1.5rem] border border-border shadow-soft transition-all hover:border-primary/20 group glass-card"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="flex items-center justify-between p-4 px-6 bg-gray-50 rounded-xl border border-transparent transition-all hover:border-gray-100 group"
                       >
-                        <div className="flex items-center gap-5 overflow-hidden">
-                          <div className="bg-card text-primary w-10 h-10 rounded-xl flex items-center justify-center text-[10px] font-black shrink-0 border border-border shadow-xl group-hover:scale-110 group-hover:rotate-6 transition-transform">
+                        <div className="flex items-center gap-4 overflow-hidden">
+                          <div className="bg-white text-[#FF385C] w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0 border border-gray-100 shadow-sm">
                             {index + 1}
                           </div>
-                          <span className="font-black text-foreground text-sm tracking-tight truncate group-hover:text-primary transition-colors">{place.name}</span>
+                          <span className="font-bold text-[#222222] text-sm truncate">{place.name}</span>
                         </div>
                         <Button 
                           variant="ghost" 
                           size="icon" 
                           onClick={() => handleRemovePlace(place.id)}
-                          className="text-muted-foreground/40 hover:text-red-500 hover:bg-red-500/10 rounded-xl shrink-0 h-10 w-10 cursor-pointer transition-all"
+                          className="text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg shrink-0 h-8 w-8 transition-colors"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -153,25 +150,25 @@ export default function RoutePlanner() {
                   </AnimatePresence>
                   
                   {places.length === 0 && (
-                    <div className="py-20 text-center space-y-6 bg-muted/10 rounded-[2.5rem] border-2 border-dashed border-border group">
-                       <MapPin className="h-12 w-12 text-muted-foreground/20 mx-auto group-hover:scale-125 transition-transform" />
-                       <p className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.4em]">Zero Nodes Tracked</p>
+                    <div className="py-16 text-center space-y-4 bg-gray-50/50 rounded-[2rem] border-2 border-dashed border-gray-100">
+                       <MapPin className="h-10 w-10 text-gray-200 mx-auto" />
+                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">No places added yet</p>
                     </div>
                   )}
                 </div>
 
                 <Button 
-                  className="w-full h-20 rounded-3xl bg-primary hover:bg-orange-600 text-white font-black text-xl shadow-4xl shadow-primary/30 transition-all hover:scale-[1.03] active:scale-95 disabled:opacity-50 cursor-pointer" 
+                  className="w-full h-14 rounded-xl bg-[#FF385C] hover:bg-[#E31C5F] text-white font-bold text-sm shadow-sm transition-all active:scale-[0.98] disabled:opacity-50" 
                   onClick={handleOptimize}
                   disabled={places.length < 2 || loading}
                 >
                   {loading ? (
-                    <div className="flex items-center gap-4">
-                       <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
-                       <span>Optimizing Trajectory...</span>
+                    <div className="flex items-center gap-2">
+                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                       <span>Optimizing...</span>
                     </div>
                   ) : (
-                    <span className="flex items-center gap-4">Orchestrate Route <Route className="h-6 w-6" /></span>
+                    <span className="flex items-center gap-2">Calculate Optimal Route <Route className="h-4 w-4" /></span>
                   )}
                 </Button>
               </CardContent>
@@ -183,31 +180,25 @@ export default function RoutePlanner() {
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 20 }}
+                  exit={{ opacity: 0, y: 10 }}
                 >
-                  <Card className="bg-accent rounded-[3.5rem] border-none shadow-4xl overflow-hidden glass-3d">
-                    <CardHeader className="p-12 pb-8 border-b border-white/10 space-y-2">
-                      <CardTitle className="text-white text-3xl font-black tracking-tighter italic flex items-center gap-4">
-                        <Compass className="h-8 w-8 animate-pulse" /> 
-                        Optimal Vector
+                  <Card className="bg-[#222222] rounded-[2rem] border-none shadow-sm overflow-hidden text-white">
+                    <CardHeader className="p-10 pb-6 border-b border-white/5 space-y-1">
+                      <CardTitle className="text-xl font-bold flex items-center gap-3">
+                        <Compass className="h-5 w-5 text-[#FF385C]" /> 
+                        Optimized Route
                       </CardTitle>
-                      <CardDescription className="text-white/60 font-medium uppercase text-[10px] tracking-[0.3em]">Temporal Delta Optimized</CardDescription>
+                      <CardDescription className="text-white/40 text-[10px] font-bold uppercase tracking-widest">Time-efficient sequence</CardDescription>
                     </CardHeader>
-                    <CardContent className="p-12 space-y-10 relative pt-12 pr-16 before:absolute before:inset-0 before:left-[4.5rem] before:h-full before:w-[2px] before:bg-gradient-to-b before:from-white/0 before:via-white/20 before:to-white/0">
-                      {optimizedRoute.map((place, i) => (
-                        <div key={place.id} className="relative flex items-center gap-10 group">
-                          {/* Order Number */}
-                          <div className="flex items-center justify-center w-14 h-14 rounded-2xl border-4 border-accent bg-white text-accent shadow-4xl shrink-0 z-10 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 group-hover:bg-primary group-hover:text-white group-hover:border-white/20">
-                            <span className="text-xl font-black italic">{place.visitOrder}</span>
+                    <CardContent className="p-8 space-y-6 pt-10">
+                      {optimizedRoute.map((place) => (
+                        <div key={place.id} className="relative flex items-center gap-6 group">
+                          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-white text-[#222222] shadow-sm shrink-0 z-10 font-bold text-sm italic">
+                            {place.visitOrder}
                           </div>
-                          
-                          {/* Place Card */}
-                          <div className="flex-1 p-8 rounded-[2rem] shadow-3xl bg-white/5 backdrop-blur-3xl border border-white/10 transition-all group-hover:border-white/40 group-hover:bg-white/10">
-                            <h4 className="font-black text-white text-lg tracking-tight mb-2 group-hover:translate-x-2 transition-transform italic">{place.name}</h4>
-                            <div className="flex items-center gap-4">
-                               <MapPin className="h-4 w-4 text-white/40 group-hover:text-white transition-colors" />
-                               <span className="text-[9px] font-black uppercase tracking-[0.4em] text-white/30 group-hover:text-white/80 transition-colors">Trajectory Step {place.visitOrder}</span>
-                            </div>
+                          <div className="flex-1 p-5 rounded-2xl bg-white/5 border border-white/10 group-hover:bg-white/10 transition-colors">
+                            <h4 className="font-bold text-white text-sm">{place.name}</h4>
+                            <p className="text-[9px] font-bold uppercase tracking-widest text-white/30 mt-1">Stop {place.visitOrder}</p>
                           </div>
                         </div>
                       ))}
@@ -220,66 +211,63 @@ export default function RoutePlanner() {
 
           {/* Map Panel */}
           <motion.div 
-            initial={{ opacity: 0, x: 30 }}
+            initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
             className="lg:col-span-12 xl:col-span-8 sticky top-32"
           >
-            <Card className="bg-card rounded-[4rem] border-border shadow-4xl glass-3d overflow-hidden h-full flex flex-col min-h-[800px]">
-              <div className="p-8 px-12 border-b border-border flex items-center justify-between bg-muted/20">
-                <div className="flex items-center gap-6">
-                   <div className="p-3 bg-primary/10 rounded-xl">
-                      <Map className="h-6 w-6 text-primary" />
+            <Card className="bg-white rounded-[2.5rem] border-gray-100 shadow-sm overflow-hidden h-full flex flex-col min-h-[700px]">
+              <div className="p-8 px-10 border-b border-gray-50 flex items-center justify-between bg-gray-50/50">
+                <div className="flex items-center gap-4">
+                   <div className="p-2.5 bg-[#FF385C]/5 rounded-xl">
+                      <Map className="h-5 w-5 text-[#FF385C]" />
                    </div>
                    <div className="space-y-1">
-                      <h3 className="text-xl font-black italic tracking-tighter">Spatial Preview</h3>
-                      <p className="text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Live Orchestration Mode</p>
+                      <h3 className="text-lg font-bold">Map Preview</h3>
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Interactive Visualization</p>
                    </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                   <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground bg-muted px-4 py-2 rounded-full border border-border">System Active</span>
+                   <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 bg-white px-4 py-1.5 rounded-full border border-gray-100">Live</span>
                 </div>
               </div>
-              <div className="flex-1 relative bg-grid-slate-900/[0.04] flex items-center justify-center overflow-hidden">
-                {/* Simulated Grid Background */}
-                <div className="absolute inset-0 opacity-10 pointer-events-none" style={{
-                  backgroundImage: `radial-gradient(circle at 2px 2px, rgba(0,0,0,0.15) 1px, transparent 0)`,
-                  backgroundSize: '24px 24px'
+              <div className="flex-1 relative flex items-center justify-center overflow-hidden bg-gray-50/20">
+                <div className="absolute inset-0 opacity-5 pointer-events-none" style={{
+                  backgroundImage: `radial-gradient(circle at 1.5px 1.5px, #FF385C 1px, transparent 0)`,
+                  backgroundSize: '20px 20px'
                 }} />
                 
-                <div className="text-center space-y-10 p-16 bg-card/40 backdrop-blur-3xl rounded-[4rem] max-w-2xl relative z-10 shadow-4xl border border-white/20 group">
+                <div className="text-center space-y-6 p-12 bg-white rounded-[2rem] max-w-lg relative z-10 shadow-sm border border-gray-50 group">
                   <div className="relative">
-                     <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 animate-pulse" />
-                     <MapPin className="h-24 w-24 text-primary mx-auto relative z-10 transition-all duration-1000 group-hover:scale-125 group-hover:rotate-12" />
+                     <MapPin className="h-16 w-16 text-[#FF385C] mx-auto relative z-10 transition-transform duration-500 group-hover:scale-110" />
                   </div>
-                  <div className="space-y-4">
-                    <h3 className="text-4xl font-black italic tracking-tighter leading-none">Spatial Visualization Matrix.</h3>
-                    <p className="text-muted-foreground font-medium text-lg leading-relaxed px-8 opacity-60">
-                      In the production environment, this module instantiates an interactive high-fidelity map with neural polyline trajectory rendering.
+                  <div className="space-y-3">
+                    <h3 className="text-2xl font-bold text-[#222222]">Route Visualization</h3>
+                    <p className="text-gray-500 font-medium text-sm leading-relaxed px-6">
+                      An interactive map will appear here to visualize your sequence of stops across the destination.
                     </p>
                   </div>
                   {optimizedRoute.length > 0 && (
                     <motion.div 
-                      initial={{ opacity: 0, scale: 0.9 }}
+                      initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="mt-10 pt-10 border-t border-border"
+                      className="mt-8 pt-8 border-t border-gray-50"
                     >
-                      <div className="flex items-center justify-center gap-4">
-                         <Sparkles className="h-5 w-5 text-emerald-500" />
-                         <span className="text-xs font-black uppercase tracking-[0.3em] text-emerald-600/80">
-                            Optimal Trajectory Resolved for {optimizedRoute.length} Spatial Entities
+                      <div className="flex items-center justify-center gap-3">
+                         <Sparkles className="h-4 w-4 text-emerald-500" />
+                         <span className="text-xs font-bold uppercase tracking-widest text-[#00A699]">
+                            Route optimized for {optimizedRoute.length} locations
                          </span>
                       </div>
                     </motion.div>
                   )}
                 </div>
                 
-                {/* Decorative Elements */}
-                <div className="absolute bottom-12 left-12 p-8 bg-card/30 backdrop-blur-2xl rounded-3xl border border-border flex items-start gap-4 max-w-sm">
-                   <Info className="h-6 w-6 text-primary shrink-0" />
-                   <p className="text-[10px] font-medium text-muted-foreground leading-relaxed italic">
-                      Neural router currently using alpha heuristic for distance modulation. Production grade Google Maps API handshake pending.
+                <div className="absolute bottom-10 left-10 p-6 bg-white/80 backdrop-blur-md rounded-2xl border border-gray-100 flex items-start gap-4 max-w-xs shadow-sm">
+                   <Info className="h-5 w-5 text-[#FF385C] shrink-0" />
+                   <p className="text-[10px] font-bold text-gray-400 leading-relaxed uppercase tracking-widest">
+                      Distance calculation utilizes real-time travel heuristics. Production API integration pending.
                    </p>
                 </div>
               </div>

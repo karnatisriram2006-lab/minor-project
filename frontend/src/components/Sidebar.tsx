@@ -50,17 +50,16 @@ export default function Sidebar() {
   const userInitial = displayName.charAt(0).toUpperCase()
 
   return (
-    <aside className="w-80 h-screen sticky top-0 bg-[#020617] border-r border-white/5 flex flex-col p-8 z-50 text-white font-sans noise-overlay">
+    <aside className="w-80 h-[calc(100vh-80px)] sticky top-20 bg-white border-r border-[#DDDDDD] flex flex-col p-8 pt-10 z-50 text-[#222222] font-sans">
       {/* Profile Section */}
       <div className="flex items-center gap-4 mb-12">
-        <Avatar className="h-14 w-14 border-2 border-primary/20 transition-transform hover:scale-105 shadow-2xl">
+        <Avatar className="h-16 w-16 border border-gray-100 shadow-sm">
           <AvatarImage src={photoUrl} />
-          <AvatarFallback className="bg-[#0B1120] text-primary font-black italic">{userInitial}</AvatarFallback>
+          <AvatarFallback className="bg-gray-100 text-[#FF385C] font-bold text-xl">{userInitial}</AvatarFallback>
         </Avatar>
         <div className="flex flex-col min-w-0">
-          <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 leading-none mb-1">Identity Node</h3>
-          <p className="text-sm font-black text-white truncate max-w-[160px]">{displayName}</p>
-          <p className="text-[10px] text-primary/80 font-bold uppercase tracking-[0.2em] italic mt-1">Matrix Verified</p>
+          <p className="text-sm font-bold text-[#222222] truncate max-w-[160px]">{displayName}</p>
+          <p className="text-xs text-gray-500 font-medium">Show profile</p>
         </div>
       </div>
 
@@ -71,38 +70,34 @@ export default function Sidebar() {
           return (
             <Link key={item.name} href={item.href}>
               <div className={cn(
-                "group flex items-center justify-between px-6 py-4 rounded-2xl transition-all duration-500 cursor-pointer mb-2 border",
+                "group flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 cursor-pointer mb-1",
                 isActive 
-                  ? "bg-[#0B1120] text-white shadow-2xl scale-[1.02] border-white/10 glow-primary" 
-                  : "text-white/40 border-transparent hover:bg-white/[0.02] hover:text-white hover:border-white/5"
+                  ? "bg-gray-50 text-[#222222]" 
+                  : "text-gray-500 hover:bg-gray-50 hover:text-[#222222]"
               )}>
-                <div className="flex items-center gap-4">
-                  <item.icon className={cn("h-5 w-5 transition-colors", isActive ? "text-primary" : "text-white/20 group-hover:text-primary/80")} />
-                  <span className="font-bold text-xs tracking-[0.1em] uppercase">{item.name}</span>
-                </div>
-                {isActive && <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_10px_rgba(249,115,22,0.8)]" />}
+                <item.icon className={cn("h-5 w-5", isActive ? "text-[#FF385C]" : "text-gray-400 group-hover:text-[#FF385C]")} />
+                <span className="font-semibold text-sm">{item.name}</span>
               </div>
             </Link>
           )
         })}
       </nav>
 
-      {/* Footer Section */}
-      <div className="space-y-6 pt-8 border-t border-white/5">
-        <Button className="w-full h-14 rounded-2xl bg-[#0F172A] hover:bg-[#1E293B] border border-white/5 text-white font-bold text-[10px] uppercase tracking-[0.2em] shadow-2xl flex items-center justify-center gap-3 transition-all active:scale-95 group relative overflow-hidden">
-          <div className="absolute inset-0 bg-primary/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
-          <Sparkles className="h-4 w-4 text-primary group-hover:rotate-12 transition-transform relative z-10" />
-          <span className="relative z-10 italic">Neural Consult</span>
+      {/* Footer Section - Airbnb Style "Luxury Consult" */}
+      <div className="space-y-6 pt-8 border-t border-gray-100">
+        <Button className="w-full h-12 rounded-xl bg-[#FF385C] hover:bg-[#E31C5F] text-white font-bold text-sm shadow-md flex items-center justify-center gap-2 transition-all active:scale-95">
+          <Sparkles className="h-4 w-4" />
+          <span>Luxury Support</span>
         </Button>
 
         <div className="space-y-1">
-          <Button variant="ghost" className="w-full justify-start gap-4 text-white/30 hover:text-white hover:bg-white/[0.02] rounded-xl px-6 h-12 transition-colors">
+          <Button variant="ghost" className="w-full justify-start gap-3 text-gray-500 hover:text-[#222222] hover:bg-gray-50 rounded-xl px-4 h-11">
             <Settings className="h-4 w-4" />
-            <span className="font-black text-[10px] uppercase tracking-widest">Settings</span>
+            <span className="font-medium text-sm">Settings</span>
           </Button>
-          <Button variant="ghost" className="w-full justify-start gap-4 text-white/30 hover:text-white hover:bg-white/[0.02] rounded-xl px-6 h-12 transition-colors">
+          <Button variant="ghost" className="w-full justify-start gap-3 text-gray-500 hover:text-[#222222] hover:bg-gray-50 rounded-xl px-4 h-11">
             <HelpCircle className="h-4 w-4" />
-            <span className="font-black text-[10px] uppercase tracking-widest">Support</span>
+            <span className="font-medium text-sm">Help Center</span>
           </Button>
         </div>
       </div>

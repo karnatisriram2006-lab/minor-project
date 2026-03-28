@@ -1,8 +1,10 @@
 services:
+  # Backend Service
   - type: web
     name: incredible-india-backend
     env: node
     plan: free
+    rootDir: backend
     buildCommand: npm install
     startCommand: npm start
     envVars:
@@ -18,3 +20,17 @@ services:
         sync: false
       - key: GROQ_MODEL
         value: llama3-8b-8192
+
+  # Frontend Service
+  - type: web
+    name: incredible-india-frontend
+    env: node
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
