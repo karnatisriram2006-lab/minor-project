@@ -9,6 +9,7 @@ import Link from "next/link"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import api from "@/lib/api"
 
 interface DiscoveryItem {
   id?: string;
@@ -31,14 +32,12 @@ export default function Discover() {
   const handleSearch = useCallback(async () => {
     setLoading(true)
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
       let endpoint = activeTab
       if (activeTab === "hostels") endpoint = "discover/hostels"
       else if (activeTab === "restaurants") endpoint = "discover/restaurants"
       else if (activeTab === "popular") endpoint = "discover/popular"
 
-      const res = await fetch(`${apiUrl}/${endpoint}${activeTab !== "popular" ? `?city=${city}` : ""}`)
-      const data = await res.json()
+      const { data } = await api.get(`${endpoint}${activeTab !== "popular" ? `?city=${city}` : ""}`)
 
       if (activeTab === "popular") {
         setItems(data.places || [])

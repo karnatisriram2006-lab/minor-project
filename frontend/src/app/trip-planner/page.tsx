@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
+import api from "@/lib/api"
 
 const InteractiveMap = dynamic(() => import("@/components/InteractiveMap"), {
   ssr: false,
@@ -62,16 +63,7 @@ export default function TripPlanner() {
     setLoading(true)
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
-      const res = await fetch(`${apiUrl}/ai/itinerary`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
-      })
-
-      if (!res.ok) throw new Error("API Response Error")
-
-      const data = await res.json()
+      const { data } = await api.post("/ai/itinerary", formData)
       setItinerary(data.itinerary || data)
     } catch (err) {
       console.error("[Curation Error]", err)

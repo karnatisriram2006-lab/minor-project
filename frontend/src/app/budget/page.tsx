@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
 import { Label } from "@/components/ui/label"
-import axios from "axios"
+import api from "@/lib/api"
 
 export default function BudgetOptimizer() {
   const [budget, setBudget] = useState<string>("50000")
@@ -21,9 +21,8 @@ export default function BudgetOptimizer() {
     setLoading(true)
     
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
-      const res = await axios.post(`${apiUrl}/budget`, { totalBudget: Number(budget) })
-      setAllocation(res.data.allocation)
+      const { data } = await api.post("/budget", { totalBudget: Number(budget) })
+      setAllocation(data.allocation)
     } catch (error) {
       console.error(error)
     } finally {

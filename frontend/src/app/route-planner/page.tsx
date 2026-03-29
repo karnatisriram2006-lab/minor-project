@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import api from "@/lib/api"
 
 interface OptimizedStop {
   id: string;
@@ -42,15 +43,14 @@ export default function RoutePlanner() {
     if (places.length < 2) return
     setLoading(true)
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
-      const res = await axios.post(`${apiUrl}/route/optimize`, {
+      const { data } = await api.post("/route/optimize", {
         locations: places.map(p => ({
           name: p.name,
           lat: 27.1751 + (Math.random() * 0.1),
           lng: 78.0421 + (Math.random() * 0.1)
         }))
       })
-      const optimized = res.data.optimizedRoute.map((p: { id: string; name: string; order: number }) => ({
+      const optimized = data.optimizedRoute.map((p: { id: string; name: string; order: number }) => ({
         ...p,
         visitOrder: p.order
       }))

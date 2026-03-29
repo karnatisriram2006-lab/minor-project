@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion"
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import api from "@/lib/api"
 
 interface Message {
   role: "user" | "bot"
@@ -36,13 +37,7 @@ export default function ChatBot() {
     setIsLoading(true)
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
-      const res = await fetch(`${apiUrl}/ai/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input })
-      })
-      const data = await res.json()
+      const { data } = await api.post("/ai/chat", { message: input })
       setMessages(prev => [...prev, { role: "bot", content: data.reply }])
     } catch (err: unknown) {
       console.error(err);
