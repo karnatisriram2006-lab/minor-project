@@ -22,48 +22,46 @@ const config = {
         border: "var(--border)",
         input: "var(--input)",
         ring: "var(--ring)",
-        background: "#F8F6F3", // Heritage Off-White
-        foreground: "#0B2A4A", // Heritage Navy
+        background: "var(--background)",
+        foreground: "var(--foreground)",
         primary: {
-          DEFAULT: "#0B2A4A", // Heritage Navy
-          foreground: "#F8F6F3",
+          DEFAULT: "var(--primary)",
+          foreground: "var(--primary-foreground)",
         },
         secondary: {
-          DEFAULT: "#F97316", // Heritage Saffron
-          foreground: "#FFFFFF",
+          DEFAULT: "var(--secondary)",
+          foreground: "var(--secondary-foreground)",
         },
         accent: {
-          DEFAULT: "#F97316",
-          foreground: "#FFFFFF",
+          DEFAULT: "var(--accent)",
+          foreground: "var(--accent-foreground)",
         },
         muted: {
-          DEFAULT: "#71717A",
-          foreground: "#F8F6F3",
-        },
-        card: {
-          DEFAULT: "#FFFFFF",
-          foreground: "#0B2A4A",
+          DEFAULT: "var(--muted)",
+          foreground: "var(--muted-foreground)",
         },
         heritage: {
-          navy: "#0B2A4A",
-          saffron: "#F97316",
-          cream: "#F8F6F3",
-          gold: "#D4AF37",
+          navy: "#00A699",      // Airbnb Babu — teal accent
+          saffron: "#FF5A5F",   // Airbnb Rausch — iconic coral red
+          bone: "#F7F7F7",      // Airbnb Light — off-white background
+          gold: "#767676",      // Airbnb Foggy — medium gray
+          onyx: "#484848",      // Airbnb Hof — dark charcoal text
         }
       },
       fontFamily: {
-        serif: ["var(--font-serif)", "serif"],
-        sans: ["var(--font-sans)", "sans-serif"],
+        sans: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "system-ui", "sans-serif"],
       },
       borderRadius: {
-        lg: "24px",
-        md: "16px",
-        sm: "12px",
+        xl: "var(--radius-xl)",
+        lg: "var(--radius-lg)",
+        md: "var(--radius-md)",
+        sm: "var(--radius-sm)",
       },
       boxShadow: {
-        "soft-sm": "0 2px 4px rgba(0,0,0,0.02)",
-        "soft-md": "0 4px 12px rgba(0,0,0,0.05)",
-        "soft-lg": "0 8px 24px rgba(0,0,0,0.08)",
+        "premium": "var(--shadow-premium)",
+        "premium-hover": "var(--shadow-premium-hover)",
+        "soft-inner": "var(--shadow-soft-inner)",
       },
       keyframes: {
         "accordion-down": {
@@ -74,15 +72,27 @@ const config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "float": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
+        }
       },
       animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
-        "pulse-soft": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "accordion-down": "accordion-down 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
+        "accordion-up": "accordion-up 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
+        "float": "float 6s ease-in-out infinite",
+        "pulse-soft": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
       },
+      transitionTimingFunction: {
+        "expo": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "emil-ease-out": "cubic-bezier(0.23, 1, 0.32, 1)",
+        "emil-in-out": "cubic-bezier(0.77, 0, 0.175, 1)",
+        "emil-in-out-soft": "cubic-bezier(0.4, 0, 0.2, 1)",
+      }
     },
   },
   plugins: [require("tailwindcss-animate")],
 } satisfies Config
 
 export default config
+

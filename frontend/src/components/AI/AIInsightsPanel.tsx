@@ -1,7 +1,7 @@
 "use client"
 
 import { motion, AnimatePresence } from "framer-motion"
-import { Sparkles, Calendar, Users, Compass, ArrowRight, X } from "lucide-react"
+import { Calendar, Users, Compass, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 

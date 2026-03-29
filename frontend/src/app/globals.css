@@ -1,35 +1,58 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: #FFFFFF;
-  --color-foreground: #222222;
+  /* ─── Airbnb Design System ─────────────────────────────── */
+  --color-background: #FFFFFF;          /* Pure white pages */
+  --color-foreground: #484848;          /* Airbnb Hof — charcoal text */
   --color-card: #FFFFFF;
-  --color-card-foreground: #222222;
-  --color-popover: #FFFFFF;
-  --color-popover-foreground: #222222;
-  --color-primary: #FF385C; /* Airbnb Rausch */
+  --color-card-foreground: #484848;
+
+  /* Primary: Airbnb Rausch — iconic coral red */
+  --color-primary: #FF5A5F;
   --color-primary-foreground: #FFFFFF;
-  --color-secondary: #00A699; /* Airbnb Babu Teal */
+
+  /* Secondary: Airbnb Babu — teal */
+  --color-secondary: #00A699;
   --color-secondary-foreground: #FFFFFF;
+
   --color-muted: #F7F7F7;
-  --color-muted-foreground: #717171;
-  --color-accent: #FF385C;
+  --color-muted-foreground: #767676;    /* Airbnb Foggy — medium gray */
+
+  --color-accent: #FF5A5F;              /* Coral accent */
   --color-accent-foreground: #FFFFFF;
+
   --color-destructive: oklch(0.602 0.158 24.5);
   --color-destructive-foreground: oklch(0.985 0.001 106);
-  --color-border: #DDDDDD;
-  --color-input: #DDDDDD;
-  --color-ring: #FF385C;
 
-  --shadow-airbnb: 0 6px 16px rgba(0, 0, 0, 0.12);
-  --shadow-airbnb-hover: 0 12px 24px rgba(0, 0, 0, 0.15);
-  --shadow-soft: 0 2px 4px rgba(0, 0, 0, 0.08);
+  --color-border: #EBEBEB;             /* Airbnb border gray */
+  --color-input: #EBEBEB;
+  --color-ring: #FF5A5F;
 
-  --radius-xl: 32px;
-  --radius-lg: 24px;
-  --radius-md: 16px;
+  /* Heritage → Airbnb Aliases (used across components) */
+  --color-heritage-bone: #F7F7F7;
+  --color-heritage-onyx: #484848;
+  --color-heritage-saffron: #FF5A5F;
+  --color-heritage-gold: #767676;
+  --color-heritage-navy: #00A699;
+
+  /* Airbnb-grade Elevation System */
+  --shadow-premium: 0 1px 2px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05);
+  --shadow-premium-hover: 0 2px 4px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.12);
+  --shadow-soft-inner: inset 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-card: 0 2px 8px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.04);
+
+  /* Modern Radii — Airbnb uses 12px as base */
+  --radius-xl: 24px;
+  --radius-lg: 16px;
+  --radius-md: 12px;
   --radius-sm: 8px;
-  --radius-base: 12px;
+  --radius-full: 9999px;
+
+  /* Cinematic Easings */
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-soft: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-emil-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-emil-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 @layer base {
@@ -39,31 +62,37 @@
   
   body {
     @apply bg-background text-foreground;
-    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-family: var(--font-sans, ui-sans-serif), system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold tracking-tight text-[#222222];
+    @apply font-bold tracking-tight text-foreground;
+    text-wrap: balance;
   }
 }
 
 @layer components {
-  .airbnb-card {
-    @apply bg-white rounded-3xl border border-[#DDDDDD] p-6 transition-all duration-300 hover:shadow-airbnb;
+  /* Airbnb-style Card */
+  .premium-card {
+    @apply bg-white rounded-2xl border border-[#EBEBEB] p-6 transition-all duration-300 ease-expo hover:shadow-premium-hover hover:-translate-y-0.5 active:scale-[0.99] shadow-premium;
   }
 
-  .btn-airbnb {
-    @apply bg-[#FF385C] text-white px-6 py-3 rounded-xl font-bold transition-all hover:bg-[#E31C5F] active:scale-95 shadow-md;
+  /* Airbnb-style Button */
+  .btn-premium {
+    @apply relative overflow-hidden bg-primary text-white px-6 py-3 rounded-xl font-semibold tracking-tight transition-all duration-200 ease-expo hover:bg-[#FF3B40] active:scale-95 shadow-sm flex items-center justify-center gap-2;
   }
 
-  .btn-outline-airbnb {
-    @apply bg-white text-[#222222] border border-[#222222] px-6 py-3 rounded-xl font-bold transition-all hover:bg-gray-50 active:scale-95;
+  /* Glass Layer */
+  .glass-layer {
+    @apply bg-white/80 backdrop-blur-xl border border-[#EBEBEB] shadow-premium;
   }
 
-  .active-nav-item {
-    @apply bg-gray-100 text-[#222222] rounded-xl;
+  /* Airbnb-style Input */
+  .input-premium {
+    @apply w-full bg-white border border-[#DDDDDD] rounded-xl h-14 px-4 font-medium text-base text-[#484848] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#FF5A5F]/20 focus:border-[#FF5A5F] placeholder:text-[#767676];
   }
 }
 
@@ -71,19 +100,31 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  .animate-slow-pan {
+    animation: pan 60s linear infinite;
+  }
+
+  @keyframes pan {
+    from { transform: scale(1.1) translateX(0); }
+    to { transform: scale(1.1) translateX(-5%); }
+  }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
 }
 
-/* Custom Scrollbar for Airbnb Theme */
+/* Airbnb-style subtle scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #FFFFFF;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
   background: #DDDDDD;
-  border-radius: 10px;
-  border: 2px solid #FFFFFF;
+  border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #B0B0B0;

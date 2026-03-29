@@ -2,31 +2,24 @@
 
 import { useState, useMemo } from "react"
 import dynamic from "next/dynamic"
-import Link from "next/link"
 import { 
   Calendar, 
   MapPin, 
-  Sparkles, 
-  Send, 
   Clock, 
-  Map as MapIcon, 
-  ChevronRight, 
   Navigation, 
-  Globe, 
   Compass,
-  Search,
-  Users,
   Wallet,
   MoreVertical,
   Maximize2,
-  Info
+  Info,
+  Sparkles,
+  ChevronRight
 } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
 
 // Deck.gl requires WebGL — must be client-only to avoid SSR errors
@@ -34,32 +27,32 @@ const InteractiveMap = dynamic(() => import("@/components/InteractiveMap"), {
   ssr: false,
   loading: () => (
     <div className="h-full w-full bg-[#020617] flex items-center justify-center">
-      <div className="w-16 h-16 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+      <div className="w-16 h-16 rounded-full border-4 border-primary border-t-transparent animate-spin" style={{ animationDuration: '0.6s' }} />
     </div>
   ),
 })
 
+interface ItineraryStop {
+  name: string;
+  type?: string;
+  description?: string;
+  time?: string;
+  lat: number;
+  lng: number;
+  status?: string;
+}
+
+type ItineraryType = Record<string, ItineraryStop[]>
+
 export default function TripPlanner() {
   const [loading, setLoading] = useState(false)
-  const [itinerary, setItinerary] = useState<any>(null)
+  const [itinerary, setItinerary] = useState<ItineraryType | null>(null)
   const [formData, setFormData] = useState({
     city: "Jaipur",
     days: "3",
     interests: "Culture, History, Food",
     budget: "Luxury"
   })
-
-  // Simulated itinerary data matching the new design if API fails or to show the result instantly for demo
-  const mockItinerary = {
-    "Day 1": [
-      { name: "Amber Fort Expedition", type: "UNESCO Heritage", description: "Ascend the hilltop fortress.", time: "09:00", lat: 26.9855, lng: 75.8513, status: "Must Visit" },
-      { name: "City Palace", type: "Museum", description: "Royal residence exploration.", time: "14:00", lat: 26.9258, lng: 75.8237 }
-    ],
-    "Day 2": [
-      { name: "Hawa Mahal", type: "Photography", description: "Palace of Winds.", time: "08:00", lat: 26.9239, lng: 75.8267 },
-      { name: "Jantar Mantar", type: "Astronomy", description: "Historic observatory.", time: "11:00", lat: 26.9248, lng: 75.8245 }
-    ]
-  }
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -82,7 +75,7 @@ export default function TripPlanner() {
       console.error("[Curation Error]", err)
       
       // Dynamic Mock Fallback if API fails, so user sees the correct number of days
-      const dynamicMock: any = {}
+      const dynamicMock: ItineraryType = {}
       const dayCount = parseInt(formData.days) || 3
       // Base coordinates for the city (using Jaipur as default if city not found)
       const baseLat = formData.city.toLowerCase().includes("agra") ? 27.1751 : 26.9124
@@ -118,40 +111,40 @@ export default function TripPlanner() {
   // Extract points for the map
   const mapPoints = useMemo(() => {
     if (!itinerary) return []
-    return Object.values(itinerary).flatMap((day: any) => 
-      day.map((act: any) => ({
+    return Object.values(itinerary).flatMap((day: ItineraryStop[]) => 
+      day.map((act: ItineraryStop) => ({
         id: act.name,
         name: act.name,
-        lat: act.lat || 26.9124,
-        lng: act.lng || 75.7873,
-        description: act.description
+        lat: Number(act.lat) || 26.9124,
+        lng: Number(act.lng) || 75.7873,
+        description: act.description || ""
       }))
     )
   }, [itinerary])
 
   return (
-    <div className="flex flex-col h-screen pt-20 overflow-hidden bg-white text-[#222222]">
+    <div className="flex flex-col h-screen pt-20 overflow-hidden bg-heritage-bone text-heritage-onyx selection:bg-heritage-saffron/10">
       
-      {/* 1. Header Area - Airbnb style */}
-      <div className="h-20 border-b border-gray-100 bg-white px-12 flex items-center justify-between z-20 shrink-0">
-        <div className="flex items-center gap-6">
-           <h2 className="text-2xl font-bold text-[#222222]">Trip Planner</h2>
-           <div className="h-6 w-[1px] bg-gray-100" />
+      {/* 1. Header Area - Heritage style */}
+      <div className="h-24 border-b border-heritage-gold/10 bg-white/80 backdrop-blur-xl px-12 flex items-center justify-between z-20 shrink-0 shadow-premium">
+        <div className="flex items-center gap-8">
+           <h2 className="text-3xl font-extrabold text-heritage-onyx tracking-tighter">Trip Planner</h2>
+           <div className="h-8 w-px bg-heritage-gold/20" />
            <div className="flex gap-4">
-              <span className="text-[10px] font-bold uppercase tracking-wider bg-red-50 text-[#FF385C] px-3 py-1 rounded-md border border-red-100">AI Assistant</span>
+              <span className="text-[11px] font-bold uppercase tracking-[0.2em] bg-heritage-saffron/5 text-heritage-saffron px-4 py-1.5 rounded-full border border-heritage-saffron/10 shadow-soft-inner">AI Architect</span>
            </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-6">
            <div className="flex -space-x-3">
               {[1, 2, 3].map(i => (
-                <Avatar key={i} className="h-8 w-8 border-2 border-white shadow-sm">
-                  <AvatarFallback className="bg-gray-100 text-[#FF385C] text-[10px] font-bold">U{i}</AvatarFallback>
+                <Avatar key={i} className="h-10 w-10 border-2 border-white shadow-premium">
+                  <AvatarFallback className="bg-heritage-bone text-heritage-gold text-xs font-bold">U{i}</AvatarFallback>
                 </Avatar>
               ))}
            </div>
-           <Button className="h-10 rounded-xl bg-[#222222] text-white font-bold text-xs px-6 hover:bg-black transition-all">
-              Invite friends
+           <Button variant="premium" size="sm" className="px-8 h-10 text-[11px] uppercase tracking-widest transition-transform duration-[160ms] ease-emil-out active:scale-[0.97]">
+              Invite Seekers
            </Button>
         </div>
       </div>
@@ -160,84 +153,85 @@ export default function TripPlanner() {
         
         {/* 2. Left Panel: Config or Itinerary Timeline */}
         <div className={cn(
-          "w-full lg:w-[450px] xl:w-[500px] bg-white border-r border-gray-100 flex flex-col z-10 transition-all duration-700 overflow-y-auto",
+          "w-full lg:w-[480px] xl:w-[550px] bg-white border-r border-heritage-gold/10 flex flex-col z-10 transition-transform duration-500 ease-emil-in-out overflow-y-auto shadow-premium",
           itinerary ? "translate-x-0" : "translate-x-0"
         )}>
           {!itinerary ? (
-            <div className="min-h-full flex flex-col justify-center p-8 lg:p-10 space-y-8 bg-transparent">
-               <div className="space-y-2 text-center">
+            <div className="min-h-full flex flex-col justify-center p-12 lg:p-16 space-y-12 bg-transparent">
+               <div className="space-y-4 text-center">
                   <motion.h1 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-3xl lg:text-4xl font-bold text-[#222222] tracking-tight"
+                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.8, ease: [0.77, 0, 0.175, 1] }}
+                    className="text-4xl lg:text-5xl font-extrabold text-heritage-onyx tracking-tighter leading-tight"
                   >
-                    Plan your next <span className="text-[#FF385C]">Adventure</span>
+                    Architect your <br /><span className="text-heritage-saffron italic font-serif">Deep Journey.</span>
                   </motion.h1>
                   <motion.p 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="text-sm font-medium text-gray-500 max-w-xs mx-auto leading-relaxed"
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ delay: 0.1, duration: 0.8, ease: [0.77, 0, 0.175, 1] }}
+                    className="text-base font-medium text-heritage-onyx/50 max-w-sm mx-auto leading-relaxed"
                   >
-                    Tell us where you want to go and what you love. We'll handle the rest.
+                    Every path in Bharat tells a story. Tell us yours, and we&apos;ll weave the map.
                   </motion.p>
                </div>
 
-               <form onSubmit={handleGenerate} className="space-y-6 max-w-md mx-auto w-full">
-                  <div className="space-y-5">
-                    <div className="space-y-2">
-                       <Label className="text-xs font-bold text-gray-700 ml-1">Destination</Label>
+               <form onSubmit={handleGenerate} className="space-y-8 max-w-md mx-auto w-full">
+                  <div className="space-y-6">
+                    <div className="space-y-3">
+                       <Label className="text-[10px] font-bold uppercase tracking-[0.25em] text-heritage-gold ml-2">Sacred Destination</Label>
                        <div className="relative group">
-                          <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#FF385C]" />
+                          <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-heritage-saffron transition-transform group-focus-within:scale-110" />
                           <input 
                             value={formData.city}
                             onChange={(e) => setFormData({...formData, city: e.target.value})}
-                            className="w-full bg-gray-50 h-14 rounded-xl pl-14 pr-6 font-semibold text-base text-[#222222] border border-gray-200 focus:outline-none focus:border-[#FF385C] focus:ring-2 focus:ring-[#FF385C]/10 transition-all placeholder:text-gray-300"
-                            placeholder="e.g. Jaipur, India"
+                            className="w-full bg-heritage-bone/50 h-16 rounded-2xl pl-16 pr-8 font-bold text-lg text-heritage-onyx border border-heritage-gold/10 focus:outline-none focus:border-heritage-saffron/40 focus:ring-8 focus:ring-heritage-saffron/5 transition-all duration-200 ease-emil-out placeholder:text-heritage-onyx/20 shadow-soft-inner"
+                            placeholder="e.g. Varanasi, India"
                           />
                        </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                       <div className="space-y-2">
-                          <Label className="text-xs font-bold text-gray-700 ml-1">Days</Label>
+                    <div className="grid grid-cols-2 gap-6">
+                       <div className="space-y-3">
+                          <Label className="text-[10px] font-bold uppercase tracking-[0.25em] text-heritage-gold ml-2">Duration (Days)</Label>
                           <div className="relative group">
-                             <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#FF385C]" />
+                             <Calendar className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-heritage-saffron transition-transform group-focus-within:scale-110" />
                              <input 
                                type="number"
                                value={formData.days}
                                onChange={(e) => setFormData({...formData, days: e.target.value})}
-                               className="w-full bg-gray-50 h-14 rounded-xl pl-14 pr-6 font-semibold text-base text-[#222222] border border-gray-200 focus:outline-none focus:border-[#FF385C] focus:ring-2 focus:ring-[#FF385C]/10 transition-all"
+                               className="w-full bg-heritage-bone/50 h-16 rounded-2xl pl-16 pr-8 font-bold text-lg text-heritage-onyx border border-heritage-gold/10 focus:outline-none focus:border-heritage-saffron/40 focus:ring-8 focus:ring-heritage-saffron/5 transition-all duration-200 ease-emil-out shadow-soft-inner"
                              />
                           </div>
                        </div>
-                       <div className="space-y-2">
-                          <Label className="text-xs font-bold text-gray-700 ml-1">Budget</Label>
+                       <div className="space-y-3">
+                          <Label className="text-[10px] font-bold uppercase tracking-[0.25em] text-heritage-gold ml-2">Tier</Label>
                           <div className="relative group">
-                             <Wallet className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#FF385C]" />
+                             <Wallet className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-heritage-saffron transition-transform group-focus-within:scale-110" />
                              <select 
                                value={formData.budget}
                                onChange={(e) => setFormData({...formData, budget: e.target.value})}
-                               className="w-full bg-gray-50 h-14 rounded-xl pl-14 pr-10 font-semibold text-base text-[#222222] border border-gray-200 focus:outline-none focus:border-[#FF385C] focus:ring-2 focus:ring-[#FF385C]/10 transition-all appearance-none cursor-pointer"
+                               className="w-full bg-heritage-bone/50 h-16 rounded-2xl pl-16 pr-10 font-bold text-lg text-heritage-onyx border border-heritage-gold/10 focus:outline-none focus:border-heritage-saffron/40 focus:ring-8 focus:ring-heritage-saffron/5 transition-all duration-200 ease-emil-out appearance-none cursor-pointer shadow-soft-inner"
                              >
-                               <option>Budget</option>
-                               <option>Standard</option>
-                               <option>Luxury</option>
+                               <option>Economy</option>
+                               <option>Classic</option>
+                               <option>Imperial</option>
                              </select>
-                             <ChevronRight className="absolute right-5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none rotate-90" />
+                             <ChevronRight className="absolute right-6 top-1/2 -translate-y-1/2 h-4 w-4 text-heritage-gold pointer-events-none rotate-90" />
                           </div>
                        </div>
                     </div>
 
-                    <div className="space-y-2">
-                       <Label className="text-xs font-bold text-gray-700 ml-1">Interests</Label>
+                    <div className="space-y-3">
+                       <Label className="text-[10px] font-bold uppercase tracking-[0.25em] text-heritage-gold ml-2">Narrative Interests</Label>
                        <div className="relative group">
-                        <Sparkles className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#FF385C]" />
+                        <Sparkles className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-heritage-saffron transition-transform group-focus-within:scale-110" />
                         <input 
                            value={formData.interests}
                            onChange={(e) => setFormData({...formData, interests: e.target.value})}
-                           className="w-full bg-gray-50 h-14 rounded-xl pl-14 pr-6 font-semibold text-sm text-[#222222] border border-gray-200 focus:outline-none focus:border-[#FF385C] focus:ring-2 focus:ring-[#FF385C]/10 transition-all placeholder:text-gray-300"
-                           placeholder="Culture, Food, History..."
+                           className="w-full bg-heritage-bone/50 h-16 rounded-2xl pl-16 pr-8 font-bold text-base text-heritage-onyx border border-heritage-gold/10 focus:outline-none focus:border-heritage-saffron/40 focus:ring-8 focus:ring-heritage-saffron/5 transition-all duration-200 ease-emil-out placeholder:text-heritage-onyx/20 shadow-soft-inner"
+                           placeholder="Culture, Gastronomy, Architecture..."
                         />
                        </div>
                     </div>
@@ -246,75 +240,80 @@ export default function TripPlanner() {
                   <Button 
                     type="submit" 
                     disabled={loading}
-                    className="w-full h-16 rounded-xl bg-[#FF385C] hover:bg-[#E31C5F] text-white font-bold text-lg shadow-lg shadow-red-200 transition-all active:scale-95 group relative overflow-hidden"
+                    variant="premium"
+                    className="w-full h-20 rounded-2xl text-lg relative overflow-hidden group shadow-premium transition-transform duration-[160ms] ease-emil-out active:scale-[0.97]"
                   >
                     {loading ? (
-                       <div className="flex items-center gap-3">
-                          <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
-                          <span className="text-sm uppercase tracking-widest font-bold">Planning...</span>
+                       <div className="flex items-center gap-4">
+                          <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+                          <span className="text-xs uppercase tracking-[0.3em] font-extrabold">Consulting Local Spirits...</span>
                        </div>
                     ) : (
-                       <div className="flex items-center gap-3">
-                          <Sparkles className="h-5 w-5" />
-                          <span className="text-sm uppercase tracking-widest font-bold">Create Itinerary</span>
+                       <div className="flex items-center gap-4">
+                          <Compass className="h-6 w-6 group-hover:rotate-180 transition-transform duration-300 ease-emil-in-out" />
+                          <span className="text-xs uppercase tracking-[0.3em] font-extrabold">Initialize Itinerary</span>
                        </div>
                     )}
                   </Button>
                </form>
 
-               <div className="p-6 rounded-2xl bg-gray-50 border border-gray-100 flex items-center gap-4 max-w-md mx-auto">
-                  <div className="w-12 h-12 shrink-0 rounded-xl bg-[#FF385C]/10 flex items-center justify-center text-[#FF385C]">
-                    <Info className="h-6 w-6" />
+               <div className="p-8 rounded-[2rem] bg-heritage-bone border border-heritage-gold/10 flex items-center gap-6 max-w-md mx-auto shadow-soft-inner">
+                  <div className="w-14 h-14 shrink-0 rounded-2xl bg-white flex items-center justify-center text-heritage-saffron shadow-premium border border-heritage-gold/5">
+                    <Info className="h-7 w-7" />
                   </div>
-                  <p className="text-xs font-medium text-gray-500 leading-relaxed italic">
-                    "Our AI uses verified local insights to create an authentic experience just for you."
+                  <p className="text-xs font-bold text-heritage-onyx/50 leading-relaxed italic">
+                    &quot;AI precision filtered through local wisdom to ensure every step is meaningful.&quot;
                   </p>
                </div>
             </div>
           ) : (
-            <div className="flex flex-col h-full bg-white">
-               <div className="p-8 border-b border-gray-100 shrink-0">
-                  <div className="flex items-center justify-between mb-2">
-                    <h2 className="text-3xl font-bold text-[#222222]">The Timeline</h2>
-                    <Button variant="ghost" size="icon" onClick={() => setItinerary(null)} className="text-gray-400 hover:text-[#FF385C]">
-                       <ChevronRight className="h-5 w-5 rotate-180" />
+            <div className="flex flex-col h-full bg-white relative">
+               <div className="p-10 border-b border-heritage-bone shrink-0 bg-heritage-bone/30">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-4xl font-extrabold text-heritage-onyx tracking-tighter leading-none">The Path</h2>
+                    <Button variant="ghost" size="icon" onClick={() => setItinerary(null)} className="text-heritage-onyx/30 hover:text-heritage-saffron transition-transform duration-[160ms] ease-emil-out active:scale-95 hover:bg-heritage-bone/50">
+                       <ChevronRight className="h-6 w-6 rotate-180" />
                     </Button>
                   </div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-[#FF385C]">Exploring {formData.city}</p>
+                  <div className="flex items-center gap-3">
+                    <span className="h-2 w-2 rounded-full bg-heritage-saffron animate-pulse" />
+                    <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-heritage-gold">Unveiling {formData.city}</p>
+                  </div>
                </div>
 
-               <div className="flex-1 overflow-y-auto p-8 space-y-10">
-                  {Object.entries(itinerary).map(([day, activities]: [string, any], idx) => (
-                    <div key={day} className="relative pl-12 border-l border-gray-100 last:border-l-transparent">
-                       {/* Day Circle */}
-                       <div className="absolute -left-[17px] top-0 w-8 h-8 rounded-full bg-[#FF385C] text-white flex items-center justify-center z-10 font-bold text-sm shadow-md">
+               <div className="flex-1 overflow-y-auto p-10 space-y-12">
+                  {Object.entries(itinerary).map(([day, activities]: [string, ItineraryStop[]], idx) => (
+                    <div key={day} className="relative pl-14 border-l-2 border-dashed border-heritage-gold/20 last:border-l-transparent">
+                       {/* Day Marker */}
+                       <div className="absolute -left-[21px] top-0 w-10 h-10 rounded-2xl bg-heritage-onyx text-heritage-bone flex items-center justify-center z-10 font-black text-xs shadow-premium border-2 border-heritage-gold/40">
                           {idx + 1}
                        </div>
 
-                       <div className="space-y-6">
-                          {activities.map((act: any, aIdx: number) => (
-                            <motion.div 
+                       <div className="space-y-8">
+                          {activities.map((act: ItineraryStop, aIdx: number) => (
+                             <motion.div 
                                key={aIdx}
-                               initial={{ opacity: 0, y: 10 }}
-                               animate={{ opacity: 1, y: 0 }}
-                               className="group airbnb-card px-5 py-4 hover:border-[#FF385C]/30 active:scale-[0.98] transition-all"
-                            >
-                               <div className="flex items-center justify-between mb-3 text-[10px] font-bold uppercase tracking-wider">
-                                  <div className="flex items-center gap-2 text-[#FF385C]">
-                                     <Clock className="h-3 w-3" />
+                               initial={{ opacity: 0, x: 20, scale: 0.95 }}
+                               animate={{ opacity: 1, x: 0, scale: 1 }}
+                               transition={{ delay: aIdx * 0.05, duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+                               className="premium-card group px-8 py-6 hover:translate-x-2 active:scale-[0.97] transition-all duration-[250ms] ease-emil-out cursor-pointer"
+                             >
+                               <div className="flex items-center justify-between mb-4 text-[10px] font-black uppercase tracking-[0.3em]">
+                                  <div className="flex items-center gap-2 text-heritage-saffron">
+                                     <Clock className="h-4 w-4" />
                                      <span>{act.time}</span>
                                   </div>
                                   {act.status && (
-                                    <span className="bg-green-50 text-green-600 px-2 py-0.5 rounded-full border border-green-100">{act.status}</span>
+                                    <span className="bg-heritage-gold/5 text-heritage-gold px-3 py-1 rounded-full border border-heritage-gold/10 shadow-soft-inner">{act.status}</span>
                                   )}
                                </div>
-                               <h3 className="text-lg font-bold text-[#222222] mb-1 group-hover:text-[#FF385C] transition-colors">{act.name}</h3>
-                               <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{act.description}</p>
+                               <h3 className="text-2xl font-extrabold text-heritage-onyx mb-2 group-hover:text-heritage-saffron transition-colors duration-[250ms] tracking-tight">{act.name}</h3>
+                               <p className="text-sm text-heritage-onyx/50 leading-relaxed font-medium line-clamp-2 italic">{act.description}</p>
                                
-                               <div className="mt-4 flex items-center justify-between border-t border-gray-50 pt-3">
-                                  <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">{act.type}</span>
-                                  <Button variant="ghost" size="icon" className="w-6 h-6 rounded-full text-gray-300 group-hover:text-gray-600">
-                                     <MoreVertical className="h-3 w-3" />
+                               <div className="mt-6 flex items-center justify-between border-t border-heritage-bone pt-4">
+                                  <span className="text-[10px] font-black text-heritage-gold/40 uppercase tracking-[0.4em]">{act.type}</span>
+                                  <Button variant="ghost" size="icon" className="w-8 h-8 rounded-full text-heritage-onyx/20 group-hover:text-heritage-saffron transition-colors duration-[160ms] ease-emil-out hover:bg-heritage-bone/50">
+                                     <MoreVertical className="h-4 w-4" />
                                   </Button>
                                </div>
                             </motion.div>
@@ -324,9 +323,9 @@ export default function TripPlanner() {
                   ))}
                </div>
 
-               <div className="p-8 border-t border-gray-100 shrink-0">
-                  <Button className="w-full h-12 rounded-xl bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200 font-bold text-xs uppercase tracking-widest transition-all">
-                     Export as PDF
+               <div className="p-10 border-t border-heritage-bone shrink-0 bg-white shadow-soft-inner">
+                  <Button variant="outline" className="w-full h-16 rounded-2xl border-heritage-gold/20 text-heritage-onyx hover:bg-heritage-bone hover:text-heritage-saffron font-bold text-xs uppercase tracking-[0.3em] transition-all duration-[200ms] ease-emil-out active:scale-[0.97] shadow-premium">
+                     Scribe Journey (PDF)
                   </Button>
                </div>
             </div>
@@ -334,38 +333,46 @@ export default function TripPlanner() {
         </div>
 
         {/* 3. Main Center/Right Area: Map */}
-        <div className="flex-1 bg-gray-50 relative">
-          <InteractiveMap points={mapPoints} />
+        <div className="flex-1 bg-heritage-bone relative overflow-hidden">
+          <div className="absolute inset-0 z-0">
+            <InteractiveMap points={mapPoints} />
+          </div>
           
           {/* Overlay UI elements for the map */}
-          <div className="absolute top-8 left-8 z-20 space-y-4">
-             <div className="bg-white p-3 rounded-2xl border border-gray-200 shadow-xl flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-[#00A699] flex items-center justify-center text-white shadow-sm">
-                   <Navigation className="h-5 w-5" />
+          <div className="absolute top-10 right-10 z-20 space-y-4">
+             <div className="bg-white/90 backdrop-blur-xl p-5 rounded-[2rem] border border-heritage-gold/10 shadow-premium flex items-center gap-6 animate-float">
+                <div className="w-14 h-14 rounded-2xl bg-heritage-onyx flex items-center justify-center text-heritage-gold shadow-premium border border-heritage-gold/20">
+                   <Navigation className="h-7 w-7" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Viewing</p>
-                  <p className="text-sm font-bold text-[#222222]">{formData.city}</p>
+                  <p className="text-[10px] font-black text-heritage-gold uppercase tracking-[0.3em] mb-1">Focus Point</p>
+                  <p className="text-xl font-extrabold text-heritage-onyx tracking-tighter leading-none">{formData.city}</p>
                 </div>
              </div>
 
-             <div className="flex gap-2">
-                <Button variant="ghost" size="icon" className="bg-white w-12 h-12 rounded-xl border border-gray-200 shadow-lg text-gray-400 hover:text-[#FF385C]">
-                   <LayoutGrid className="h-5 w-5" />
+             <div className="flex gap-3 justify-end">
+                <Button variant="ghost" size="icon" className="bg-white/80 backdrop-blur-md w-14 h-14 rounded-2xl border border-heritage-gold/10 shadow-premium text-heritage-onyx hover:text-heritage-saffron hover:bg-white transition-all duration-[160ms] ease-emil-out active:scale-95">
+                   <LayoutGrid className="h-6 w-6" />
                 </Button>
-                <Button variant="ghost" size="icon" className="bg-white w-12 h-12 rounded-xl border border-gray-200 shadow-lg text-gray-400 hover:text-[#FF385C]">
-                   <Maximize2 className="h-5 w-5" />
+                <Button variant="ghost" size="icon" className="bg-white/80 backdrop-blur-md w-14 h-14 rounded-2xl border border-heritage-gold/10 shadow-premium text-heritage-onyx hover:text-heritage-saffron hover:bg-white transition-all duration-[160ms] ease-emil-out active:scale-95">
+                   <Maximize2 className="h-6 w-6" />
                 </Button>
              </div>
           </div>
 
           {!itinerary && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-               <div className="bg-white/90 backdrop-blur-md p-16 rounded-3xl border border-gray-100 flex flex-col items-center shadow-2xl">
-                  <div className="w-24 h-24 rounded-full border border-gray-100 flex items-center justify-center mb-6">
-                     <div className="w-12 h-12 rounded-full border-4 border-[#FF385C] border-t-transparent animate-spin" />
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+               <div className="bg-white/70 backdrop-blur-2xl p-20 rounded-[4rem] border border-heritage-gold/10 flex flex-col items-center shadow-premium scale-110">
+                  <div className="w-28 h-28 rounded-full border-4 border-heritage-gold/10 flex items-center justify-center mb-10 overflow-hidden relative">
+                     <div className="absolute inset-0 bg-gradient-to-tr from-heritage-saffron/20 to-heritage-gold/20 animate-pulse" />
+                     <div className="w-16 h-16 rounded-full border-[6px] border-heritage-saffron border-t-transparent animate-spin" style={{ animationDuration: '0.5s' }} />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-300 select-none">Enter your trip details</h3>
+                  <h3 className="text-3xl font-extrabold text-heritage-onyx/20 select-none tracking-tighter">Awaiting your coordinates</h3>
+                  <div className="mt-6 flex gap-4">
+                   <div className="h-1.5 w-12 rounded-full bg-heritage-gold/20" />
+                   <div className="h-1.5 w-6 rounded-full bg-heritage-saffron/20" />
+                   <div className="h-1.5 w-12 rounded-full bg-heritage-gold/20" />
+                  </div>
                </div>
             </div>
           )}

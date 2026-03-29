@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Send, User, Bot, Sparkles, MoreHorizontal, X } from "lucide-react"
+import { Send, Sparkles, X } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 
 import { Button } from "@/components/ui/button"
@@ -44,7 +44,8 @@ export default function ChatBot() {
       })
       const data = await res.json()
       setMessages(prev => [...prev, { role: "bot", content: data.reply }])
-    } catch (err) {
+    } catch (err: unknown) {
+      console.error(err);
       setMessages(prev => [...prev, { role: "bot", content: "I'm having trouble connecting to the network. Please try again in a moment." }])
     } finally {
       setIsLoading(false)

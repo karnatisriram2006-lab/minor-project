@@ -1,0 +1,100 @@
+
+D:\Minorproject\frontend\src\components\AI\AIOrb.tsx
+  3:20  error  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Minorproject\frontend\src\components\ChatBot.tsx
+   4:26  error  'MoreHorizontal' is defined but never used  @typescript-eslint/no-unused-vars
+  47:14  error  'err' is defined but never used             @typescript-eslint/no-unused-vars
+
+D:\Minorproject\frontend\src\components\InteractiveMap.tsx
+    3:38  error    'useMemo' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+  118:16  error    'err' is defined but never used                                                                                      @typescript-eslint/no-unused-vars
+  126:6   warning  React Hook useEffect has a missing dependency: 'fullRoute.length'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  159:20  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  169:20  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  190:36  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+
+D:\Minorproject\frontend\src\components\Map\AIItineraryRoute.tsx
+   16:32  error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+   17:29  error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+   18:36  error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+   72:9   error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+   84:74  error  'e' is defined but never used                                                                                        @typescript-eslint/no-unused-vars
+  120:13  error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  123:29  error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  142:51  error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  175:70  error  'e' is defined but never used                                                                                        @typescript-eslint/no-unused-vars
+
+D:\Minorproject\frontend\src\components\Map\AnimatedRoute.tsx
+  13:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Minorproject\frontend\src\components\Map\HeatmapLayer.tsx
+   8:8   error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  15:20  error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  19:18  error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  29:44  error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  35:7   error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+
+D:\Minorproject\frontend\src\components\Map\ItineraryMap.tsx
+   3:20  error  'useEffect' is defined but never used     @typescript-eslint/no-unused-vars
+   4:20  error  'MapPin' is defined but never used        @typescript-eslint/no-unused-vars
+   4:35  error  'Calendar' is defined but never used      @typescript-eslint/no-unused-vars
+   4:66  error  'ShieldCheck' is defined but never used   @typescript-eslint/no-unused-vars
+   4:79  error  'Globe' is defined but never used         @typescript-eslint/no-unused-vars
+  52:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Minorproject\frontend\src\components\Map\RoutePlanner.tsx
+    4:24   error  'Navigation2' is defined but never used                                                                              @typescript-eslint/no-unused-vars
+    4:51   error  'ChevronRight' is defined but never used                                                                             @typescript-eslint/no-unused-vars
+    4:65   error  'Route' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+    4:86   error  'Info' is defined but never used                                                                                     @typescript-eslint/no-unused-vars
+    4:92   error  'Settings2' is defined but never used                                                                                @typescript-eslint/no-unused-vars
+    4:103  error  'HandCoins' is defined but never used                                                                                @typescript-eslint/no-unused-vars
+    4:149  error  'ArrowRight' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+   20:32   error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+   21:29   error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+   22:36   error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+   85:9    error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+   95:71   error  'e' is defined but never used                                                                                        @typescript-eslint/no-unused-vars
+  142:13   error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  145:29   error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  164:51   error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  191:22   error  'e' is defined but never used                                                                                        @typescript-eslint/no-unused-vars
+  195:100  error  'e' is defined but never used                                                                                        @typescript-eslint/no-unused-vars
+  230:53   error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+
+D:\Minorproject\frontend\src\components\Map\TourismMap.tsx
+    4:10   error  'Filter' is defined but never used                                                                                   @typescript-eslint/no-unused-vars
+    4:34   error  'Star' is defined but never used                                                                                     @typescript-eslint/no-unused-vars
+    4:40   error  'MapPin' is defined but never used                                                                                   @typescript-eslint/no-unused-vars
+    4:48   error  'Calendar' is defined but never used                                                                                 @typescript-eslint/no-unused-vars
+    4:58   error  'Ticket' is defined but never used                                                                                   @typescript-eslint/no-unused-vars
+    4:66   error  'Navigation' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+    4:78   error  'Layers' is defined but never used                                                                                   @typescript-eslint/no-unused-vars
+    4:86   error  'Sparkles' is defined but never used                                                                                 @typescript-eslint/no-unused-vars
+    4:96   error  'ArrowRight' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+    4:108  error  'Gauge' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+    4:121  error  'Users' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+   32:38   error  'fullScreen' is assigned a value but never used                                                                      @typescript-eslint/no-unused-vars
+   34:32   error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+   35:29   error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+   36:31   error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  105:7    error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  106:13   error  'HeatLayer' is assigned a value but never used                                                                       @typescript-eslint/no-unused-vars
+  117:19   error  '_' is defined but never used                                                                                        @typescript-eslint/no-unused-vars
+  118:25   error  '_' is defined but never used                                                                                        @typescript-eslint/no-unused-vars
+  176:13   error  'route' is assigned a value but never used                                                                           @typescript-eslint/no-unused-vars
+
+D:\Minorproject\frontend\src\components\Navbar.tsx
+  19:3   error  'ArrowRightCircle' is defined but never used     @typescript-eslint/no-unused-vars
+  20:3   error  'Bell' is defined but never used                 @typescript-eslint/no-unused-vars
+  21:3   error  'Search' is defined but never used               @typescript-eslint/no-unused-vars
+  22:3   error  'LayoutGrid' is defined but never used           @typescript-eslint/no-unused-vars
+  27:17  error  'loading' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  28:9   error  'isAuthPage' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Minorproject\frontend\src\components\Sidebar.tsx
+  17:3  error  'ChevronRight' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 75 problems (74 errors, 1 warning)
+

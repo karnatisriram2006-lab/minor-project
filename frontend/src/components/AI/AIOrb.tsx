@@ -1,21 +1,15 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Sparkles, MessageSquare, X, Send, Bot, Sparkle, ArrowRight } from "lucide-react"
+import { useState } from "react"
+import { Sparkles, X, ArrowRight } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 
 export default function AIOrb() {
   const [isOpen, setIsOpen] = useState(false)
-  const [showTooltip, setShowTooltip] = useState(false)
-  const [messages, setMessages] = useState([
+  const [messages] = useState([
     { role: 'assistant', text: 'Hello Traveler. I am your spatial intelligence layer. How shall we traverse the subcontinent today?' }
   ])
-
-  useEffect(() => {
-    const timer = setTimeout(() => setShowTooltip(true), 3000)
-    return () => clearTimeout(timer)
-  }, [])
 
   return (
     <div className="fixed bottom-12 right-12 flex flex-col items-end gap-8 z-[202]">

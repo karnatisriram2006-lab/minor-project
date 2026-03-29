@@ -1,0 +1,28 @@
+
+> frontend@0.1.0 build
+> next build
+
+   ▲ Next.js 15.1.7
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+./src/components/InteractiveMap.tsx
+127:6  Warning: React Hook useEffect has a missing dependency: 'fullRoute.length'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+Failed to compile.
+
+./src/components/Map/AnimatedRoute.tsx:15:29
+Type error: Expected 1 arguments, but got 0.
+
+[0m [90m 13 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mAnimatedRoute[39m({ map[33m,[39m coordinates[33m,[39m isPlaying[33m,[39m onComplete }[33m:[39m [33mAnimatedRouteProps[39m) {[0m
+[0m [90m 14 |[39m   [36mconst[39m markerRef [33m=[39m useRef[33m<[39m[33many[39m[33m>[39m([36mnull[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 15 |[39m   [36mconst[39m animationFrameRef [33m=[39m useRef[33m<[39m[33mnumber[39m[33m>[39m()[33m;[39m[0m
+[0m [90m    |[39m                             [31m[1m^[22m[39m[0m
+[0m [90m 16 |[39m   [36mconst[39m progressRef [33m=[39m useRef([35m0[39m)[33m;[39m[0m
+[0m [90m 17 |[39m[0m
+[0m [90m 18 |[39m   useEffect(() [33m=>[39m {[0m
+Next.js build worker exited with code: 1 and signal: null

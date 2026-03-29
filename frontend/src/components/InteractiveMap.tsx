@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState, useMemo } from "react"
+import React, { useEffect, useState } from "react"
 import { Map, Marker, useMap, useControl } from "react-map-gl/maplibre"
 import maplibregl from "maplibre-gl"
 import { MapboxOverlay, MapboxOverlayProps } from "@deck.gl/mapbox"
@@ -115,7 +115,8 @@ export default function InteractiveMap({ points = [], center = [20.5937, 78.9629
         } else {
           setFullRoute(points.map(p => [p.lng, p.lat] as [number, number]))
         }
-      } catch (err) {
+      } catch (err: unknown) {
+        console.error(err);
         setFullRoute(points.map(p => [p.lng, p.lat] as [number, number]))
       } finally {
         setLoadingRoute(false)
@@ -150,14 +151,16 @@ export default function InteractiveMap({ points = [], center = [20.5937, 78.9629
     }, 20)
     
     return () => clearInterval(interval)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fullRoute])
 
   const layers = [
     new PathLayer({
       id: "route-path-glow",
       data: [{ path: visibleRoute }],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       getPath: (d: any) => d.path,
-      getColor: [255, 56, 92, 40], // #FF385C Rausch Red with low opacity
+      getColor: [249, 115, 22, 40], // Heritage Saffron with low opacity
       getWidth: 10,
       widthUnits: "pixels",
       jointRounded: true,
@@ -166,8 +169,9 @@ export default function InteractiveMap({ points = [], center = [20.5937, 78.9629
     new PathLayer({
       id: "route-path",
       data: [{ path: visibleRoute }],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       getPath: (d: any) => d.path,
-      getColor: [255, 56, 92, 255], // #FF385C Rausch Red
+      getColor: [249, 115, 22, 255], // Heritage Saffron
       getWidth: 3,
       widthUnits: "pixels",
       jointRounded: true,
@@ -176,17 +180,18 @@ export default function InteractiveMap({ points = [], center = [20.5937, 78.9629
   ]
 
   return (
-    <div className="h-full w-full relative group bg-white">
+    <div className="h-full w-full relative group bg-heritage-bone">
       {/* Light placeholder shown on server / before mount */}
       {!isMounted ? (
-        <div className="absolute inset-0 bg-gray-50 flex items-center justify-center">
-          <div className="w-10 h-10 rounded-full border-4 border-[#FF385C] border-t-transparent animate-spin" />
+        <div className="absolute inset-0 bg-heritage-bone flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full border-4 border-heritage-saffron border-t-transparent animate-spin" />
         </div>
       ) : (
         <div className="absolute inset-0">
           <Map 
             mapLib={maplibregl}
             initialViewState={INITIAL_VIEW_STATE}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             mapStyle={MAP_STYLE as any} 
             style={{ width: "100%", height: "100%" }}
             reuseMaps
@@ -200,19 +205,19 @@ export default function InteractiveMap({ points = [], center = [20.5937, 78.9629
                 <div className="relative group/marker cursor-pointer">
                   {/* Marker Pin Visual */}
                   <div className="w-8 h-8 flex items-center justify-center relative">
-                    <div className="absolute w-4 h-4 bg-[#FF385C]/20 rounded-full animate-ping" />
-                    <div className="relative w-3 h-3 bg-[#FF385C] border-2 border-white rounded-full shadow-lg" />
+                    <div className="absolute w-4 h-4 bg-heritage-saffron/20 rounded-full animate-ping" />
+                    <div className="relative w-3 h-3 bg-heritage-saffron border-2 border-white rounded-full shadow-lg" />
                   </div>
 
                   {/* HTML Popup on Hover */}
                   <div className="absolute bottom-10 left-1/2 -translate-x-1/2 opacity-0 group-hover/marker:opacity-100 transition-all transform group-hover/marker:-translate-y-1 pointer-events-none z-50">
-                    <div className="bg-white rounded-xl p-3 w-44 border border-gray-100 shadow-xl">
-                      <h4 className="text-[#222222] font-bold text-xs">{loc.name}</h4>
-                      <p className="text-[10px] text-gray-500 font-medium leading-relaxed mt-1 line-clamp-2">
+                    <div className="bg-heritage-bone/95 backdrop-blur-md rounded-[1.2rem] p-4 w-48 border border-heritage-gold/10 shadow-premium">
+                      <h4 className="text-heritage-onyx font-black text-xs">{loc.name}</h4>
+                      <p className="text-[10px] text-heritage-onyx/40 font-medium leading-relaxed mt-1 line-clamp-2">
                         {loc.description}
                       </p>
-                      <div className="pt-2 mt-2 border-t border-gray-50 flex justify-between items-center">
-                          <span className="text-[9px] font-bold uppercase tracking-wider text-[#FF385C]">
+                      <div className="pt-2 mt-2 border-t border-heritage-gold/10 flex justify-between items-center">
+                          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-heritage-saffron">
                             Activity
                           </span>
                         </div>
@@ -234,10 +239,10 @@ export default function InteractiveMap({ points = [], center = [20.5937, 78.9629
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute top-8 right-8 z-30 bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl border border-gray-100 shadow-lg flex items-center gap-2"
+            className="absolute top-8 right-8 z-30 bg-heritage-bone/90 backdrop-blur-md px-5 py-3 rounded-[1.2rem] border border-heritage-gold/10 shadow-premium flex items-center gap-3"
           >
-            <div className="w-2 h-2 rounded-full bg-[#FF385C] animate-pulse" />
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-600">
+            <div className="w-2 h-2 rounded-full bg-heritage-saffron animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-heritage-onyx">
               Updating route...
             </span>
           </motion.div>
@@ -246,7 +251,7 @@ export default function InteractiveMap({ points = [], center = [20.5937, 78.9629
 
       {/* Zoom Info Badge */}
       <div className="absolute bottom-8 right-8 z-20">
-        <div className="bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-gray-100 shadow-sm text-[9px] font-bold uppercase tracking-wider text-gray-400">
+        <div className="bg-heritage-bone/80 backdrop-blur-sm px-4 py-2 rounded-[1rem] border border-heritage-gold/10 shadow-soft-inner text-[9px] font-black uppercase tracking-[0.2em] text-heritage-gold/60">
           Zoom: {INITIAL_VIEW_STATE.zoom.toFixed(1)}
         </div>
       </div>

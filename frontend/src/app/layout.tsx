@@ -5,7 +5,6 @@ import { ThemeProvider } from "@/components/theme-provider";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import { cn } from "@/lib/utils";
-import dynamic from "next/dynamic";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-serif" });
