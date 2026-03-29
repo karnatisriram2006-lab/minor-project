@@ -2,12 +2,12 @@
 
 import { useState } from "react"
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts"
-import { Wallet, Info, Sparkles, IndianRupee, ArrowRight } from "lucide-react"
+import { Info, Sparkles, IndianRupee, ArrowRight } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+
 import { Label } from "@/components/ui/label"
 import axios from "axios"
 
