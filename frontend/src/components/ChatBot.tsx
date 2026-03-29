@@ -11,6 +11,9 @@ import api from "@/lib/api"
 interface Message {
   role: "user" | "bot"
   content: string
+  translation?: string
+  isTranslating?: boolean
+  showTranslation?: boolean
 }
 
 export default function ChatBot() {
@@ -46,6 +49,48 @@ export default function ChatBot() {
       setIsLoading(false)
     }
   }
+
+  const toggleTranslation = async (index: number) => {
+    const msg = messages[index]
+    if (msg.role !== "bot") return
+
+    // If we already have it, just toggle
+    if (msg.translation) {
+      const newMessages = [...messages]
+      newMessages[index] = { ...msg, showTranslation: !msg.showTranslation }
+      setMessages(newMessages)
+      return
+    }
+
+    // Otherwise, fetch it
+    const newMessages = [...messages]
+    newMessages[index] = { ...msg, isTranslating: true }
+    setMessages(newMessages)
+
+    try {
+      const { data } = await api.post("/ai/translate", { text: msg.content, lang: "Marathi" })
+      const updatedMessages = [...messages]
+      updatedMessages[index] = { 
+        ...msg, 
+        translation: data.translation, 
+        showTranslation: true, 
+        isTranslating: false 
+      }
+      setMessages(updatedMessages)
+    } catch (err) {
+      console.error("Translation error:", err)
+      const errorMessages = [...messages]
+      errorMessages[index] = { ...msg, isTranslating: false }
+      setMessages(errorMessages)
+    }
+  }
+
+  const handleSuggestion = (text: string) => {
+    setInput(text)
+    // We'll let handleSend be triggered by a click or manual Enter
+  }
+
+  const suggestions = ["History", "Architecture", "Culture", "Best Time"]
 
   return (
     <>
@@ -86,10 +131,10 @@ export default function ChatBot() {
                      <Sparkles className="h-5 w-5" />
                   </div>
                   <div>
-                     <h2 className="text-base font-bold text-[#222222]">Assistant</h2>
-                     <div className="flex items-center gap-2">
+                     <h2 className="text-sm font-bold text-[#222222]">AI Travel Assistant</h2>
+                     <div className="flex items-center gap-1.5">
                         <div className="h-2 w-2 rounded-full bg-[#00A699] animate-pulse" />
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Live Help</span>
+                        <span className="text-[10px] font-bold text-[#00A699] uppercase tracking-wider">Online</span>
                      </div>
                   </div>
                </div>
@@ -115,12 +160,29 @@ export default function ChatBot() {
                     )}
                   >
                     <div className={cn(
-                      "px-5 py-3 rounded-2xl text-[14px] leading-relaxed shadow-sm",
+                      "px-5 py-3 rounded-2xl text-[14px] leading-relaxed shadow-sm relative group",
                       m.role === "user" 
                         ? "bg-[#222222] text-white rounded-tr-none" 
                         : "bg-gray-100 text-[#222222] rounded-tl-none font-medium"
                     )}>
-                      {m.content}
+                      {m.showTranslation ? m.translation : m.content}
+                      
+                      {m.role === "bot" && (
+                        <button
+                          onClick={() => toggleTranslation(i)}
+                          disabled={m.isTranslating}
+                          className={cn(
+                            "mt-2 flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold transition-all",
+                            m.showTranslation ? "text-[#FF385C]" : "text-[#00A699] hover:text-[#00847A]"
+                          )}
+                        >
+                          <div className={cn(
+                            "h-1.5 w-1.5 rounded-full",
+                            m.isTranslating ? "animate-spin border-t-transparent border-current bg-transparent" : (m.showTranslation ? "bg-[#FF385C]" : "bg-[#00A699]")
+                          )} />
+                          {m.isTranslating ? "Translating..." : (m.showTranslation ? "Show English" : "Marathi translation available")}
+                        </button>
+                      )}
                     </div>
                   </motion.div>
                 ))}
@@ -137,6 +199,25 @@ export default function ChatBot() {
               )}
             </div>
 
+            {/* SUGGESTION CHIPS */}
+            <div className="px-6 py-2 flex flex-wrap gap-2 bg-white">
+               {suggestions.map((s) => (
+                 <button
+                   key={s}
+                   onClick={() => {
+                     setInput(s);
+                     setTimeout(() => {
+                        const sendBtn = document.getElementById('chat-send-btn');
+                        sendBtn?.click();
+                     }, 50);
+                   }}
+                   className="px-4 py-1.5 rounded-full border border-gray-100 bg-gray-50 text-[12px] font-medium text-gray-400 hover:bg-gray-100 hover:border-heritage-gold/20 hover:text-heritage-onyx transition-all shadow-sm"
+                 >
+                   {s}
+                 </button>
+               ))}
+            </div>
+
             {/* 3. INPUT AREA */}
             <div className="p-6 bg-white border-t border-gray-50">
                <div className="relative group">
@@ -148,6 +229,7 @@ export default function ChatBot() {
                     className="w-full h-14 bg-gray-50 border border-gray-100 focus:outline-none focus:border-[#FF385C] focus:ring-2 focus:ring-[#FF385C]/10 rounded-xl py-3 pl-5 pr-14 text-[14px] font-medium text-[#222222] transition-all placeholder:text-gray-400"
                   />
                   <Button 
+                    id="chat-send-btn"
                     onClick={handleSend}
                     disabled={!input.trim() || isLoading}
                     size="icon"

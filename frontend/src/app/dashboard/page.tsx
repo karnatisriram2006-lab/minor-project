@@ -16,12 +16,20 @@ import { motion } from "framer-motion"
 import Image from "next/image"
 import Link from "next/link"
 
+import { auth } from "@/lib/firebase"
+import { User as FirebaseUser } from "firebase/auth"
+import api from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
 
-import { auth } from "@/lib/firebase"
-import { User as FirebaseUser } from "firebase/auth"
+interface Message {
+  role: "user" | "bot"
+  content: string
+  translation?: string
+  isTranslating?: boolean
+  showTranslation?: boolean
+}
 
 export default function Dashboard() {
   const [user, setUser] = useState<FirebaseUser | null>(null)
@@ -35,22 +43,71 @@ export default function Dashboard() {
 
   const displayName = user?.displayName?.split(" ")[0] || "Traveler"
 
-  const [messages] = useState([
+  const [messages, setMessages] = useState<Message[]>([
     {
-      role: 'assistant' as const,
-      text: "The Hawa Mahal was designed by Lal Chand Ustad. Its 953 windows — called Jharokhas — allowed royal ladies to observe street life while remaining unseen. Would you like to know more?",
-      tags: ["History", "Architecture"]
-    },
-    {
-      role: 'user' as const,
-      text: "Yes! How does this relate to the Rajput lifestyle of that era?"
-    },
-    {
-      role: 'assistant' as const,
-      text: "Great question. The Jharokhas reflect the concept of 'purdah' in Rajput culture — a tradition of seclusion that also influenced the unique ventilation and cooling design of the palace.",
-      badge: "Marathi translation available"
+      role: 'bot',
+      content: "Namaste! I'm your YĀTRĀ assistant. How can I help you explore India today?",
     }
   ])
+  const [input, setInput] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const scrollRef = useEffect(() => {
+     const el = document.getElementById('dashboard-chat-scroll');
+     if (el) el.scrollTop = el.scrollHeight;
+  }, [messages])
+
+  const handleSend = async (overrideInput?: string) => {
+    const text = overrideInput || input
+    if (!text.trim() || isLoading) return
+
+    const userMsg: Message = { role: "user", content: text }
+    setMessages(prev => [...prev, userMsg])
+    setInput("")
+    setIsLoading(true)
+
+    try {
+      const { data } = await api.post("/ai/chat", { message: text })
+      setMessages(prev => [...prev, { role: "bot", content: data.reply }])
+    } catch (err) {
+      console.error(err)
+      setMessages(prev => [...prev, { role: "bot", content: "Sorry, I am having trouble connecting. Please try again." }])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const toggleTranslation = async (index: number) => {
+    const msg = messages[index]
+    if (msg.role !== "bot") return
+
+    if (msg.translation) {
+      const newMessages = [...messages]
+      newMessages[index] = { ...msg, showTranslation: !msg.showTranslation }
+      setMessages(newMessages)
+      return
+    }
+
+    const newMessages = [...messages]
+    newMessages[index] = { ...msg, isTranslating: true }
+    setMessages(newMessages)
+
+    try {
+      const { data } = await api.post("/ai/translate", { text: msg.content, lang: "Marathi" })
+      const updatedMessages = [...messages]
+      updatedMessages[index] = { 
+        ...msg, 
+        translation: data.translation, 
+        showTranslation: true, 
+        isTranslating: false 
+      }
+      setMessages(updatedMessages)
+    } catch (err) {
+      console.error(err)
+      const errorMessages = [...messages]
+      errorMessages[index] = { ...msg, isTranslating: false }
+      setMessages(errorMessages)
+    }
+  }
 
   const quickActions = [
     { label: "Plan a trip", href: "/trip-planner", icon: <Sparkles className="h-4 w-4" />, color: "#FF5A5F" },
@@ -151,37 +208,66 @@ export default function Dashboard() {
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              <div id="dashboard-chat-scroll" className="flex-1 overflow-y-auto p-5 space-y-4 scroll-smooth">
                 {messages.map((msg, idx) => (
                   <motion.div
                     key={idx}
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.1 }}
+                    transition={{ delay: 0.1 }}
                     className={cn("flex flex-col", msg.role === 'user' ? "items-end" : "items-start")}
                   >
                     <div className={cn(
-                      "max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed",
+                      "max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed relative",
                       msg.role === 'user'
                         ? "rounded-tr-sm text-white"
                         : "rounded-tl-sm border border-[#EBEBEB] text-[#484848] bg-[#F7F7F7]"
                     )} style={msg.role === 'user' ? { backgroundColor: '#484848' } : {}}>
-                      {msg.text}
-                      {'badge' in msg && msg.badge && (
-                        <div className="mt-2 pt-2 border-t border-[#EBEBEB] flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full bg-[#00A699]" />
-                          <span className="text-[11px] font-semibold text-[#767676]">{msg.badge}</span>
+                      {msg.showTranslation ? msg.translation : msg.content}
+                      
+                      {msg.role === 'bot' && (
+                        <div className="mt-2 pt-2 border-t border-[#EBEBEB]">
+                          <button
+                            onClick={() => toggleTranslation(idx)}
+                            disabled={msg.isTranslating}
+                            className={cn(
+                              "flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider transition-all",
+                              msg.showTranslation ? "text-[#FF385C]" : "text-[#00A699]"
+                            )}
+                          >
+                            <div className={cn(
+                              "w-1.5 h-1.5 rounded-full shrink-0",
+                              msg.isTranslating ? "animate-spin border-t-transparent border-current bg-transparent border-[1.5px]" : (msg.showTranslation ? "bg-[#FF385C]" : "bg-[#00A699]")
+                            )} />
+                            {msg.isTranslating ? "Translating..." : (msg.showTranslation ? "Show English" : "Marathi translation available")}
+                          </button>
                         </div>
                       )}
                     </div>
-                    {msg.role === 'assistant' && 'tags' in msg && msg.tags && (
-                      <div className="flex gap-1.5 mt-2">
-                        {msg.tags.map(tag => (
-                          <span key={tag} className="text-[11px] font-medium text-[#767676] bg-[#F7F7F7] px-2.5 py-1 rounded-lg border border-[#EBEBEB]">{tag}</span>
-                        ))}
-                      </div>
-                    )}
                   </motion.div>
+                ))}
+
+                {isLoading && (
+                  <div className="flex flex-col items-start gap-2">
+                    <div className="px-4 py-3 rounded-2xl bg-[#F7F7F7] border border-[#EBEBEB] flex items-center gap-1.5 rounded-tl-none">
+                      <div className="w-1 h-1 rounded-full bg-[#FF5A5F] animate-bounce" />
+                      <div className="w-1 h-1 rounded-full bg-[#FF5A5F] animate-bounce delay-100" />
+                      <div className="w-1 h-1 rounded-full bg-[#FF5A5F] animate-bounce delay-200" />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Suggestions */}
+              <div className="px-5 py-2 flex flex-wrap gap-1.5 border-t border-[#EBEBEB]/50 bg-white">
+                {["History", "Architecture", "Culture"].map(s => (
+                  <button 
+                    key={s} 
+                    onClick={() => handleSend(s)}
+                    className="text-[10px] font-bold text-[#767676] bg-[#F7F7F7] px-2.5 py-1 rounded-lg border border-[#EBEBEB] hover:bg-gray-100 transition-colors"
+                  >
+                    {s}
+                  </button>
                 ))}
               </div>
 
@@ -189,12 +275,17 @@ export default function Dashboard() {
               <div className="px-4 py-3 border-t border-[#EBEBEB] flex items-center gap-2 bg-white">
                 <input
                   type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSend()}
                   placeholder="Ask about your trip..."
                   className="flex-1 bg-[#F7F7F7] h-11 rounded-xl px-4 text-sm font-medium text-[#484848] border border-[#EBEBEB] focus:outline-none focus:border-[#FF5A5F] focus:ring-2 focus:ring-[#FF5A5F]/10 transition-all placeholder:text-[#BBBBBB]"
                 />
                 <Button
+                  onClick={() => handleSend()}
+                  disabled={!input.trim() || isLoading}
                   variant="premium"
-                  className="h-11 w-11 rounded-xl shrink-0 transition-all active:scale-95 p-0 flex items-center justify-center shadow-sm"
+                  className="h-11 w-11 rounded-xl shrink-0 transition-all active:scale-95 p-0 flex items-center justify-center shadow-sm disabled:opacity-50"
                 >
                   <Send className="h-4 w-4" />
                 </Button>

@@ -6,6 +6,7 @@ const apiUrl = rawApiUrl.endsWith('/') ? rawApiUrl.slice(0, -1) : rawApiUrl;
 
 const api = axios.create({
   baseURL: apiUrl,
+  withCredentials: true,
 });
 
 // Add a request interceptor to include the Firebase JWT token

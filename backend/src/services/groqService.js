@@ -145,6 +145,38 @@ Format as JSON:
 };
 
 /**
+ * Agent 4: Translation Agent
+ * Translates content while maintaining cultural context and friendly tone.
+ */
+const translateAgent = async (text, targetLanguage = "Marathi") => {
+    console.log(`[Translation Agent] Translating into ${targetLanguage}...`);
+
+    const prompt = `Translate the following travel-related text into ${targetLanguage}.
+Maintain the same friendly, knowledgeable tourism assistant tone.
+Text: "${text}"
+
+Requirement: Provide ONLY the translated text. Do not include quotes or extra commentary.`;
+
+    const systemPrompt = `You are a professional ${targetLanguage} translator specializing in Indian tourism. Respond with only the translated string.`;
+
+    try {
+        // Use temperature 0.1 for high precision in translation
+        const completion = await groq.chat.completions.create({
+            model: GROQ_MODEL,
+            messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: prompt }
+            ],
+            temperature: 0.1,
+            max_tokens: 512
+        });
+        return completion.choices[0]?.message?.content?.trim() ?? "Translation unavailable.";
+    } catch (error) {
+        console.error('[Translation Agent Error]', error.message);
+    }
+};
+
+/**
  * Chatbot completion using Groq (plain text response)
  */
 const chatCompletion = async (message) => {
@@ -172,5 +204,6 @@ module.exports = {
     generateItineraryAgent,
     recommendPlacesAgent,
     travelGuideAgent,
-    chatCompletion
+    chatCompletion,
+    translateAgent
 };

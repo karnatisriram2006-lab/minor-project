@@ -29,16 +29,21 @@ console.log('[Server] CORS Allowed Origins:', allowedOrigins.includes('*') ? 'AL
 
 app.use(cors({
     origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps or curl)
-        if (!origin || allowedOrigins.includes('*')) return callback(null, true);
+        // Allow requests with no origin (like mobile apps/CURL) or if * is allowed
+        if (!origin || allowedOrigins.includes('*')) {
+            return callback(null, origin || true);
+        }
+        
         if (allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
+            callback(null, origin);
         } else {
             console.warn(`[CORS Blocked] Origin: ${origin}`);
             callback(new Error('Not allowed by CORS'));
         }
     },
-    credentials: true
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 

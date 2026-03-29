@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import dynamic from "next/dynamic"
+import { useState, useMemo } from "react"
 import axios from "axios"
 import { Map, MapPin, Navigation, Plus, Trash2, Sparkles, Route, Info, Compass, ArrowRight } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -9,28 +10,88 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import api from "@/lib/api"
 
+const InteractiveMap = dynamic(() => import("@/components/InteractiveMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-full w-full bg-[#F7F7F7] flex items-center justify-center">
+      <div className="w-10 h-10 rounded-full border-4 border-[#FF5A5F] border-t-transparent animate-spin" />
+    </div>
+  ),
+})
+
 interface OptimizedStop {
   id: string;
   name: string;
+  lat: number;
+  lng: number;
   visitOrder: number;
   order?: number;
 }
 
+interface Place {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+}
+
 export default function RoutePlanner() {
-  const [places, setPlaces] = useState<{ id: string; name: string }[]>([
-    { id: "1", name: "Taj Mahal, Agra" },
-    { id: "2", name: "Agra Fort" },
+  const [places, setPlaces] = useState<Place[]>([
+    { id: "1", name: "Taj Mahal, Agra", lat: 27.1751, lng: 78.0421 },
+    { id: "2", name: "Agra Fort", lat: 27.1798, lng: 78.0213 },
   ])
   const [newPlace, setNewPlace] = useState("")
   const [optimizedRoute, setOptimizedRoute] = useState<OptimizedStop[]>([])
   const [loading, setLoading] = useState(false)
 
-  const handleAddPlace = (e: React.FormEvent) => {
+  const [isGeocoding, setIsGeocoding] = useState(false)
+
+  // Real geocoder using Nominatim OpenStreetMap API
+  const getCoordinates = async (name: string): Promise<{ lat: number, lng: number } | null> => {
+    try {
+      const response = await axios.get(`https://nominatim.openstreetmap.org/search`, {
+        params: {
+          q: name,
+          format: "json",
+          limit: 1,
+          countrycodes: "in" // Restrict to India for better accuracy
+        },
+        headers: {
+          "User-Agent": "Yatra-Travel-Planner"
+        }
+      });
+
+      if (response.data && response.data.length > 0) {
+        return {
+          lat: parseFloat(response.data[0].lat),
+          lng: parseFloat(response.data[0].lon)
+        };
+      }
+      return null;
+    } catch (err) {
+      console.error("Geocoding error:", err);
+      return null;
+    }
+  }
+
+  const handleAddPlace = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (newPlace.trim()) {
-      setPlaces([...places, { id: Date.now().toString(), name: newPlace.trim() }])
-      setNewPlace("")
-      setOptimizedRoute([])
+    if (newPlace.trim() && !isGeocoding) {
+      setIsGeocoding(true)
+      const coords = await getCoordinates(newPlace.trim());
+      
+      if (coords) {
+        setPlaces([...places, { 
+          id: Date.now().toString(), 
+          name: newPlace.trim(),
+          ...coords
+        }])
+        setNewPlace("")
+        setOptimizedRoute([])
+      } else {
+        alert("Could not find the location. Please try a more specific name.")
+      }
+      setIsGeocoding(false)
     }
   }
 
@@ -45,12 +106,13 @@ export default function RoutePlanner() {
     try {
       const { data } = await api.post("/route/optimize", {
         locations: places.map(p => ({
+          id: p.id,
           name: p.name,
-          lat: 27.1751 + (Math.random() * 0.1),
-          lng: 78.0421 + (Math.random() * 0.1)
+          lat: p.lat,
+          lng: p.lng
         }))
       })
-      const optimized = data.optimizedRoute.map((p: { id: string; name: string; order: number }) => ({
+      const optimized = data.optimizedRoute.map((p: any) => ({
         ...p,
         visitOrder: p.order
       }))
@@ -61,6 +123,17 @@ export default function RoutePlanner() {
       setLoading(false)
     }
   }
+
+  const mapPoints = useMemo(() => {
+    const dataSource = optimizedRoute.length > 0 ? optimizedRoute : places;
+    return dataSource.map(p => ({
+      id: p.id,
+      name: p.name,
+      lat: p.lat,
+      lng: p.lng,
+      description: `Stop ${"visitOrder" in p ? p.visitOrder : ""}`
+    }))
+  }, [places, optimizedRoute])
 
   return (
     <div className="min-h-screen bg-[#F7F7F7] text-[#484848] pt-0 pb-24 sm:pt-4 sm:pb-12 font-sans">
@@ -112,9 +185,14 @@ export default function RoutePlanner() {
                   />
                   <Button
                     type="submit"
-                    className="h-11 w-11 bg-[#FF5A5F] hover:bg-[#e04f54] text-white rounded-xl shrink-0 transition-all active:scale-95 p-0 flex items-center justify-center shadow-sm"
+                    disabled={isGeocoding}
+                    className="h-11 w-11 bg-[#FF5A5F] hover:bg-[#e04f54] text-white rounded-xl shrink-0 transition-all active:scale-95 p-0 flex items-center justify-center shadow-sm disabled:opacity-50"
                   >
-                    <Plus className="h-5 w-5" />
+                    {isGeocoding ? (
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <Plus className="h-5 w-5" />
+                    )}
                   </Button>
                 </form>
 
@@ -221,9 +299,9 @@ export default function RoutePlanner() {
             transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="xl:col-span-3 sticky top-28"
           >
-            <div className="bg-white rounded-2xl border border-[#EBEBEB] shadow-sm overflow-hidden" style={{ minHeight: '620px' }}>
+            <div className="bg-white rounded-2xl border border-[#EBEBEB] shadow-sm overflow-hidden flex flex-col" style={{ height: '620px' }}>
               {/* Map card header */}
-              <div className="px-6 py-4 border-b border-[#EBEBEB] flex items-center justify-between">
+              <div className="px-6 py-4 border-b border-[#EBEBEB] flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-[#FF5A5F]/8 flex items-center justify-center text-[#FF5A5F]">
                     <Map className="h-4.5 w-4.5" />
@@ -239,45 +317,20 @@ export default function RoutePlanner() {
                 </div>
               </div>
 
-              {/* Map body — dot-grid background + placeholder */}
+              {/* Map body — Interactive Map */}
               <div
-                className="flex-1 relative flex items-center justify-center"
+                className="flex-1 relative overflow-hidden"
                 style={{
-                  minHeight: '560px',
-                  backgroundImage: `radial-gradient(circle at 2px 2px, #DDDDDD 1.5px, transparent 0)`,
-                  backgroundSize: '28px 28px',
                   backgroundColor: '#FAFAFA'
                 }}
               >
-                <div className="text-center space-y-5 p-10 bg-white/90 backdrop-blur-sm rounded-2xl border border-[#EBEBEB] shadow-sm max-w-sm relative z-10">
-                  <div className="w-14 h-14 rounded-2xl bg-[#FF5A5F]/8 flex items-center justify-center mx-auto">
-                    <MapPin className="h-7 w-7 text-[#FF5A5F]" />
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="text-base font-bold text-[#484848]">Map preview</h3>
-                    <p className="text-sm text-[#767676] leading-relaxed">
-                      Add your stops and optimize the route to see the map visualization here.
-                    </p>
-                  </div>
-                  {optimizedRoute.length > 0 && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex items-center justify-center gap-2 pt-1"
-                    >
-                      <Sparkles className="h-3.5 w-3.5 text-[#FF5A5F]" />
-                      <span className="text-xs font-semibold text-[#00A699]">
-                        Route optimized — {optimizedRoute.length} stops
-                      </span>
-                    </motion.div>
-                  )}
-                </div>
+                <InteractiveMap points={mapPoints} />
 
                 {/* Info footnote */}
-                <div className="absolute bottom-5 left-5 right-5 flex items-start gap-3 bg-white/90 backdrop-blur-md rounded-xl px-4 py-3 border border-[#EBEBEB] shadow-sm">
+                <div className="absolute bottom-5 left-5 right-5 flex items-start gap-3 bg-white/90 backdrop-blur-md rounded-xl px-4 py-3 border border-[#EBEBEB] shadow-sm z-10">
                   <Info className="h-4 w-4 text-[#767676] shrink-0 mt-0.5" />
                   <p className="text-[11px] text-[#767676] leading-relaxed">
-                    Route calculations use approximate coordinates. Connect to backend for precise geospatial data.
+                    Visualizing your travel sequence. Add stops and optimize to update the route path.
                   </p>
                 </div>
               </div>

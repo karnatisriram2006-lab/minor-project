@@ -2,7 +2,8 @@ const {
     generateItineraryAgent, 
     recommendPlacesAgent, 
     travelGuideAgent, 
-    chatCompletion 
+    chatCompletion,
+    translateAgent
 } = require('../services/groqService');
 const { getFromCache, saveToCache, getTouristPlaces } = require('../services/itineraryStorageService');
 
@@ -88,9 +89,27 @@ const chatbot = async (req, res) => {
     }
 };
 
+// @desc    Translate text to target language
+// @route   POST /api/ai/translate
+const translateMessage = async (req, res) => {
+    const { text, lang } = req.body;
+
+    if (!text) {
+        return res.status(400).json({ message: 'Text to translate is required' });
+    }
+
+    try {
+        const translation = await translateAgent(text, lang || 'Marathi');
+        res.json({ translation });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     createItinerary,
     recommendPlaces,
     travelGuide,
-    chatbot
+    chatbot,
+    translateMessage
 };
