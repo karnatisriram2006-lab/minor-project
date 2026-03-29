@@ -2,12 +2,11 @@
 
 import { useState, useEffect } from "react"
 import api from "@/lib/api"
-import { Users, UserPlus, MapPin, Calendar, Percent, Sparkles, ArrowRight, ShieldCheck } from "lucide-react"
+import { Users, UserPlus, MapPin, Calendar, Percent, Sparkles, ArrowRight, ShieldCheck, Search } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
@@ -31,19 +30,18 @@ export default function Companions() {
   const handleMatch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault()
     setLoading(true)
-    
     try {
-      const budget = (document.getElementById('budget-select') as HTMLSelectElement)?.value || "medium";
-      const res = await api.post("/companion/match", { 
+      const budget = (document.getElementById('budget-select') as HTMLSelectElement)?.value || "medium"
+      const res = await api.post("/companion/match", {
         destination,
         travelDate: (document.querySelector('input[type="date"]') as HTMLInputElement)?.value,
         budgetRange: budget,
-        interests: "" 
+        interests: ""
       })
       setMatches(res.data.matches || res.data)
     } catch (err: unknown) {
       console.error("Match error:", err)
-      const error = err as { response?: { status: number } };
+      const error = err as { response?: { status: number } }
       if (error.response?.status === 401) setIsAuthorized(false)
     } finally {
       setLoading(false)
@@ -52,249 +50,284 @@ export default function Companions() {
 
   useEffect(() => {
     const fetchInitial = async () => {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      if (!token) {
-        setIsAuthorized(false)
-        return
-      }
-      
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+      if (!token) { setIsAuthorized(false); return }
       try {
         const res = await api.get("/companion/matches")
         setMatches(res.data)
         setIsAuthorized(true)
       } catch (err: unknown) {
         console.error("Initial fetch error:", err)
-        const error = err as { response?: { status: number } };
+        const error = err as { response?: { status: number } }
         if (error.response?.status === 401) setIsAuthorized(false)
       }
     }
     fetchInitial()
   }, [])
 
-  return (
-    <div className="min-h-screen bg-heritage-bone text-heritage-onyx selection:bg-heritage-saffron/10 pt-40 pb-56 relative overflow-hidden font-sans">
-      
-      {/* Background Accents */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10" style={{ background: 'radial-gradient(circle at top right, #76767608, transparent 40%)' }} />
-
-      {!isAuthorized ? (
-        <div className="container mx-auto px-6 max-w-4xl relative z-10 flex flex-col items-center justify-center min-h-[60vh] text-center space-y-16">
-           <motion.div 
-             initial={{ opacity: 0, scale: 0.9 }}
-             animate={{ opacity: 1, scale: 1 }}
-             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-             className="bg-heritage-saffron/5 text-heritage-saffron w-28 h-28 rounded-[2rem] flex items-center justify-center shadow-premium border border-heritage-gold/10"
-           >
-              <ShieldCheck className="h-12 w-12" />
-           </motion.div>
-           
-           <div className="space-y-6">
-             <h2 className="text-6xl md:text-8xl font-extrabold tracking-tighter leading-none text-heritage-onyx">Access <span className="text-heritage-saffron italic">Denied.</span></h2>
-             <p className="text-xl md:text-2xl text-heritage-onyx/40 font-medium max-w-xl mx-auto leading-relaxed">
-               Find your fellow wanderers by authenticating your presence in our digital heritage.
-             </p>
-           </div>
-
-           <Button 
-             onClick={() => window.location.href = '/login'}
-             variant="premium"
-             className="h-20 px-12 rounded-[1.5rem] text-lg font-black group shadow-premium"
-           >
-             Sign In<ArrowRight className="h-5 w-5 group-hover:translate-x-2 transition-transform ml-4" />
-           </Button>
-        </div>
-      ) : (
-        <div className="container mx-auto px-6 max-w-7xl relative z-10 space-y-24">
-        
-        <div className="text-center space-y-8">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="bg-heritage-saffron/5 text-heritage-saffron w-24 h-24 rounded-[2rem] flex items-center justify-center mx-auto mb-10 border border-heritage-gold/10 shadow-premium"
-          >
-            <Users className="h-10 w-10" />
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="space-y-6"
-          >
-            <h1 className="text-6xl md:text-[7rem] font-extrabold tracking-tighter leading-none text-heritage-onyx">
-               Soul <span className="text-heritage-saffron italic">Matches.</span>
-            </h1>
-            <p className="text-xl md:text-2xl text-heritage-onyx/40 font-medium max-w-3xl mx-auto leading-relaxed">
-              Weave your story with others. Discover kindred spirits exploring the vast landscapes of Bharat.
+  /* ── Not signed in ────────────────────────────────────── */
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen bg-[#F7F7F7] flex items-center justify-center px-6 font-sans">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="bg-white rounded-2xl border border-[#EBEBEB] shadow-sm p-12 text-center max-w-md w-full space-y-6"
+        >
+          <div className="w-14 h-14 rounded-2xl bg-[#FF5A5F]/8 flex items-center justify-center mx-auto text-[#FF5A5F]">
+            <ShieldCheck className="h-7 w-7" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold text-[#484848] tracking-tight">Sign in required</h2>
+            <p className="text-sm text-[#767676] leading-relaxed">
+              You need to be signed in to find and connect with travel companions.
             </p>
-          </motion.div>
+          </div>
+          <Button
+            onClick={() => window.location.href = '/login'}
+            variant="premium"
+            className="h-12 px-8 rounded-xl text-sm font-semibold group transition-all active:scale-[0.97] w-full"
+          >
+            Sign in
+            <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+          </Button>
+        </motion.div>
+      </div>
+    )
+  }
+
+  /* ── Authorized view ──────────────────────────────────── */
+  return (
+    <div className="min-h-screen bg-[#F7F7F7] text-[#484848] pt-6 pb-24 sm:pt-8 sm:pb-12 font-sans">
+      <div className="container mx-auto px-6 max-w-6xl space-y-8">
+
+        {/* ── Page header ──────────────────────────────── */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#FF5A5F] bg-[#FF5A5F]/8 px-3 py-1 rounded-full border border-[#FF5A5F]/15">
+              <Sparkles className="h-3.5 w-3.5" />
+              AI-matched
+            </span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-bold text-[#484848] tracking-tight">
+            Find travel <span className="text-[#FF5A5F]">companions</span>
+          </h1>
+          <p className="text-[#767676] text-base max-w-xl leading-relaxed">
+            Discover like-minded travelers heading to the same destinations as you.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
-          
-          {/* Create Request Panel */}
+        {/* ── Main grid ────────────────────────────────── */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+          {/* Filter panel */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
+            initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="lg:col-span-4 lg:col-start-1"
+            transition={{ delay: 0.1, duration: 0.5 }}
+            className="lg:col-span-4"
           >
-            <Card variant="premium" className="overflow-hidden h-fit sticky top-40 bg-white">
-              <CardHeader className="p-10 border-b border-heritage-bone bg-heritage-bone/30">
-                <CardTitle className="text-2xl font-extrabold tracking-tight">Kinship Filters</CardTitle>
-                <CardDescription className="text-[10px] font-black uppercase tracking-[0.3em] text-heritage-gold">Calibrate your resonance</CardDescription>
-              </CardHeader>
-              <CardContent className="p-10 space-y-10">
-                <form onSubmit={handleMatch} className="space-y-8">
-                  <div className="space-y-4">
-                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-heritage-gold/60 ml-2">Sacred Destination</Label>
-                    <div className="relative group">
-                      <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-heritage-saffron transition-transform group-focus-within:scale-110" />
-                      <Input 
-                        placeholder="E.g. Spiti Valley" 
+            <div className="bg-white rounded-2xl border border-[#EBEBEB] shadow-sm overflow-hidden sticky top-28">
+              <div className="px-6 py-5 border-b border-[#EBEBEB]">
+                <h2 className="text-base font-bold text-[#484848] tracking-tight">Search filters</h2>
+                <p className="text-xs text-[#767676] mt-0.5">Find travelers matching your preferences</p>
+              </div>
+
+              <div className="p-6">
+                <form onSubmit={handleMatch} className="space-y-4">
+
+                  {/* Destination */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-[#767676] uppercase tracking-wide">Destination</Label>
+                    <div className="relative">
+                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#767676]" />
+                      <Input
+                        placeholder="e.g. Spiti Valley"
                         value={destination}
                         onChange={(e) => setDestination(e.target.value)}
-                        className="pl-16 bg-heritage-bone/50 rounded-[1.5rem] h-20 font-black text-lg text-heritage-onyx focus:ring-8 focus:ring-heritage-saffron/5 border-heritage-gold/10 transition-all placeholder:text-heritage-onyx/20 shadow-soft-inner"
+                        className="pl-11 h-12 rounded-xl bg-[#F7F7F7] border-[#EBEBEB] focus:border-[#FF5A5F] focus:ring-4 focus:ring-[#FF5A5F]/10 text-sm font-medium text-[#484848] placeholder:text-[#BBBBBB] transition-all"
                         required
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-heritage-gold/60 ml-2">Temporal Alignment</Label>
-                    <div className="relative group">
-                      <Calendar className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-heritage-saffron transition-transform group-focus-within:scale-110" />
-                      <Input type="date" className="pl-16 bg-heritage-bone/50 rounded-[1.5rem] h-20 font-black text-lg text-heritage-onyx focus:ring-8 focus:ring-heritage-saffron/5 border-heritage-gold/10 transition-all shadow-soft-inner" required />
+                  {/* Travel date */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-[#767676] uppercase tracking-wide">Travel date</Label>
+                    <div className="relative">
+                      <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#767676]" />
+                      <Input
+                        type="date"
+                        className="pl-11 h-12 rounded-xl bg-[#F7F7F7] border-[#EBEBEB] focus:border-[#FF5A5F] focus:ring-4 focus:ring-[#FF5A5F]/10 text-sm font-medium text-[#484848] transition-all"
+                        required
+                      />
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-heritage-gold/60 ml-2">Resonance Level</Label>
+                  {/* Budget level */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-[#767676] uppercase tracking-wide">Budget range</Label>
                     <Select defaultValue="medium">
-                      <SelectTrigger id="budget-select" className="bg-heritage-bone/50 rounded-[1.5rem] h-20 font-black text-lg text-heritage-onyx focus:ring-8 focus:ring-heritage-saffron/5 border-heritage-gold/10 transition-all px-8 shadow-soft-inner border-0">
-                        <SelectValue placeholder="Budget Level" />
+                      <SelectTrigger
+                        id="budget-select"
+                        className="h-12 rounded-xl bg-[#F7F7F7] border-[#EBEBEB] focus:border-[#FF5A5F] focus:ring-4 focus:ring-[#FF5A5F]/10 text-sm font-medium text-[#484848] px-4 transition-all"
+                      >
+                        <SelectValue placeholder="Budget level" />
                       </SelectTrigger>
-                      <SelectContent className="rounded-[1.5rem] border-heritage-gold/10 shadow-premium bg-white">
-                        <SelectItem value="low" className="font-black text-xs py-4 uppercase tracking-widest text-heritage-onyx/60">Backpacker (Free Spirit)</SelectItem>
-                        <SelectItem value="medium" className="font-black text-xs py-4 uppercase tracking-widest text-heritage-onyx/60">Classic (Rooted)</SelectItem>
-                        <SelectItem value="high" className="font-black text-xs py-4 uppercase tracking-widest text-heritage-onyx/60">Majestic (Royal)</SelectItem>
+                      <SelectContent className="rounded-xl border-[#EBEBEB] shadow-lg bg-white">
+                        <SelectItem value="low" className="text-sm font-medium text-[#484848] py-3">Budget traveler</SelectItem>
+                        <SelectItem value="medium" className="text-sm font-medium text-[#484848] py-3">Mid-range</SelectItem>
+                        <SelectItem value="high" className="text-sm font-medium text-[#484848] py-3">Luxury</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
-                  <Button type="submit" variant="premium" className="w-full h-20 rounded-[1.5rem] text-lg font-black group shadow-premium" disabled={loading}>
+                  {/* Submit */}
+                  <Button
+                    type="submit"
+                    variant="premium"
+                    className="w-full h-12 rounded-xl text-sm font-semibold group shadow-sm transition-all active:scale-[0.98]"
+                    disabled={loading}
+                  >
                     {loading ? (
-                      <div className="flex items-center gap-4">
-                         <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
-                         <span className="text-xs uppercase tracking-[0.3em]">Scouring Horizons...</span>
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>Searching...</span>
                       </div>
                     ) : (
-                      <span className="flex items-center gap-4 text-xs uppercase tracking-[0.3em] font-black">
-                         Synchronize <Sparkles className="h-5 w-5 group-hover:rotate-180 transition-transform duration-700" />
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <Search className="h-4 w-4" />
+                        <span>Find companions</span>
+                      </div>
                     )}
                   </Button>
                 </form>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </motion.div>
 
-          {/* Matches Panel */}
-          <div className="lg:col-span-8 space-y-10">
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
+          {/* Results panel */}
+          <div className="lg:col-span-8 space-y-4">
+
+            {/* Results header */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center justify-between px-6"
+              className="flex items-center justify-between"
             >
-              <h2 className="text-3xl font-extrabold text-heritage-onyx tracking-tight">Kindred Spirits</h2>
-              <div className="flex items-center gap-4 px-6 py-2 rounded-full bg-heritage-bone border border-heritage-gold/10 shadow-soft-inner">
-                 <div className="h-2 w-2 rounded-full bg-heritage-saffron animate-pulse" />
-                 <span className="text-[10px] font-black uppercase tracking-[0.3em] text-heritage-gold">{matches.length} Travelers Present</span>
+              <h2 className="text-base font-bold text-[#484848]">Travelers</h2>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-[#EBEBEB] shadow-sm">
+                <div className="h-2 w-2 rounded-full bg-[#FF5A5F] animate-pulse" />
+                <span className="text-xs font-semibold text-[#767676]">{matches.length} available</span>
               </div>
             </motion.div>
 
-            <div className="space-y-8">
-              <AnimatePresence mode="popLayout">
-                {loading ? (
-                  <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="space-y-8"
-                  >
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="h-52 rounded-[2.5rem] bg-heritage-bone/30 animate-pulse border-2 border-dashed border-heritage-gold/5" />
-                    ))}
-                  </motion.div>
-                ) : (
-                  <div className="space-y-8">
-                    {matches.length > 0 ? matches.map((match, idx) => (idx < 5 && (
-                      <motion.div
-                        key={match.id}
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                      >
-                        <Card variant="premium" className="overflow-hidden bg-white group relative">
-                          <div className="absolute top-10 right-10 bg-heritage-saffron/5 text-heritage-saffron px-6 py-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-3 border border-heritage-saffron/10 shadow-soft-inner group-hover:bg-heritage-saffron group-hover:text-white transition-all duration-500 z-20">
-                            <Percent className="h-4 w-4" /> {match.similarityScore}% Resonance
-                          </div>
-                          
-                          <CardContent className="p-10 md:p-12 flex flex-col md:flex-row gap-10 items-center md:items-start text-center md:text-left relative z-10">
-                            <div className="relative shrink-0">
-                               <div className="absolute -inset-2 bg-gradient-to-tr from-heritage-saffron to-heritage-gold rounded-[2rem] opacity-0 group-hover:opacity-20 transition-opacity blur-xl" />
-                               <Avatar className="h-32 w-32 border-4 border-white shadow-premium rounded-[2.2rem] overflow-hidden transition-all duration-700 group-hover:scale-105 group-hover:rotate-2 relative z-10">
-                                 <AvatarFallback className="text-3xl font-black bg-heritage-bone text-heritage-gold uppercase tracking-tighter">
-                                   {match.avatar}
-                                 </AvatarFallback>
-                               </Avatar>
-                            </div>
-                            
-                            <div className="flex-1 space-y-6 pt-2">
-                              <div className="space-y-2">
-                                <h3 className="text-3xl font-black text-heritage-onyx tracking-tighter group-hover:text-heritage-saffron transition-colors duration-500">{match.name}</h3>
-                                <div className="flex flex-wrap items-center justify-center md:justify-start gap-6 text-[11px] font-black uppercase tracking-[0.2em] text-heritage-gold/40">
-                                  <span className="flex items-center gap-2 px-4 py-1 rounded-full bg-heritage-bone border border-heritage-gold/5"><MapPin className="h-4 w-4 text-heritage-saffron" /> {match.destination}</span>
-                                  <span className="flex items-center gap-2 px-4 py-1 rounded-full bg-heritage-bone border border-heritage-gold/5"><Calendar className="h-4 w-4 text-heritage-saffron" /> {match.dates}</span>
-                                </div>
-                              </div>
+            <AnimatePresence mode="popLayout">
+              {loading ? (
+                /* Skeleton */
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="space-y-4"
+                >
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-32 rounded-2xl bg-[#EBEBEB] animate-pulse border border-[#E0E0E0]" />
+                  ))}
+                </motion.div>
+              ) : matches.length > 0 ? (
+                <div className="space-y-4">
+                  {matches.slice(0, 5).map((match, idx) => (
+                    <motion.div
+                      key={match.id}
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.08, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                      <div className="bg-white rounded-2xl border border-[#EBEBEB] shadow-sm hover:shadow-md hover:border-[#FF5A5F]/20 transition-all duration-300 overflow-hidden group">
+                        <div className="p-6 flex flex-col sm:flex-row gap-5 items-start sm:items-center">
 
-                              <div className="flex flex-wrap justify-center md:justify-start gap-3">
-                                {(match.interests || []).map((interest: string, k: number) => (
-                                  <span key={k} className="bg-heritage-bone/50 text-heritage-onyx/60 px-5 py-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.25em] border border-heritage-gold/5 group-hover:bg-heritage-saffron/5 group-hover:text-heritage-saffron group-hover:border-heritage-saffron/10 transition-all duration-500">
+                          {/* Avatar */}
+                          <Avatar className="h-14 w-14 rounded-2xl border border-[#EBEBEB] shrink-0">
+                            <AvatarFallback className="text-lg font-bold bg-[#F7F7F7] text-[#484848] rounded-2xl">
+                              {match.avatar}
+                            </AvatarFallback>
+                          </Avatar>
+
+                          {/* Info */}
+                          <div className="flex-1 min-w-0 space-y-2">
+                            <div className="flex flex-wrap items-center gap-3">
+                              <h3 className="text-base font-bold text-[#484848] tracking-tight group-hover:text-[#FF5A5F] transition-colors">
+                                {match.name}
+                              </h3>
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#00A699] bg-[#00A699]/8 px-2.5 py-1 rounded-full border border-[#00A699]/15">
+                                <Percent className="h-3 w-3" />
+                                {match.similarityScore}% match
+                              </span>
+                            </div>
+
+                            <div className="flex flex-wrap gap-3 text-xs text-[#767676] font-medium">
+                              <span className="flex items-center gap-1.5">
+                                <MapPin className="h-3.5 w-3.5 text-[#FF5A5F]" />
+                                {match.destination}
+                              </span>
+                              <span className="flex items-center gap-1.5">
+                                <Calendar className="h-3.5 w-3.5 text-[#FF5A5F]" />
+                                {match.dates}
+                              </span>
+                            </div>
+
+                            {/* Interest tags */}
+                            {(match.interests || []).length > 0 && (
+                              <div className="flex flex-wrap gap-2 pt-1">
+                                {(match.interests || []).slice(0, 4).map((interest: string, k: number) => (
+                                  <span
+                                    key={k}
+                                    className="text-[11px] font-medium text-[#767676] bg-[#F7F7F7] px-2.5 py-1 rounded-lg border border-[#EBEBEB]"
+                                  >
                                     {interest}
                                   </span>
                                 ))}
                               </div>
-                            </div>
-                            
-                            <div className="md:self-center mt-6 md:mt-0 xl:pl-10">
-                              <Button variant="premium" className="w-full md:w-auto h-16 px-10 rounded-[1.2rem] text-xs font-black uppercase tracking-[0.3em] group/btn shadow-premium">
-                                <UserPlus className="h-5 w-5 mr-4 group-hover/btn:scale-110 transition-transform" /> Connect
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    ))) : (
-                      <motion.div 
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="text-center py-24 bg-heritage-bone/30 rounded-[3rem] border-4 border-dashed border-heritage-gold/10 group relative overflow-hidden"
-                      >
-                        <div className="absolute inset-0 bg-heritage-gold/5 opacity-0 group-hover:opacity-100 transition-opacity animate-pulse" />
-                        <Users className="h-24 w-24 text-heritage-gold/20 mx-auto mb-8 relative z-10" />
-                        <p className="text-heritage-gold/40 font-black uppercase tracking-[0.5em] text-xs relative z-10 italic">The horizon is silent</p>
-                      </motion.div>
-                    )}
+                            )}
+                          </div>
+
+                          {/* Connect button */}
+                          <Button
+                            variant="premium"
+                            className="h-10 px-5 rounded-xl text-xs font-semibold shrink-0 group/btn transition-all active:scale-[0.97]"
+                          >
+                            <UserPlus className="h-4 w-4 mr-1.5" />
+                            Connect
+                          </Button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                /* Empty state */
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border-2 border-dashed border-[#EBEBEB] text-center space-y-4"
+                >
+                  <div className="w-14 h-14 rounded-2xl bg-[#F7F7F7] flex items-center justify-center border border-[#EBEBEB]">
+                    <Users className="h-7 w-7 text-[#BBBBBB]" />
                   </div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
+                  <div className="space-y-1.5">
+                    <p className="text-sm font-semibold text-[#484848]">No companions found yet</p>
+                    <p className="text-xs text-[#767676] max-w-xs">
+                      Use the filters to search for travelers heading to your destination.
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
-      )}
+      </div>
     </div>
   )
 }

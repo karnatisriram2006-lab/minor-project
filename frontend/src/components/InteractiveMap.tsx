@@ -154,13 +154,14 @@ export default function InteractiveMap({ points = [], center = [20.5937, 78.9629
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fullRoute])
 
-  const layers = [
+  // Defer layer calculation to ensure client-side parity
+  const layers = isMounted ? [
     new PathLayer({
       id: "route-path-glow",
       data: [{ path: visibleRoute }],
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       getPath: (d: any) => d.path,
-      getColor: [249, 115, 22, 40], // Heritage Saffron with low opacity
+      getColor: [255, 90, 95, 40], // Airbnb Rausch with low opacity
       getWidth: 10,
       widthUnits: "pixels",
       jointRounded: true,
@@ -171,20 +172,20 @@ export default function InteractiveMap({ points = [], center = [20.5937, 78.9629
       data: [{ path: visibleRoute }],
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       getPath: (d: any) => d.path,
-      getColor: [249, 115, 22, 255], // Heritage Saffron
+      getColor: [255, 90, 95, 255], // Airbnb Rausch
       getWidth: 3,
       widthUnits: "pixels",
       jointRounded: true,
       capRounded: true,
     }),
-  ]
+  ] : []
 
   return (
-    <div className="h-full w-full relative group bg-heritage-bone">
+    <div className="h-full w-full relative group bg-[#F7F7F7]">
       {/* Light placeholder shown on server / before mount */}
       {!isMounted ? (
-        <div className="absolute inset-0 bg-heritage-bone flex items-center justify-center">
-          <div className="w-10 h-10 rounded-full border-4 border-heritage-saffron border-t-transparent animate-spin" />
+        <div className="absolute inset-0 bg-[#F7F7F7] flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full border-4 border-[#FF5A5F] border-t-transparent animate-spin" />
         </div>
       ) : (
         <div className="absolute inset-0">
@@ -205,20 +206,20 @@ export default function InteractiveMap({ points = [], center = [20.5937, 78.9629
                 <div className="relative group/marker cursor-pointer">
                   {/* Marker Pin Visual */}
                   <div className="w-8 h-8 flex items-center justify-center relative">
-                    <div className="absolute w-4 h-4 bg-heritage-saffron/20 rounded-full animate-ping" />
-                    <div className="relative w-3 h-3 bg-heritage-saffron border-2 border-white rounded-full shadow-lg" />
+                    <div className="absolute w-4 h-4 bg-[#FF5A5F]/20 rounded-full animate-ping" />
+                    <div className="relative w-3 h-3 bg-[#FF5A5F] border-2 border-white rounded-full shadow-lg" />
                   </div>
 
                   {/* HTML Popup on Hover */}
                   <div className="absolute bottom-10 left-1/2 -translate-x-1/2 opacity-0 group-hover/marker:opacity-100 transition-all transform group-hover/marker:-translate-y-1 pointer-events-none z-50">
-                    <div className="bg-heritage-bone/95 backdrop-blur-md rounded-[1.2rem] p-4 w-48 border border-heritage-gold/10 shadow-premium">
-                      <h4 className="text-heritage-onyx font-black text-xs">{loc.name}</h4>
-                      <p className="text-[10px] text-heritage-onyx/40 font-medium leading-relaxed mt-1 line-clamp-2">
+                    <div className="bg-white/95 backdrop-blur-md rounded-2xl p-4 w-48 border border-[#EBEBEB] shadow-xl">
+                      <h4 className="text-[#484848] font-bold text-xs">{loc.name}</h4>
+                      <p className="text-[10px] text-[#767676] font-medium leading-relaxed mt-1 line-clamp-2">
                         {loc.description}
                       </p>
-                      <div className="pt-2 mt-2 border-t border-heritage-gold/10 flex justify-between items-center">
-                          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-heritage-saffron">
-                            Activity
+                      <div className="pt-2 mt-2 border-t border-[#EBEBEB] flex justify-between items-center">
+                          <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#FF5A5F]">
+                            Destination
                           </span>
                         </div>
                     </div>
@@ -239,10 +240,10 @@ export default function InteractiveMap({ points = [], center = [20.5937, 78.9629
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute top-8 right-8 z-30 bg-heritage-bone/90 backdrop-blur-md px-5 py-3 rounded-[1.2rem] border border-heritage-gold/10 shadow-premium flex items-center gap-3"
+            className="absolute top-8 right-8 z-30 bg-white/90 backdrop-blur-md px-5 py-3 rounded-2xl border border-[#EBEBEB] shadow-lg flex items-center gap-3"
           >
-            <div className="w-2 h-2 rounded-full bg-heritage-saffron animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-heritage-onyx">
+            <div className="w-2 h-2 rounded-full bg-[#FF5A5F] animate-pulse" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#484848]">
               Updating route...
             </span>
           </motion.div>
@@ -251,7 +252,7 @@ export default function InteractiveMap({ points = [], center = [20.5937, 78.9629
 
       {/* Zoom Info Badge */}
       <div className="absolute bottom-8 right-8 z-20">
-        <div className="bg-heritage-bone/80 backdrop-blur-sm px-4 py-2 rounded-[1rem] border border-heritage-gold/10 shadow-soft-inner text-[9px] font-black uppercase tracking-[0.2em] text-heritage-gold/60">
+        <div className="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-xl border border-[#EBEBEB] shadow-sm text-[9px] font-bold uppercase tracking-[0.2em] text-[#767676]">
           Zoom: {INITIAL_VIEW_STATE.zoom.toFixed(1)}
         </div>
       </div>

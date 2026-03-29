@@ -1709,5 +1709,727 @@
         }
       ]
     }
+  },
+  "itinerary-jaipur-3-Imperial-Culture, History, Food": {
+    "itinerary": {
+      "day1": [
+        {
+          "name": "Amber Fort",
+          "description": "Historic fort",
+          "time": "09:00 AM",
+          "type": "landmark",
+          "lat": 26.9853,
+          "lng": 75.8503
+        },
+        {
+          "name": "Rajasthani Lunch",
+          "description": "Local cuisine",
+          "time": "01:00 PM",
+          "type": "food",
+          "lat": 26.9124,
+          "lng": 75.7873
+        },
+        {
+          "name": "City Palace",
+          "description": "Royal palace",
+          "time": "03:00 PM",
+          "type": "culture",
+          "lat": 26.9253,
+          "lng": 75.8235
+        }
+      ],
+      "day2": [
+        {
+          "name": "Hawa Mahal",
+          "description": "Palace of winds",
+          "time": "09:00 AM",
+          "type": "landmark",
+          "lat": 26.9236,
+          "lng": 75.8264
+        },
+        {
+          "name": "Johri Bazaar",
+          "description": "Local market",
+          "time": "11:00 AM",
+          "type": "culture",
+          "lat": 26.9222,
+          "lng": 75.8273
+        },
+        {
+          "name": "Chokhi Dhani Dinner",
+          "description": "Rajasthani dinner",
+          "time": "07:00 PM",
+          "type": "food",
+          "lat": 26.7994,
+          "lng": 75.7603
+        }
+      ],
+      "day3": [
+        {
+          "name": "Jal Mahal",
+          "description": "Water palace",
+          "time": "09:00 AM",
+          "type": "landmark",
+          "lat": 26.9544,
+          "lng": 75.8511
+        },
+        {
+          "name": "Albert Hall Museum",
+          "description": "State museum",
+          "time": "11:00 AM",
+          "type": "culture",
+          "lat": 26.9077,
+          "lng": 75.8014
+        },
+        {
+          "name": "Ginger Restaurant",
+          "description": "Fine dining",
+          "time": "08:00 PM",
+          "type": "food",
+          "lat": 26.9124,
+          "lng": 75.7873
+        }
+      ]
+    }
+  },
+  "itinerary-assam-3-Luxury-Culture, History, Food": {
+    "itinerary": {
+      "day1": [
+        {
+          "name": "Kamakhya Temple",
+          "description": "Sacred Hindu site",
+          "time": "09:00 AM",
+          "type": "culture",
+          "lat": 26.1959,
+          "lng": 91.7363
+        },
+        {
+          "name": "Assamese Thali",
+          "description": "Local food tasting",
+          "time": "01:00 PM",
+          "type": "food",
+          "lat": 26.1445,
+          "lng": 91.7362
+        },
+        {
+          "name": "State Museum",
+          "description": "Historical artifacts",
+          "time": "03:00 PM",
+          "type": "history",
+          "lat": 26.1445,
+          "lng": 91.7362
+        }
+      ],
+      "day2": [
+        {
+          "name": "Brahmaputra River",
+          "description": "Scenic boat ride",
+          "time": "08:00 AM",
+          "type": "landmark",
+          "lat": 26.2001,
+          "lng": 91.6667
+        },
+        {
+          "name": "Sualkuchi Village",
+          "description": "Silk weaving tour",
+          "time": "11:00 AM",
+          "type": "culture",
+          "lat": 26.1833,
+          "lng": 91.5333
+        },
+        {
+          "name": "Jungle Trek",
+          "description": "Wildlife exploration",
+          "time": "02:00 PM",
+          "type": "adventure",
+          "lat": 26.7333,
+          "lng": 92.7833
+        }
+      ],
+      "day3": [
+        {
+          "name": "Rang Ghar",
+          "description": "Ancient sports pavilion",
+          "time": "09:00 AM",
+          "type": "history",
+          "lat": 26.4833,
+          "lng": 92.7833
+        },
+        {
+          "name": "Assam Tea Estate",
+          "description": "Tea tasting tour",
+          "time": "11:30 AM",
+          "type": "food",
+          "lat": 26.7167,
+          "lng": 92.7667
+        },
+        {
+          "name": "Guwahati Market",
+          "description": "Local shopping",
+          "time": "03:00 PM",
+          "type": "culture",
+          "lat": 26.1667,
+          "lng": 91.75
+        }
+      ]
+    }
+  },
+  "itinerary-assam-7-Economy-Culture, History, Food": {
+    "itinerary": {
+      "day1": [
+        {
+          "name": "Kamakhya Temple",
+          "description": "Ancient Temple",
+          "time": "09:00 AM",
+          "type": "culture",
+          "lat": 26.1959,
+          "lng": 91.7363
+        },
+        {
+          "name": "Assamese Thali",
+          "description": "Local Food",
+          "time": "01:00 PM",
+          "type": "food",
+          "lat": 26.1904,
+          "lng": 91.7408
+        },
+        {
+          "name": "Guwahati Market",
+          "description": "Local Shopping",
+          "time": "04:00 PM",
+          "type": "culture",
+          "lat": 26.1842,
+          "lng": 91.7459
+        }
+      ],
+      "day2": [
+        {
+          "name": "Umananda Temple",
+          "description": "River Island",
+          "time": "09:30 AM",
+          "type": "landmark",
+          "lat": 26.1739,
+          "lng": 91.7508
+        },
+        {
+          "name": "Brahmaputra Cruise",
+          "description": "River Cruise",
+          "time": "02:00 PM",
+          "type": "landmark",
+          "lat": 26.1947,
+          "lng": 91.7362
+        },
+        {
+          "name": "Jalukbari Village",
+          "description": "Rural Life",
+          "time": "05:00 PM",
+          "type": "culture",
+          "lat": 26.1439,
+          "lng": 91.6934
+        }
+      ],
+      "day3": [
+        {
+          "name": "Kaziranga National Park",
+          "description": "Wildlife Sanctuary",
+          "time": "06:00 AM",
+          "type": "landmark",
+          "lat": 26.6333,
+          "lng": 93.3667
+        },
+        {
+          "name": "Elephant Safari",
+          "description": "Wildlife Tour",
+          "time": "08:00 AM",
+          "type": "landmark",
+          "lat": 26.6333,
+          "lng": 93.3667
+        },
+        {
+          "name": "Local Tea Estate",
+          "description": "Tea Plantation",
+          "time": "03:00 PM",
+          "type": "culture",
+          "lat": 26.7167,
+          "lng": 93.3833
+        }
+      ],
+      "day4": [
+        {
+          "name": "Sivasagar Lake",
+          "description": "Scenic Lake",
+          "time": "09:00 AM",
+          "type": "landmark",
+          "lat": 26.9833,
+          "lng": 94.6333
+        },
+        {
+          "name": "Rang Ghar",
+          "description": "Ancient Pavilion",
+          "time": "11:00 AM",
+          "type": "culture",
+          "lat": 26.9833,
+          "lng": 94.6333
+        },
+        {
+          "name": "Assamese Cuisine",
+          "description": "Local Food",
+          "time": "01:00 PM",
+          "type": "food",
+          "lat": 26.9833,
+          "lng": 94.6333
+        }
+      ],
+      "day5": [
+        {
+          "name": "Touphema Village",
+          "description": "Tribal Village",
+          "time": "09:30 AM",
+          "type": "culture",
+          "lat": 25.7833,
+          "lng": 94.5167
+        },
+        {
+          "name": "Naga Heritage Village",
+          "description": "Tribal Culture",
+          "time": "12:00 PM",
+          "type": "culture",
+          "lat": 25.7833,
+          "lng": 94.5167
+        },
+        {
+          "name": "Dimapur Market",
+          "description": "Local Shopping",
+          "time": "04:00 PM",
+          "type": "culture",
+          "lat": 25.9333,
+          "lng": 93.7333
+        }
+      ],
+      "day6": [
+        {
+          "name": "Manas National Park",
+          "description": "Wildlife Sanctuary",
+          "time": "06:00 AM",
+          "type": "landmark",
+          "lat": 26.6333,
+          "lng": 91.0667
+        },
+        {
+          "name": "Jeep Safari",
+          "description": "Wildlife Tour",
+          "time": "08:00 AM",
+          "type": "landmark",
+          "lat": 26.6333,
+          "lng": 91.0667
+        },
+        {
+          "name": "Local Handicrafts",
+          "description": "Local Art",
+          "time": "03:00 PM",
+          "type": "culture",
+          "lat": 26.6333,
+          "lng": 91.0667
+        }
+      ],
+      "day7": [
+        {
+          "name": "Guwahati Museum",
+          "description": "State Museum",
+          "time": "09:30 AM",
+          "type": "culture",
+          "lat": 26.1842,
+          "lng": 91.7459
+        },
+        {
+          "name": "Assam State Zoo",
+          "description": "Local Zoo",
+          "time": "12:00 PM",
+          "type": "landmark",
+          "lat": 26.1439,
+          "lng": 91.6934
+        },
+        {
+          "name": "Farewell Dinner",
+          "description": "Local Food",
+          "time": "07:00 PM",
+          "type": "food",
+          "lat": 26.1904,
+          "lng": 91.7408
+        }
+      ]
+    }
+  },
+  "itinerary-meghalaya-7-Economy-Culture, History, Food": {
+    "itinerary": {
+      "day1": [
+        {
+          "name": "Umiam Lake",
+          "description": "Scenic lake",
+          "time": "09:00 AM",
+          "type": "landmark",
+          "lat": 25.3989,
+          "lng": 91.3944
+        },
+        {
+          "name": "Local Market",
+          "description": "Try local food",
+          "time": "12:00 PM",
+          "type": "food",
+          "lat": 25.5672,
+          "lng": 91.8931
+        },
+        {
+          "name": "Nongpoh Village",
+          "description": "Explore culture",
+          "time": "03:00 PM",
+          "type": "culture",
+          "lat": 25.8981,
+          "lng": 91.8804
+        }
+      ],
+      "day2": [
+        {
+          "name": "Shillong Peak",
+          "description": "Highest point",
+          "time": "08:00 AM",
+          "type": "landmark",
+          "lat": 25.1714,
+          "lng": 91.8333
+        },
+        {
+          "name": "Don Bosco Museum",
+          "description": "Tribal history",
+          "time": "11:00 AM",
+          "type": "history",
+          "lat": 25.5659,
+          "lng": 91.8934
+        },
+        {
+          "name": "Police Bazar",
+          "description": "Street food",
+          "time": "07:00 PM",
+          "type": "food",
+          "lat": 25.5695,
+          "lng": 91.8936
+        }
+      ],
+      "day3": [
+        {
+          "name": "Elephant Falls",
+          "description": "Natural falls",
+          "time": "09:30 AM",
+          "type": "landmark",
+          "lat": 25.2031,
+          "lng": 91.8469
+        },
+        {
+          "name": "Mawphlang Sacred Forest",
+          "description": "Ancient forest",
+          "time": "01:00 PM",
+          "type": "landmark",
+          "lat": 25.2358,
+          "lng": 91.7333
+        },
+        {
+          "name": "Khasi Cuisine",
+          "description": "Local dinner",
+          "time": "08:00 PM",
+          "type": "food",
+          "lat": 25.5659,
+          "lng": 91.8934
+        }
+      ],
+      "day4": [
+        {
+          "name": "Cherrapunji",
+          "description": "Wettest place",
+          "time": "08:00 AM",
+          "type": "landmark",
+          "lat": 25.3005,
+          "lng": 91.6934
+        },
+        {
+          "name": "Mawsmai Cave",
+          "description": "Limestone cave",
+          "time": "11:00 AM",
+          "type": "landmark",
+          "lat": 25.2733,
+          "lng": 91.7056
+        },
+        {
+          "name": "Ramakrishna Mission",
+          "description": "Spiritual center",
+          "time": "03:00 PM",
+          "type": "culture",
+          "lat": 25.3005,
+          "lng": 91.6934
+        }
+      ],
+      "day5": [
+        {
+          "name": "Dawki River",
+          "description": "Boat ride",
+          "time": "09:00 AM",
+          "type": "landmark",
+          "lat": 25.1833,
+          "lng": 91.9333
+        },
+        {
+          "name": "Bangladesh Border",
+          "description": "International border",
+          "time": "12:00 PM",
+          "type": "landmark",
+          "lat": 25.1833,
+          "lng": 91.9333
+        },
+        {
+          "name": "Local Handicrafts",
+          "description": "Shopping",
+          "time": "04:00 PM",
+          "type": "culture",
+          "lat": 25.5659,
+          "lng": 91.8934
+        }
+      ],
+      "day6": [
+        {
+          "name": "Mawlynnong Village",
+          "description": "Cleanest village",
+          "time": "08:00 AM",
+          "type": "culture",
+          "lat": 25.1833,
+          "lng": 91.85
+        },
+        {
+          "name": "Living Root Bridge",
+          "description": "Natural wonder",
+          "time": "11:00 AM",
+          "type": "landmark",
+          "lat": 25.2667,
+          "lng": 91.7167
+        },
+        {
+          "name": "Jaintia Cuisine",
+          "description": "Local lunch",
+          "time": "01:00 PM",
+          "type": "food",
+          "lat": 25.1833,
+          "lng": 91.85
+        }
+      ],
+      "day7": [
+        {
+          "name": "Shillong Cathedral",
+          "description": "Beautiful church",
+          "time": "09:00 AM",
+          "type": "culture",
+          "lat": 25.5659,
+          "lng": 91.8934
+        },
+        {
+          "name": "Ward's Lake",
+          "description": "Scenic lake",
+          "time": "11:00 AM",
+          "type": "landmark",
+          "lat": 25.5659,
+          "lng": 91.8934
+        },
+        {
+          "name": "Departure",
+          "description": "End trip",
+          "time": "03:00 PM",
+          "type": "departure",
+          "lat": 25.5981,
+          "lng": 91.8804
+        }
+      ]
+    }
+  },
+  "itinerary-shimla-7-Economy-Culture, History, Food": {
+    "itinerary": {
+      "day1": [
+        {
+          "name": "Shimla Mall Road",
+          "description": "Local shopping",
+          "time": "09:00 AM",
+          "type": "culture",
+          "lat": 31.1048,
+          "lng": 77.1734
+        },
+        {
+          "name": "Christ Church",
+          "description": "Historic church",
+          "time": "11:00 AM",
+          "type": "history",
+          "lat": 31.1042,
+          "lng": 77.1745
+        },
+        {
+          "name": "Lakkar Bazaar",
+          "description": "Wooden crafts",
+          "time": "02:00 PM",
+          "type": "culture",
+          "lat": 31.0973,
+          "lng": 77.1753
+        }
+      ],
+      "day2": [
+        {
+          "name": "The Ridge",
+          "description": "Scenic view",
+          "time": "08:00 AM",
+          "type": "landmark",
+          "lat": 31.1045,
+          "lng": 77.1739
+        },
+        {
+          "name": "State Museum",
+          "description": "Himachal history",
+          "time": "10:00 AM",
+          "type": "history",
+          "lat": 31.0978,
+          "lng": 77.1761
+        },
+        {
+          "name": "Tibetan Market",
+          "description": "Local food",
+          "time": "01:00 PM",
+          "type": "food",
+          "lat": 31.0956,
+          "lng": 77.1773
+        }
+      ],
+      "day3": [
+        {
+          "name": "Kufri Fun World",
+          "description": "Adventure park",
+          "time": "09:30 AM",
+          "type": "landmark",
+          "lat": 31.1033,
+          "lng": 77.2667
+        },
+        {
+          "name": "Himalayan Nature Park",
+          "description": "Wildlife park",
+          "time": "12:00 PM",
+          "type": "landmark",
+          "lat": 31.1028,
+          "lng": 77.2679
+        },
+        {
+          "name": "Local Dhaba",
+          "description": "Traditional food",
+          "time": "07:00 PM",
+          "type": "food",
+          "lat": 31.1031,
+          "lng": 77.2653
+        }
+      ],
+      "day4": [
+        {
+          "name": "Narkanda",
+          "description": "Skiing resort",
+          "time": "08:00 AM",
+          "type": "landmark",
+          "lat": 31.2742,
+          "lng": 77.4536
+        },
+        {
+          "name": "Tanni Jubbar Lake",
+          "description": "Scenic lake",
+          "time": "11:00 AM",
+          "type": "landmark",
+          "lat": 31.2833,
+          "lng": 77.4667
+        },
+        {
+          "name": "Local Cafe",
+          "description": "Coffee break",
+          "time": "03:00 PM",
+          "type": "food",
+          "lat": 31.2751,
+          "lng": 77.4551
+        }
+      ],
+      "day5": [
+        {
+          "name": "Mashobra",
+          "description": "Scenic village",
+          "time": "09:00 AM",
+          "type": "culture",
+          "lat": 31.0153,
+          "lng": 77.0833
+        },
+        {
+          "name": "Craignano",
+          "description": "Italian villa",
+          "time": "11:30 AM",
+          "type": "history",
+          "lat": 31.0167,
+          "lng": 77.0839
+        },
+        {
+          "name": "Local Restaurant",
+          "description": "Himachali food",
+          "time": "07:30 PM",
+          "type": "food",
+          "lat": 31.0162,
+          "lng": 77.0842
+        }
+      ],
+      "day6": [
+        {
+          "name": "Shimla State Museum",
+          "description": "Art gallery",
+          "time": "10:00 AM",
+          "type": "history",
+          "lat": 31.0978,
+          "lng": 77.1761
+        },
+        {
+          "name": "Annandale",
+          "description": "Golf course",
+          "time": "12:30 PM",
+          "type": "landmark",
+          "lat": 31.0931,
+          "lng": 77.1858
+        },
+        {
+          "name": "Local Street Food",
+          "description": "Evening snacks",
+          "time": "05:00 PM",
+          "type": "food",
+          "lat": 31.0956,
+          "lng": 77.1773
+        }
+      ],
+      "day7": [
+        {
+          "name": "Kali Bari Temple",
+          "description": "Hindu temple",
+          "time": "08:00 AM",
+          "type": "culture",
+          "lat": 31.1039,
+          "lng": 77.1733
+        },
+        {
+          "name": "Scandal Point",
+          "description": "Scenic view",
+          "time": "09:30 AM",
+          "type": "landmark",
+          "lat": 31.1045,
+          "lng": 77.1739
+        },
+        {
+          "name": "Departure",
+          "description": "Trip ends",
+          "time": "11:00 AM",
+          "type": "departure",
+          "lat": 31.1048,
+          "lng": 77.1734
+        }
+      ]
+    }
   }
 }

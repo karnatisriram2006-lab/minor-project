@@ -14,7 +14,7 @@ interface Message {
 
 export default function ChatBot() {
   const [messages, setMessages] = useState<Message[]>([
-    { role: "bot", content: "Namaste! I am your Heritage Guide AI. How may I assist your exploration of India's timeless treasures today?" }
+    { role: "bot", content: "Hi! I'm your YĀTRĀ travel assistant. Ask me anything about trip planning, destinations, or travel tips in India! 🇮🇳" }
   ])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -59,7 +59,7 @@ export default function ChatBot() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-[120] w-14 h-14 rounded-full bg-[#FF385C] text-white shadow-airbnb-hover flex items-center justify-center cursor-pointer border-4 border-white transition-all overflow-hidden"
+        className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] right-4 lg:bottom-6 lg:right-6 z-[120] w-14 h-14 rounded-full bg-[#FF5A5F] text-white shadow-lg flex items-center justify-center cursor-pointer border-4 border-white overflow-hidden"
       >
         <AnimatePresence mode="wait">
           {isOpen ? (
@@ -78,10 +78,11 @@ export default function ChatBot() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9, transformOrigin: "bottom right" }}
+            initial={{ opacity: 0, y: 20, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 50, scale: 0.9 }}
-            className="fixed bottom-24 right-6 z-[110] flex flex-col h-[520px] max-h-[calc(100vh-120px)] w-[350px] bg-white rounded-[1.5rem] shadow-airbnb border border-gray-100 overflow-hidden"
+            exit={{ opacity: 0, y: 20, scale: 0.97 }}
+            transition={{ type: "spring", duration: 0.4, bounce: 0.1 }}
+            className="fixed bottom-[calc(8.5rem+env(safe-area-inset-bottom,0px))] right-2 left-2 sm:left-auto lg:bottom-24 lg:right-6 z-[110] flex flex-col h-[480px] max-h-[calc(100dvh-12rem)] sm:w-[350px] bg-white rounded-2xl shadow-xl border border-[#EBEBEB] overflow-hidden"
           >
             {/* 1. CHAT HEADER */}
             <header className="px-5 py-5 border-b border-gray-50 flex items-center justify-between bg-white">

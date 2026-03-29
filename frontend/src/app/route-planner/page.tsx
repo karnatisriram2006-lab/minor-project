@@ -2,12 +2,11 @@
 
 import { useState } from "react"
 import axios from "axios"
-import { Map, MapPin, Navigation, Plus, Trash2, Sparkles, Route, Info, Compass, ArrowRightCircle } from "lucide-react"
+import { Map, MapPin, Navigation, Plus, Trash2, Sparkles, Route, Info, Compass, ArrowRight } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface OptimizedStop {
   id: string;
@@ -30,7 +29,7 @@ export default function RoutePlanner() {
     if (newPlace.trim()) {
       setPlaces([...places, { id: Date.now().toString(), name: newPlace.trim() }])
       setNewPlace("")
-      setOptimizedRoute([]) 
+      setOptimizedRoute([])
     }
   }
 
@@ -41,24 +40,20 @@ export default function RoutePlanner() {
 
   const handleOptimize = async () => {
     if (places.length < 2) return
-    
     setLoading(true)
-    
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
-      const res = await axios.post(`${apiUrl}/route/optimize`, { 
+      const res = await axios.post(`${apiUrl}/route/optimize`, {
         locations: places.map(p => ({
           name: p.name,
-          lat: 27.1751 + (Math.random() * 0.1), 
+          lat: 27.1751 + (Math.random() * 0.1),
           lng: 78.0421 + (Math.random() * 0.1)
         }))
       })
-      
       const optimized = res.data.optimizedRoute.map((p: { id: string; name: string; order: number }) => ({
         ...p,
         visitOrder: p.order
       }))
-      
       setOptimizedRoute(optimized)
     } catch (err) {
       console.error("Optimization error:", err)
@@ -68,246 +63,241 @@ export default function RoutePlanner() {
   }
 
   return (
-    <div className="min-h-screen bg-heritage-bone text-heritage-onyx selection:bg-heritage-saffron/10 pt-40 pb-56 relative overflow-hidden font-sans">
-      
-      {/* Cinematic Background Accents */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10" style={{ background: 'radial-gradient(circle at top right, #76767608, transparent 40%)' }} />
+    <div className="min-h-screen bg-[#F7F7F7] text-[#484848] pt-0 pb-24 sm:pt-4 sm:pb-12 font-sans">
 
-      <div className="container mx-auto px-6 max-w-7xl relative z-10 space-y-24">
-        
-        {/* Header Section */}
-        <div className="text-center space-y-10">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="inline-flex items-center gap-4 px-6 py-2 rounded-full bg-heritage-saffron/5 border border-heritage-saffron/10 text-heritage-saffron text-[10px] font-black uppercase tracking-[0.4em] shadow-soft-inner mx-auto mb-4"
-          >
-            <Navigation className="h-4 w-4" />
-            Path Conjurer
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="space-y-6"
-          >
-            <h1 className="text-6xl md:text-[8rem] font-extrabold tracking-tighter leading-none text-heritage-onyx italic">
-               Flow <span className="text-heritage-saffron underline decoration-heritage-saffron/20">Matrices.</span>
-            </h1>
-            <p className="text-xl md:text-2xl text-heritage-onyx/40 font-medium max-w-3xl mx-auto leading-relaxed">
-              Synchronize your destinations with high-fidelity spatial intelligence for the optimal traversal of Bharat.
-            </p>
-          </motion.div>
+      <div className="container mx-auto px-6 max-w-6xl space-y-10">
+
+        {/* ── Page Header ────────────────────────────────────── */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#FF5A5F] bg-[#FF5A5F]/8 px-3 py-1 rounded-full border border-[#FF5A5F]/15">
+              <Navigation className="h-3.5 w-3.5" />
+              Route Optimizer
+            </span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-bold text-[#484848] tracking-tight">
+            Plan your <span className="text-[#FF5A5F]">route</span>
+          </h1>
+          <p className="text-[#767676] text-base max-w-xl leading-relaxed">
+            Add your destinations and we&apos;ll calculate the most efficient route across India.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start pt-12">
-          
-          {/* Input Panel */}
-          <motion.div 
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4, duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="lg:col-span-12 xl:col-span-4 space-y-12"
-          >
-            <Card className="bg-white rounded-[3rem] border-heritage-gold/10 shadow-premium overflow-hidden h-fit">
-              <CardHeader className="p-12 border-b border-heritage-bone">
-                <div className="flex justify-between items-center mb-4">
-                   <CardTitle className="text-3xl font-black text-heritage-onyx tracking-tighter italic">Stops.</CardTitle>
-                   <div className="bg-heritage-bone px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-heritage-onyx/40 shadow-soft-inner"> {places.length} Sequence Point </div>
+        {/* ── Main Grid ──────────────────────────────────────── */}
+        <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
+
+          {/* Left: Input + Results */}
+          <div className="xl:col-span-2 space-y-5">
+
+            {/* Stop input card */}
+            <div className="bg-white rounded-2xl border border-[#EBEBEB] shadow-sm overflow-hidden">
+              <div className="px-6 py-5 border-b border-[#EBEBEB] flex items-center justify-between">
+                <div>
+                  <h2 className="text-base font-bold text-[#484848] tracking-tight">Stops</h2>
+                  <p className="text-xs text-[#767676] mt-0.5">Add at least 2 destinations</p>
                 </div>
-                <CardDescription className="text-[10px] font-black uppercase tracking-[0.3em] text-heritage-gold">Calibrate your traversal</CardDescription>
-              </CardHeader>
-              <CardContent className="p-12 space-y-10">
-                <form onSubmit={handleAddPlace} className="flex gap-4">
-                  <Input 
-                    placeholder="Enter destination..." 
+                <span className="text-xs font-semibold text-[#767676] bg-[#F7F7F7] px-3 py-1.5 rounded-lg border border-[#EBEBEB]">
+                  {places.length} stop{places.length !== 1 ? "s" : ""}
+                </span>
+              </div>
+
+              <div className="p-5 space-y-4">
+                {/* Add place form */}
+                <form onSubmit={handleAddPlace} className="flex gap-2">
+                  <Input
+                    placeholder="Add a destination..."
                     value={newPlace}
                     onChange={(e) => setNewPlace(e.target.value)}
-                    className="bg-heritage-bone/50 rounded-[1.2rem] h-16 font-black text-lg text-heritage-onyx focus:ring-8 focus:ring-heritage-saffron/5 border-heritage-gold/10 transition-all px-8 shadow-soft-inner flex-1 placeholder:text-heritage-onyx/20"
+                    className="flex-1 h-11 rounded-xl bg-[#F7F7F7] border-[#EBEBEB] focus:border-[#FF5A5F] focus:ring-4 focus:ring-[#FF5A5F]/10 text-sm font-medium text-[#484848] placeholder:text-[#BBBBBB] transition-all px-4"
                   />
-                  <Button type="submit" size="icon" className="bg-heritage-saffron text-white hover:bg-heritage-onyx rounded-[1.2rem] h-16 w-16 cursor-pointer shadow-premium shrink-0 transition-all active:scale-95 group">
-                    <Plus className="h-6 w-6 group-hover:rotate-90 transition-transform duration-500" />
+                  <Button
+                    type="submit"
+                    className="h-11 w-11 bg-[#FF5A5F] hover:bg-[#e04f54] text-white rounded-xl shrink-0 transition-all active:scale-95 p-0 flex items-center justify-center shadow-sm"
+                  >
+                    <Plus className="h-5 w-5" />
                   </Button>
                 </form>
 
-                <div className="space-y-4 max-h-[450px] overflow-y-auto pr-4 custom-scrollbar">
+                {/* Places list */}
+                <div className="space-y-2 max-h-72 overflow-y-auto">
                   <AnimatePresence mode="popLayout">
                     {places.map((place, index) => (
-                      <motion.div 
-                        key={place.id} 
-                        initial={{ opacity: 0, y: 15 }}
+                      <motion.div
+                        key={place.id}
+                        initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.98 }}
+                        exit={{ opacity: 0, scale: 0.97 }}
                         layout
-                        className="flex items-center justify-between p-6 bg-heritage-bone/30 rounded-[1.5rem] border border-transparent transition-all hover:bg-white hover:shadow-premium group"
+                        className="flex items-center justify-between px-4 py-3 bg-[#F7F7F7] rounded-xl border border-[#EBEBEB] hover:border-[#FF5A5F]/20 hover:bg-white transition-all group"
                       >
-                        <div className="flex items-center gap-6 overflow-hidden">
-                          <div className="bg-white text-heritage-saffron w-10 h-10 rounded-xl flex items-center justify-center text-xs font-black shrink-0 border border-heritage-gold/5 shadow-soft-inner">
+                        <div className="flex items-center gap-3 overflow-hidden">
+                          <div className="w-7 h-7 rounded-lg bg-[#FF5A5F]/10 text-[#FF5A5F] flex items-center justify-center text-xs font-bold shrink-0">
                             {index + 1}
                           </div>
-                          <span className="font-black text-heritage-onyx text-base tracking-tighter truncate">{place.name}</span>
+                          <span className="font-medium text-[#484848] text-sm truncate">{place.name}</span>
                         </div>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => handleRemovePlace(place.id)}
-                          className="text-heritage-onyx/20 hover:text-heritage-saffron hover:bg-heritage-saffron/5 rounded-xl shrink-0 h-10 w-10 transition-colors"
+                          className="h-8 w-8 text-[#BBBBBB] hover:text-[#FF5A5F] hover:bg-[#FF5A5F]/5 rounded-lg shrink-0 transition-colors"
                         >
-                          <Trash2 className="h-5 w-5" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </motion.div>
                     ))}
                   </AnimatePresence>
-                  
+
                   {places.length === 0 && (
-                    <div className="py-24 text-center space-y-6 bg-heritage-bone/20 rounded-[2.5rem] border-2 border-dashed border-heritage-gold/10">
-                       <MapPin className="h-16 w-16 text-heritage-gold/20 mx-auto" />
-                       <p className="text-[10px] font-black text-heritage-gold/40 uppercase tracking-[0.5em] italic">No Points Synchronized</p>
+                    <div className="py-10 text-center space-y-2 border-2 border-dashed border-[#EBEBEB] rounded-xl">
+                      <MapPin className="h-8 w-8 text-[#DDDDDD] mx-auto" />
+                      <p className="text-xs text-[#BBBBBB] font-medium">No stops added yet</p>
                     </div>
                   )}
                 </div>
 
-                <Button 
+                {/* Optimize button */}
+                <Button
                   variant="premium"
-                  className="w-full h-20 rounded-[1.5rem] shadow-premium transition-all active:scale-[0.98] disabled:opacity-50" 
+                  className="w-full h-12 rounded-xl text-sm font-semibold shadow-sm transition-all active:scale-[0.98] disabled:opacity-50"
                   onClick={handleOptimize}
                   disabled={places.length < 2 || loading}
                 >
                   {loading ? (
-                    <div className="flex items-center gap-4">
-                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                       <span className="font-black text-xs uppercase tracking-widest">Conjuring Path...</span>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Optimizing route...</span>
                     </div>
                   ) : (
-                    <span className="flex items-center gap-4 font-black text-xs uppercase tracking-[0.3em]">Synthesize Optimal Route <Route className="h-5 w-5" /></span>
+                    <div className="flex items-center gap-2">
+                      <Route className="h-4 w-4" />
+                      <span>Optimize route</span>
+                    </div>
                   )}
                 </Button>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
-            {/* Results Panel */}
+            {/* Optimized results */}
             <AnimatePresence>
               {optimizedRoute.length > 0 && (
                 <motion.div
-                  initial={{ opacity: 0, y: 30, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 20 }}
-                  transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
+                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                  className="bg-[#484848] rounded-2xl border border-[#484848] overflow-hidden"
                 >
-                  <Card className="bg-heritage-onyx rounded-[3rem] border-none shadow-premium overflow-hidden text-white relative group">
-                    <div className="absolute inset-0 bg-heritage-saffron/5 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-                    <CardHeader className="p-12 pb-8 border-b border-white/5 space-y-4 relative z-10">
-                      <CardTitle className="text-3xl font-black flex items-center gap-4 italic tracking-tighter">
-                        <Compass className="h-8 w-8 text-heritage-saffron" /> 
-                        The Manifest.
-                      </CardTitle>
-                      <CardDescription className="text-white/40 text-[10px] font-black uppercase tracking-[0.5em]">High-Fidelity Chronological Sequence</CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-10 space-y-6 pt-12 relative z-10">
-                      {optimizedRoute.map((place) => (
-                        <div key={place.id} className="relative flex items-center gap-8 group/item">
-                          <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-white text-heritage-onyx shadow-premium shrink-0 z-10 font-black text-xs italic transition-transform group-hover/item:scale-110">
-                            {place.visitOrder}
-                          </div>
-                          <div className="flex-1 p-6 rounded-[1.5rem] bg-white/5 border border-white/5 group-hover/item:bg-white/10 transition-all duration-500">
-                            <h4 className="font-black text-white text-lg tracking-tighter">{place.name}</h4>
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mt-2">Vector Point {place.visitOrder}</p>
-                          </div>
+                  <div className="px-6 py-4 border-b border-white/10 flex items-center gap-3">
+                    <Compass className="h-5 w-5 text-[#FF5A5F]" />
+                    <div>
+                      <h3 className="text-sm font-bold text-white">Optimized Route</h3>
+                      <p className="text-[11px] text-white/40 font-medium">Best travel order</p>
+                    </div>
+                  </div>
+                  <div className="p-4 space-y-2">
+                    {optimizedRoute.map((place) => (
+                      <div key={place.id} className="flex items-center gap-3 px-4 py-3 bg-white/8 rounded-xl border border-white/8 hover:bg-white/12 transition-colors">
+                        <div className="w-7 h-7 rounded-lg bg-white text-[#484848] flex items-center justify-center text-xs font-bold shrink-0">
+                          {place.visitOrder}
                         </div>
-                      ))}
-                    </CardContent>
-                  </Card>
+                        <span className="font-medium text-white text-sm">{place.name}</span>
+                      </div>
+                    ))}
+                    <div className="flex items-center gap-2 pt-2 px-2">
+                      <Sparkles className="h-3.5 w-3.5 text-[#FF5A5F]" />
+                      <span className="text-[11px] text-white/40 font-medium">{optimizedRoute.length} stops optimized</span>
+                    </div>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
-          </motion.div>
+          </div>
 
-          {/* Map Panel */}
-          <motion.div 
-            initial={{ opacity: 0, x: 30 }}
+          {/* Right: Map placeholder */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.6, duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="lg:col-span-12 xl:col-span-8 sticky top-32"
+            transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="xl:col-span-3 sticky top-28"
           >
-            <Card className="bg-white rounded-[3.5rem] border-heritage-gold/10 shadow-premium overflow-hidden h-full flex flex-col min-h-[850px]">
-              <div className="p-10 px-12 border-b border-heritage-bone flex items-center justify-between bg-heritage-bone/20">
-                <div className="flex items-center gap-6">
-                   <div className="p-4 bg-heritage-saffron/5 rounded-2xl border border-heritage-saffron/10 shadow-soft-inner">
-                      <Map className="h-7 w-7 text-heritage-saffron" />
-                   </div>
-                   <div className="space-y-1">
-                      <h3 className="text-2xl font-black text-heritage-onyx italic tracking-tighter">Spatial Surface.</h3>
-                      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-heritage-gold">Geospatial Visualization</p>
-                   </div>
+            <div className="bg-white rounded-2xl border border-[#EBEBEB] shadow-sm overflow-hidden" style={{ minHeight: '620px' }}>
+              {/* Map card header */}
+              <div className="px-6 py-4 border-b border-[#EBEBEB] flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-[#FF5A5F]/8 flex items-center justify-center text-[#FF5A5F]">
+                    <Map className="h-4.5 w-4.5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-[#484848]">Route Map</h3>
+                    <p className="text-[11px] text-[#767676]">Visual route preview</p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-4">
-                   <span className="h-3 w-3 rounded-full bg-heritage-saffron animate-pulse" />
-                   <span className="text-[10px] font-black uppercase tracking-[0.3em] text-heritage-onyx/40 bg-white px-6 py-2 rounded-full border border-heritage-gold/5 shadow-soft-inner">Real-Time Sync</span>
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-[#FF5A5F] animate-pulse" />
+                  <span className="text-[11px] font-semibold text-[#767676]">Live</span>
                 </div>
               </div>
-              <div className="flex-1 relative flex items-center justify-center overflow-hidden bg-heritage-bone/10 p-12">
-                <div className="absolute inset-0 opacity-[0.06] pointer-events-none" style={{
-                  backgroundImage: `radial-gradient(circle at 2px 2px, #76767640 1.5px, transparent 0)`,
-                  backgroundSize: '40px 40px'
-                }} />
-                
-                <div className="text-center space-y-10 p-20 bg-white rounded-[4rem] max-w-2xl relative z-10 shadow-premium border border-heritage-gold/5 group">
-                  <div className="relative">
-                     <div className="absolute inset-0 bg-heritage-saffron/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000 scale-150" />
-                     <MapPin className="h-24 w-24 text-heritage-saffron mx-auto relative z-10 transition-transform duration-1000 group-hover:scale-125" />
+
+              {/* Map body — dot-grid background + placeholder */}
+              <div
+                className="flex-1 relative flex items-center justify-center"
+                style={{
+                  minHeight: '560px',
+                  backgroundImage: `radial-gradient(circle at 2px 2px, #DDDDDD 1.5px, transparent 0)`,
+                  backgroundSize: '28px 28px',
+                  backgroundColor: '#FAFAFA'
+                }}
+              >
+                <div className="text-center space-y-5 p-10 bg-white/90 backdrop-blur-sm rounded-2xl border border-[#EBEBEB] shadow-sm max-w-sm relative z-10">
+                  <div className="w-14 h-14 rounded-2xl bg-[#FF5A5F]/8 flex items-center justify-center mx-auto">
+                    <MapPin className="h-7 w-7 text-[#FF5A5F]" />
                   </div>
-                  <div className="space-y-6">
-                    <h3 className="text-4xl font-black text-heritage-onyx italic tracking-tighter">Neural Layout Pending.</h3>
-                    <p className="text-heritage-onyx/40 font-medium text-lg leading-relaxed px-12 italic">
-                      The high-fidelity spatial surface will materialize here, visualizing your sequence points across the sacred landscape.
+                  <div className="space-y-2">
+                    <h3 className="text-base font-bold text-[#484848]">Map preview</h3>
+                    <p className="text-sm text-[#767676] leading-relaxed">
+                      Add your stops and optimize the route to see the map visualization here.
                     </p>
                   </div>
                   {optimizedRoute.length > 0 && (
-                    <motion.div 
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="mt-12 pt-12 border-t border-heritage-bone"
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center justify-center gap-2 pt-1"
                     >
-                      <div className="flex items-center justify-center gap-4">
-                         <Sparkles className="h-5 w-5 text-heritage-saffron" />
-                         <span className="text-[10px] font-black uppercase tracking-[0.4em] text-heritage-gold">
-                            Resonance Synchronized: {optimizedRoute.length} Stop Matrices
-                         </span>
-                      </div>
+                      <Sparkles className="h-3.5 w-3.5 text-[#FF5A5F]" />
+                      <span className="text-xs font-semibold text-[#00A699]">
+                        Route optimized — {optimizedRoute.length} stops
+                      </span>
                     </motion.div>
                   )}
                 </div>
-                
-                <div className="absolute bottom-12 left-12 p-8 bg-white/90 backdrop-blur-2xl rounded-[2rem] border border-heritage-gold/10 flex items-start gap-6 max-w-sm shadow-premium">
-                   <div className="w-12 h-12 rounded-2xl bg-heritage-saffron/5 flex items-center justify-center shadow-soft-inner shrink-0">
-                      <Info className="h-6 w-6 text-heritage-saffron" />
-                   </div>
-                   <p className="text-[10px] font-black text-heritage-onyx/30 leading-relaxed uppercase tracking-[0.3em] italic">
-                      Vector approximations utilize active pilgrimage flow heuristics. Production API handshake stable.
-                   </p>
+
+                {/* Info footnote */}
+                <div className="absolute bottom-5 left-5 right-5 flex items-start gap-3 bg-white/90 backdrop-blur-md rounded-xl px-4 py-3 border border-[#EBEBEB] shadow-sm">
+                  <Info className="h-4 w-4 text-[#767676] shrink-0 mt-0.5" />
+                  <p className="text-[11px] text-[#767676] leading-relaxed">
+                    Route calculations use approximate coordinates. Connect to backend for precise geospatial data.
+                  </p>
                 </div>
               </div>
-            </Card>
-          </motion.div>
-
-        </div>
-      </div>
-
-      {/* Footer Accent */}
-      <section className="py-60 mt-40 relative">
-         <div className="container mx-auto px-6 text-center space-y-12">
-            <h2 className="text-6xl md:text-[8rem] font-extrabold text-heritage-onyx tracking-tighter leading-none italic opacity-5 border-b border-heritage-gold/10 pb-20">
-               Bharat Legacy Sequence.
-            </h2>
-            <div className="flex justify-center pt-24">
-               <Button variant="premium" className="px-24 h-24 rounded-[2rem] text-xl font-black uppercase tracking-[0.4em] shadow-premium group">
-                  Finalize Matrices <ArrowRightCircle className="ml-8 h-8 w-8 group-hover:rotate-45 transition-transform duration-700" />
-               </Button>
             </div>
-         </div>
-      </section>
+          </motion.div>
+        </div>
 
+        {/* ── CTA strip ──────────────────────────────────────── */}
+        <div className="bg-white rounded-2xl border border-[#EBEBEB] p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h3 className="text-base font-bold text-[#484848]">Ready to plan your full trip?</h3>
+            <p className="text-sm text-[#767676]">Generate a day-by-day AI itinerary from the Trip Planner.</p>
+          </div>
+          <Button variant="premium" className="h-11 px-6 rounded-xl text-sm font-semibold shrink-0 group transition-all active:scale-[0.97]">
+            Open Trip Planner
+            <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+          </Button>
+        </div>
+
+      </div>
     </div>
   )
 }

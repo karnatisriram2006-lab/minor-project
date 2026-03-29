@@ -46,41 +46,40 @@ export default function Sidebar() {
   const userInitial = displayName.charAt(0).toUpperCase()
 
   return (
-    <aside className="w-72 h-[calc(100vh-80px)] sticky top-20 bg-white border-r border-[#EBEBEB] flex flex-col p-6 pt-8 z-50 text-[#484848] font-sans">
-      {/* Profile Section */}
-      <div className="flex items-center gap-3 mb-10 pb-6 border-b border-[#EBEBEB]">
-        <Avatar className="h-12 w-12 border border-[#EBEBEB] shadow-sm rounded-full">
+    /* hidden on mobile (< lg), visible on lg+ */
+    <aside className="hidden lg:flex w-64 h-[calc(100vh-80px)] sticky top-20 bg-white border-r border-[#EBEBEB] flex-col p-5 pt-6 z-50 text-[#484848] font-sans shrink-0">
+      {/* Profile */}
+      <div className="flex items-center gap-3 mb-8 pb-5 border-b border-[#EBEBEB]">
+        <Avatar className="h-10 w-10 border border-[#EBEBEB] shadow-sm rounded-full shrink-0">
           <AvatarImage src={photoUrl} />
-          <AvatarFallback className="bg-[#F7F7F7] text-[#FF5A5F] font-bold text-base">
+          <AvatarFallback className="bg-[#F7F7F7] text-[#FF5A5F] font-bold text-sm">
             {userInitial}
           </AvatarFallback>
         </Avatar>
         <div className="flex flex-col min-w-0">
-          <p className="text-sm font-semibold text-[#484848] truncate max-w-[160px]">{displayName}</p>
-          <p className="text-[11px] text-[#767676] mt-0.5">Show profile</p>
+          <p className="text-sm font-semibold text-[#484848] truncate">{displayName}</p>
+          <p className="text-[11px] text-[#767676]">Show profile</p>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1">
+      <nav className="flex-1 space-y-0.5">
         {navItems.map((item) => {
           const isActive = pathname === item.href
           return (
             <Link key={item.name} href={item.href}>
               <div className={cn(
-                "group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 cursor-pointer",
+                "group flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer",
+                "transition-colors duration-150",
                 isActive
                   ? "bg-[#FF5A5F]/8 text-[#FF5A5F]"
-                  : "text-[#484848] hover:bg-[#F7F7F7] hover:text-[#484848]"
+                  : "text-[#484848] hover:bg-[#F7F7F7]"
               )}>
                 <item.icon className={cn(
-                  "h-5 w-5 transition-transform group-hover:scale-105",
-                  isActive ? "text-[#FF5A5F]" : "text-[#767676] group-hover:text-[#484848]"
+                  "h-4.5 w-4.5 shrink-0",
+                  isActive ? "text-[#FF5A5F]" : "text-[#767676]"
                 )} />
-                <span className={cn(
-                  "font-semibold text-sm",
-                  isActive ? "text-[#484848]" : "text-[#484848]"
-                )}>{item.name}</span>
+                <span className="font-semibold text-sm text-[#484848]">{item.name}</span>
                 {isActive && (
                   <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#FF5A5F]" />
                 )}
@@ -90,21 +89,21 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Footer Section */}
-      <div className="space-y-2 pt-6 border-t border-[#EBEBEB]">
+      {/* Footer */}
+      <div className="space-y-1 pt-4 border-t border-[#EBEBEB]">
         <Button
           variant="premium"
-          className="w-full h-12 rounded-xl text-sm font-semibold shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95"
+          className="w-full h-10 rounded-xl text-xs font-semibold shadow-sm flex items-center justify-center gap-2"
         >
-          <Sparkles className="h-4 w-4" />
-          <span>Get Support</span>
+          <Sparkles className="h-3.5 w-3.5" />
+          Get Support
         </Button>
 
-        <Button variant="ghost" className="w-full justify-start gap-3 text-[#767676] hover:text-[#484848] hover:bg-[#F7F7F7] rounded-xl px-4 h-11">
+        <Button variant="ghost" className="w-full justify-start gap-3 text-[#767676] hover:text-[#484848] hover:bg-[#F7F7F7] rounded-xl px-3 h-10">
           <Settings className="h-4 w-4" />
           <span className="font-medium text-sm">Settings</span>
         </Button>
-        <Button variant="ghost" className="w-full justify-start gap-3 text-[#767676] hover:text-[#484848] hover:bg-[#F7F7F7] rounded-xl px-4 h-11">
+        <Button variant="ghost" className="w-full justify-start gap-3 text-[#767676] hover:text-[#484848] hover:bg-[#F7F7F7] rounded-xl px-3 h-10">
           <HelpCircle className="h-4 w-4" />
           <span className="font-medium text-sm">Help Center</span>
         </Button>
