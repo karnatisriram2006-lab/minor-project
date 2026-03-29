@@ -16,7 +16,6 @@ import {
   ChevronRight,
   Search,
   Users,
-  LayoutDashboard,
   List
 } from "lucide-react"
 import { motion } from "framer-motion"

@@ -124,6 +124,7 @@ export default function InteractiveMap({ points = [], center = [20.5937, 78.9629
     }
 
     fetchRoute()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [points])
 
   // Animate Route progressively
