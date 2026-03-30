@@ -10,11 +10,17 @@ import {
   MapPin,
   Users,
   ArrowRight,
-  CheckCircle2
+  CheckCircle2,
+  Calculator
 } from "lucide-react"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
 import Link from "next/link"
+
+import { WeatherCard } from "@/components/WeatherCard"
+import { PlacesExplorer } from "@/components/PlacesExplorer"
+import { useWeather } from "@/hooks/useWeather"
+import { geocodeCity } from "@/lib/geocodingService"
 
 import { auth } from "@/lib/firebase"
 import { User as FirebaseUser } from "firebase/auth"
@@ -33,13 +39,40 @@ interface Message {
 
 export default function Dashboard() {
   const [user, setUser] = useState<FirebaseUser | null>(null)
+  const [trips, setTrips] = useState<any[]>([])
+  const [loadingTrips, setLoadingTrips] = useState(true)
+  const [coords, setCoords] = useState<{lat: number, lng: number} | null>(null)
+  const { weather, loading: weatherLoading, getWeather } = useWeather()
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
       setUser(currentUser)
+      if (currentUser) {
+        try {
+          const { data } = await api.get("/trips")
+          const userTrips = data.trips || []
+          setTrips(userTrips)
+          
+          if (userTrips.length > 0 && userTrips[0].city) {
+            const cityName = userTrips[0].city
+            getWeather(cityName)
+            
+            // Fetch coordinates for Places Explorer
+            geocodeCity(cityName).then(res => {
+              if (res) setCoords({ lat: res.lat, lng: res.lng })
+            })
+          }
+        } catch (err) {
+          console.error("Error fetching trips:", err)
+        } finally {
+          setLoadingTrips(false)
+        }
+      } else {
+        setLoadingTrips(false)
+      }
     })
     return () => unsubscribe()
-  }, [])
+  }, [getWeather])
 
   const displayName = user?.displayName?.split(" ")[0] || "Traveler"
 
@@ -112,21 +145,29 @@ export default function Dashboard() {
   const quickActions = [
     { label: "Plan a trip", href: "/trip-planner", icon: <Sparkles className="h-4 w-4" />, color: "#FF5A5F" },
     { label: "Find companions", href: "/companions", icon: <Users className="h-4 w-4" />, color: "#00A699" },
-    { label: "Optimize route", href: "/route-planner", icon: <Route className="h-4 w-4" />, color: "#484848" },
+    { label: "Cost Estimator", href: "/cost-estimator", icon: <Calculator className="h-4 w-4" />, color: "#484848" },
     { label: "Budget planner", href: "/budget", icon: <Wallet className="h-4 w-4" />, color: "#FC642D" },
   ]
+
+  const latestTrip = trips[0] || null
+  
+  const itinerary = latestTrip?.itinerary?.[0]?.activities?.map((act: string, i: number) => ({
+    time: i === 0 ? "09:00" : i === 1 ? "12:00" : "15:00",
+    title: act,
+    done: false
+  })) || [
+    { time: "09:00", title: "No activities planned", done: false },
+  ]
+
+  const tripLocation = latestTrip?.city || "Discovery Mode"
+  const tripDate = latestTrip?.dates?.startDate 
+    ? new Date(latestTrip.dates.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+    : "No upcoming trip"
 
   const nearbyCompanions = [
     { name: "Aditi Rao", status: "Heading to Jaipur tomorrow", match: "98%", avatar: "AR" },
     { name: "Rohan Mehta", status: "Currently at Amer Fort", match: "85%", avatar: "RM" },
     { name: "Sana Khan", status: "Exploring Yoga retreats", match: "72%", avatar: "SK" },
-  ]
-
-  const itinerary = [
-    { time: "06:00", title: "Sunrise at Jal Mahal", done: true },
-    { time: "09:30", title: "Guided walk: Johari Bazaar", done: true },
-    { time: "13:00", title: "Lunch — Rajasthani cuisine", done: false },
-    { time: "16:00", title: "Amer Fort exploration", done: false },
   ]
 
   return (
@@ -153,7 +194,9 @@ export default function Dashboard() {
             className="flex items-center gap-2 bg-white px-4 py-2.5 rounded-xl border border-[#EBEBEB] shadow-sm self-start sm:self-auto"
           >
             <div className="w-2 h-2 rounded-full bg-[#00A699] animate-pulse" />
-            <span className="text-xs font-semibold text-[#767676]">Jaipur • 10:45 AM</span>
+            <span className="text-xs font-semibold text-[#767676]">
+              {latestTrip ? `${latestTrip.city} • Active` : "Exploring India"}
+            </span>
           </motion.div>
         </div>
 
@@ -307,19 +350,23 @@ export default function Dashboard() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between items-baseline">
-                    <span className="text-xl font-bold text-[#484848]">₹45,200</span>
+                    <span className="text-xl font-bold text-[#484848]">
+                      {latestTrip ? `₹${latestTrip.budget?.toLocaleString('en-IN') || '0'}` : "₹0"}
+                    </span>
                     <span className="text-xs font-semibold text-[#00A699] bg-[#00A699]/8 px-2 py-0.5 rounded-full">On track</span>
                   </div>
                   <div className="w-full h-2 bg-[#F7F7F7] rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
-                      whileInView={{ width: "75%" }}
+                      whileInView={{ width: latestTrip ? "35%" : "0%" }}
                       transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
                       className="h-full rounded-full"
                       style={{ backgroundColor: '#FF5A5F' }}
                     />
                   </div>
-                  <p className="text-xs text-[#767676]">75% of budget used</p>
+                  <p className="text-xs text-[#767676]">
+                    {latestTrip ? "35% of budget used" : "No active spending"}
+                  </p>
                 </div>
               </div>
 
@@ -352,7 +399,18 @@ export default function Dashboard() {
           </motion.div>
 
           {/* Right sidebar */}
-          <div className="xl:col-span-5 flex flex-col gap-5">
+          <div className="xl:col-span-5 flex flex-col gap-6">
+
+            {/* Live Weather Status */}
+            <AnimatePresence mode="wait">
+              {(weather || weatherLoading) && (
+                <WeatherCard 
+                  data={weather} 
+                  city={trips[0]?.city || "Current Location"} 
+                  loading={weatherLoading} 
+                />
+              )}
+            </AnimatePresence>
 
             {/* Nearby travelers */}
             <motion.div
@@ -374,7 +432,7 @@ export default function Dashboard() {
               </div>
 
               <div className="space-y-3">
-                {nearbyCompanions.map((companion, i) => (
+                {nearbyCompanions.map((companion: any, i: number) => (
                   <div key={i} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#F7F7F7] transition-colors cursor-pointer group">
                     <Avatar className="h-10 w-10 border border-[#EBEBEB] rounded-xl shrink-0">
                       <AvatarFallback className="bg-[#F7F7F7] text-[#484848] font-bold text-xs rounded-xl">
@@ -402,14 +460,14 @@ export default function Dashboard() {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-[#484848]">Today — Oct 14</h3>
-                  <p className="text-xs text-[#767676] mt-0.5">Jaipur, Rajasthan</p>
+                  <h3 className="text-sm font-bold text-[#484848]">Today — {tripDate}</h3>
+                  <p className="text-xs text-[#767676] mt-0.5">{tripLocation}</p>
                 </div>
                 <MapPin className="h-4 w-4 text-[#FF5A5F]" />
               </div>
 
               <div className="space-y-1">
-                {itinerary.map((item, i) => (
+                {itinerary.map((item: any, i: number) => (
                   <div key={i} className={cn(
                     "flex items-center gap-3 p-3 rounded-xl transition-colors",
                     item.done ? "opacity-50" : "hover:bg-[#F7F7F7]"
@@ -433,20 +491,24 @@ export default function Dashboard() {
               style={{ height: '160px' }}
             >
               <Image
-                src="https://images.unsplash.com/photo-1599661046289-e31897846e41?w=800&auto=format&fit=crop&q=80"
-                alt="Jaipur"
+                src={latestTrip ? "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800&auto=format&fit=crop&q=80" : "https://images.unsplash.com/photo-1506461883276-594a12b11cf3?w=800&auto=format&fit=crop&q=80"}
+                alt={tripLocation}
                 fill
                 className="object-cover group-hover:scale-105 transition-transform duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-4 flex items-end justify-between">
                 <div>
-                  <p className="text-white font-bold text-sm">Jaipur, Rajasthan</p>
-                  <p className="text-white/70 text-xs">Pink City — Oct 14–16</p>
+                  <p className="text-white font-bold text-sm">{tripLocation}</p>
+                  <p className="text-white/70 text-xs">
+                    {latestTrip ? `${latestTrip.city} Adventure` : "Ready for your next journey?"}
+                  </p>
                 </div>
-                <Button className="h-8 px-3 rounded-lg bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-semibold hover:bg-white/30 transition-all">
-                  View map
-                </Button>
+                <Link href={latestTrip ? "/map" : "/trip-planner"}>
+                  <Button className="h-8 px-3 rounded-lg bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-semibold hover:bg-white/30 transition-all">
+                    {latestTrip ? "View map" : "Start planning"}
+                  </Button>
+                </Link>
               </div>
             </motion.div>
           </div>
@@ -528,6 +590,17 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+
+        {/* ── Nearby Places Section ─────────────────────── */}
+        {coords && (
+          <div className="pt-8 border-t border-[#EBEBEB]">
+            <PlacesExplorer 
+              lat={coords.lat} 
+              lon={coords.lng} 
+              city={trips[0]?.city} 
+            />
+          </div>
+        )}
 
       </div>
     </div>

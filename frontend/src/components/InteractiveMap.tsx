@@ -83,9 +83,9 @@ export default function InteractiveMap({ points = [], center = [20.5937, 78.9629
   useEffect(() => { setIsMounted(true) }, [])
 
   const INITIAL_VIEW_STATE = {
-    longitude: center[1],
-    latitude: center[0],
-    zoom: zoom,
+    longitude: 78.9629, // India Longitude
+    latitude: 20.5937,  // India Latitude
+    zoom: zoom || 4.5,
     pitch: 40,
     bearing: 0,
     maxZoom: 18,

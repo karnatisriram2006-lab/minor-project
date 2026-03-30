@@ -143,23 +143,23 @@ export default function BudgetOptimizer() {
               </div>
               <div className="p-6 md:p-8">
                 {allocation ? (
-                  <div className="flex flex-col xl:flex-row items-center gap-16">
-                    <div className="w-full xl:w-5/12 h-[350px] relative flex items-center justify-center">
+                  <div className="flex flex-col xl:flex-row items-center gap-8 xl:gap-12">
+                    <div className="w-full xl:w-1/2 h-[320px] relative flex items-center justify-center">
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
                            <div className="text-center">
                               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#767676]/40 leading-none mb-2">Total</p>
-                              <p className="text-4xl font-black text-[#484848] tracking-tighter leading-none">100%</p>
+                              <p className="text-3xl font-black text-[#484848] tracking-tighter leading-none">100%</p>
                            </div>
-                       </div>
+                        </div>
                       <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
+                        <PieChart margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
                           <Pie
                             data={chartData}
                             cx="50%"
                             cy="50%"
-                            innerRadius={80}
-                            outerRadius={120}
-                            paddingAngle={4}
+                            innerRadius={60}
+                            outerRadius={90}
+                            paddingAngle={5}
                             dataKey="value"
                             stroke="#fff"
                             strokeWidth={4}
@@ -188,7 +188,7 @@ export default function BudgetOptimizer() {
                       </ResponsiveContainer>
                     </div>
                     
-                    <div className="w-full xl:w-7/12 space-y-4">
+                    <div className="w-full xl:w-1/2 space-y-3">
                       {chartData.map((item, idx) => (
                         <motion.div 
                           key={item.name} 

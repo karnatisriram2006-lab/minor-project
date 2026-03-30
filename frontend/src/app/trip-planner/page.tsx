@@ -25,6 +25,8 @@ import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
 import api from "@/lib/api"
+import { exportElementToPDF } from "@/lib/pdfExport"
+import { PrintableItinerary } from "@/components/PrintableItinerary"
 
 const InteractiveMap = dynamic(() => import("@/components/InteractiveMap"), {
   ssr: false,
@@ -50,6 +52,7 @@ type ItineraryType = Record<string, ItineraryStop[]>
 export default function TripPlanner() {
   const [viewMode, setViewMode] = useState<"list" | "map">("list")
   const [loading, setLoading] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
   const [itinerary, setItinerary] = useState<ItineraryType | null>(null)
   const [formData, setFormData] = useState({
     city: "Jaipur",
@@ -258,8 +261,12 @@ export default function TripPlanner() {
                 >
                   {loading ? (
                     <div className="flex items-center gap-3">
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span>Generating itinerary...</span>
+                      <motion.div 
+                        animate={{ rotate: 360 }}
+                        transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                        className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full" 
+                      />
+                      <span className="animate-pulse">Curating your experience...</span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
@@ -285,15 +292,41 @@ export default function TripPlanner() {
             <div className="flex flex-col h-full bg-white">
               <div className="px-6 py-4 border-b border-[#EBEBEB] shrink-0">
                 <div className="flex items-center justify-between mb-1">
-                  <h2 className="text-xl font-bold text-[#484848] tracking-tight">Your Itinerary</h2>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setItinerary(null)}
-                    className="text-[#767676] hover:text-[#484848] hover:bg-[#F7F7F7] rounded-xl h-9 w-9 transition-colors"
-                  >
-                    <ChevronRight className="h-5 w-5 rotate-180" />
-                  </Button>
+                  <h2 className="text-xl font-bold text-[#484848] tracking-tight">
+                    {loading ? "Planning..." : "Your Itinerary"}
+                  </h2>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      disabled={loading}
+                      onClick={async () => {
+                        try {
+                          await api.post("/trips/save", {
+                            city: formData.city,
+                            startDate: new Date(),
+                            endDate: new Date(Date.now() + (parseInt(formData.days) || 1) * 24 * 60 * 60 * 1000),
+                            budget: formData.budget === "Luxury" ? 100000 : formData.budget === "Classic" ? 50000 : 20000,
+                            itinerary: itinerary
+                          })
+                          alert("Trip saved to your dashboard!")
+                        } catch (err) {
+                          console.error("Save error:", err)
+                        }
+                      }}
+                      variant="premium"
+                      size="sm"
+                      className="h-8 px-3 rounded-lg text-xs font-bold"
+                    >
+                      Save Trip
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setItinerary(null)}
+                      className="text-[#767676] hover:text-[#484848] hover:bg-[#F7F7F7] rounded-xl h-9 w-9 transition-colors"
+                    >
+                      <ChevronRight className="h-5 w-5 rotate-180" />
+                    </Button>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-[#FF5A5F] animate-pulse" />
@@ -301,8 +334,23 @@ export default function TripPlanner() {
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto px-6 py-4 space-y-8">
-                {Object.entries(itinerary).map(([day, activities]: [string, ItineraryStop[]], idx) => (
+              <div className="flex-1 overflow-y-auto px-6 py-4 space-y-8 bg-white">
+                {loading ? (
+                  /* Skeleton List */
+                  <div className="space-y-8 animate-pulse">
+                    {[1, 2].map((day) => (
+                      <div key={day} className="relative pl-10 border-l-2 border-[#EBEBEB]">
+                        <div className="absolute -left-4 top-0 w-8 h-8 rounded-full bg-[#EBEBEB] z-10" />
+                        <div className="h-4 w-20 bg-[#F7F7F7] rounded-lg mb-6" />
+                        <div className="space-y-4">
+                          {[1, 2, 3].map((i) => (
+                            <div key={i} className="h-28 rounded-2xl bg-[#F7F7F7] border border-[#EBEBEB]" />
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : Object.entries(itinerary).map(([day, activities]: [string, ItineraryStop[]], idx) => (
                   <div key={day} className="relative pl-10 border-l-2 border-[#EBEBEB]">
                     {/* Day badge */}
                     <div className="absolute -left-4 top-0 w-8 h-8 rounded-full bg-[#FF5A5F] text-white flex items-center justify-center z-10 font-bold text-xs shadow-sm">
@@ -350,10 +398,26 @@ export default function TripPlanner() {
               <div className="p-5 border-t border-[#EBEBEB] shrink-0">
                 <Button
                   variant="outline"
+                  onClick={async () => {
+                    setIsExporting(true);
+                    try {
+                      await exportElementToPDF("printable-itinerary-content", `${formData.city}-Itinerary.pdf`, `${formData.city} Trip Itinerary`);
+                    } finally {
+                      setIsExporting(false);
+                    }
+                  }}
+                  disabled={isExporting}
                   className="w-full h-12 rounded-xl border-[#DDDDDD] text-[#484848] hover:bg-[#F7F7F7] font-semibold text-sm transition-all active:scale-[0.98]"
                 >
-                  Export as PDF
+                  {isExporting ? "Generating PDF..." : "Export as PDF"}
                 </Button>
+                
+                {/* ── Hidden Print Layout ────────────────────────────── */}
+                <PrintableItinerary 
+                  city={formData.city} 
+                  itinerary={itinerary} 
+                  days={formData.days} 
+                />
               </div>
             </div>
           )}

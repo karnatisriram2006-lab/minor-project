@@ -15,6 +15,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    firebaseUid: {
+        type: String,
+        unique: true,
+        sparse: true,
+    },
     interests: {
         type: [String],
         default: [],

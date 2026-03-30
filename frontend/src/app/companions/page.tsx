@@ -25,6 +25,38 @@ export default function Companions() {
   const [destination, setDestination] = useState("")
   const [loading, setLoading] = useState(false)
   const [matches, setMatches] = useState<CompanionMatch[]>([])
+  const [featuredTravelers] = useState<CompanionMatch[]>([
+    {
+      id: "feat-1",
+      name: "Sanya Malhotra",
+      match: "98%",
+      destination: "Spiti Valley",
+      avatar: "SM",
+      similarityScore: 98,
+      dates: "June 12 - June 20",
+      interests: ["Trekking", "Photography", "Camping"]
+    },
+    {
+      id: "feat-2",
+      name: "Kabir Singh",
+      match: "92%",
+      destination: "Goa",
+      avatar: "KS",
+      similarityScore: 92,
+      dates: "Dec 28 - Jan 5",
+      interests: ["Nightlife", "Beach", "Surfing"]
+    },
+    {
+      id: "feat-3",
+      name: "Riya Sen",
+      match: "85%",
+      destination: "Jaipur",
+      avatar: "RS",
+      similarityScore: 85,
+      dates: "Oct 14 - Oct 20",
+      interests: ["Culture", "History", "Food"]
+    }
+  ])
   const [isAuthorized, setIsAuthorized] = useState(true)
 
   const handleMatch = async (e?: React.FormEvent) => {
@@ -218,8 +250,10 @@ export default function Companions() {
             >
               <h2 className="text-base font-bold text-[#484848]">Travelers</h2>
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-[#EBEBEB] shadow-sm">
-                <div className="h-2 w-2 rounded-full bg-[#FF5A5F] animate-pulse" />
-                <span className="text-xs font-semibold text-[#767676]">{matches.length} available</span>
+                <div className="h-2 w-2 rounded-full bg-[#00A699] animate-pulse" />
+                <span className="text-xs font-semibold text-[#767676]">
+                  {matches.length > 0 ? `${matches.length} matches` : "Featured explorers"}
+                </span>
               </div>
             </motion.div>
 
@@ -236,9 +270,9 @@ export default function Companions() {
                     <div key={i} className="h-32 rounded-2xl bg-[#EBEBEB] animate-pulse border border-[#E0E0E0]" />
                   ))}
                 </motion.div>
-              ) : matches.length > 0 ? (
+              ) : (matches.length > 0 || featuredTravelers.length > 0) ? (
                 <div className="space-y-4">
-                  {matches.slice(0, 5).map((match, idx) => (
+                  {(matches.length > 0 ? matches : featuredTravelers).map((match, idx) => (
                     <motion.div
                       key={match.id}
                       initial={{ opacity: 0, y: 16 }}
@@ -317,9 +351,9 @@ export default function Companions() {
                     <Users className="h-7 w-7 text-[#BBBBBB]" />
                   </div>
                   <div className="space-y-1.5">
-                    <p className="text-sm font-semibold text-[#484848]">No companions found yet</p>
+                    <p className="text-sm font-semibold text-[#484848]">No specific matches found</p>
                     <p className="text-xs text-[#767676] max-w-xs">
-                      Use the filters to search for travelers heading to your destination.
+                      Try adjusting your destination or dates to find more travelers.
                     </p>
                   </div>
                 </motion.div>

@@ -1,7 +1,8 @@
-const fs = require('fs').promises;
+const SavedTrip = require('../models/SavedTrip');
+const Cache = require('../models/Cache');
 const path = require('path');
+const fs = require('fs').promises;
 
-const CACHE_PATH = path.join(__dirname, '../../cache/itineraryCache.json');
 const DATASET_PATH = path.join(__dirname, '../../data/touristPlaces.json');
 
 /**
@@ -22,11 +23,11 @@ const getTouristPlaces = async () => {
  */
 const getFromCache = async (key) => {
     try {
-        const data = await fs.readFile(CACHE_PATH, 'utf8');
-        const cache = JSON.parse(data);
-        return cache[key] || null;
+        if (!process.env.MONGODB_URI) return null;
+        const entry = await Cache.findOne({ key });
+        return entry ? entry.value : null;
     } catch (error) {
-        console.error('[Storage Service] Error reading cache:', error.message);
+        console.error('[Storage Service] Cache read error:', error.message);
         return null;
     }
 };
@@ -36,13 +37,15 @@ const getFromCache = async (key) => {
  */
 const saveToCache = async (key, itinerary) => {
     try {
-        const data = await fs.readFile(CACHE_PATH, 'utf8');
-        const cache = JSON.parse(data);
-        cache[key] = itinerary;
-        await fs.writeFile(CACHE_PATH, JSON.stringify(cache, null, 2));
-        console.log(`[Storage Service] Cached new itinerary for: ${key}`);
+        if (!process.env.MONGODB_URI) return;
+        await Cache.findOneAndUpdate(
+            { key },
+            { value: itinerary },
+            { upsert: true, new: true }
+        );
+        console.log(`[Storage Service] Cached new itinerary in MongoDB for: ${key}`);
     } catch (error) {
-        console.error('[Storage Service] Error writing to cache:', error.message);
+        console.error('[Storage Service] Cache write error:', error.message);
     }
 };
 
