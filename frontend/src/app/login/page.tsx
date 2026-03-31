@@ -47,6 +47,7 @@ export default function Login() {
           src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&q=80&w=1200"
           alt="Taj Mahal"
           fill
+          sizes="(max-width: 1024px) 50vw, 50vw"
           className="object-cover opacity-30"
           priority
         />

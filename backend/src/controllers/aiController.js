@@ -3,7 +3,8 @@ const {
     recommendPlacesAgent, 
     travelGuideAgent, 
     chatCompletion,
-    translateAgent
+    translateAgent,
+    validateItinerary
 } = require('../services/groqService');
 const { getFromCache, saveToCache, getTouristPlaces } = require('../services/itineraryStorageService');
 
@@ -27,11 +28,26 @@ const createItinerary = async (req, res) => {
             return res.json(cachedResult);
         }
 
-        const itinerary = await generateItineraryAgent(city, days, interests || 'general', budget || 'medium');
+        // Generate raw itinerary from AI
+        const rawItinerary = await generateItineraryAgent(city, days, interests || 'general', budget || 'medium');
         
-        console.log(`[AI Itinerary] Successfully generated itinerary for ${city}`);
-        await saveToCache(cacheKey, itinerary);
-        res.json(itinerary);
+        // Validate and optimize geographically
+        const { itinerary: optimizedItinerary, warnings } = validateItinerary(rawItinerary.itinerary || rawItinerary);
+        
+        console.log(`[AI Itinerary] Successfully generated and optimized itinerary for ${city}`);
+        if (warnings.length > 0) {
+            console.log('[AI Itinerary] Warnings:', warnings);
+        }
+        
+        const result = {
+            itinerary: optimizedItinerary,
+            warnings,
+            city,
+            days
+        };
+        
+        await saveToCache(cacheKey, result);
+        res.json(result);
     } catch (error) {
         console.error('[AI Itinerary Controller Error]:', error.message, error.stack);
         res.status(500).json({ message: 'Itinerary generation failed', error: error.message });

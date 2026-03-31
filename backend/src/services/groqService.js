@@ -49,7 +49,7 @@ const parseAIJSON = (text) => {
 
 /**
  * Agent 1: Travel Planning Agent
- * Generate a detailed travel itinerary
+ * Generate a detailed, geographically-optimized itinerary
  */
 const generateItineraryAgent = async (city, days, interests, budget) => {
     console.log(`[Itinerary Agent] Planning ${days} days in ${city}...`);
@@ -58,22 +58,35 @@ const generateItineraryAgent = async (city, days, interests, budget) => {
 User Interests: ${interests}
 Budget Level: ${budget}
 
+CRITICAL GEOGRAPHIC RULES:
+1. Group places that are CLOSE TOGETHER on the same day (within 5-10km of each other).
+2. NEVER put places on opposite ends of the city on the same day.
+3. Start each day from a central location and visit nearby places in a logical route.
+4. Maximum 4-5 places per day to allow realistic travel time.
+5. Include realistic travel time between places (15-45 min within city).
+6. Order places within each day by geographic proximity (shortest path).
+
 Requirement: Provide a day-by-day itinerary in JSON format.
-Each day should have a list of activities.
-Activities must include: name, description (max 10 words), time, type (e.g., 'culture', 'food', 'landmark').
+Each activity must include: name, description (max 10 words), time, type, lat, lng.
 
 Format:
 {
   "itinerary": {
     "day1": [
-      { "name": "...", "description": "...", "time": "09:00 AM", "type": "...", "lat": 27.1751, "lng": 78.0421 }
+      { "name": "...", "description": "...", "time": "09:00 AM", "type": "culture", "lat": 27.1751, "lng": 78.0421, "visitDuration": "2 hours" }
     ],
-    ...
+    "day2": [
+      { "name": "...", "description": "...", "time": "10:00 AM", "type": "landmark", "lat": 27.1751, "lng": 78.0421, "visitDuration": "1.5 hours" }
+    ]
   }
 }
-Note: Strictly include accurate latitude and longitude for every place in India.`;
 
-    const systemPrompt = "You are a professional Indian Travel Planner. Respond ONLY with valid JSON.";
+Note: 
+- All lat/lng must be accurate coordinates within ${city}, India.
+- Places in the same day MUST be geographically close to each other.
+- Include visitDuration for each place (e.g., "1 hour", "2 hours").`;
+
+    const systemPrompt = "You are a professional Indian Travel Planner who optimizes routes geographically. Group nearby places together. Respond ONLY with valid JSON.";
 
     try {
         const responseText = await callGroq(prompt, systemPrompt, 0.2);
@@ -199,11 +212,171 @@ const chatCompletion = async (message) => {
     }
 };
 
+/**
+ * Agent 5: Nearby Places Agent (AI-Generated)
+ * Generates nearby places based on user coordinates and category
+ */
+const nearbyPlacesAgent = async (lat, lng, category = 'general', radius = 5000) => {
+    console.log(`[Nearby Places Agent] Finding ${category} near ${lat}, ${lng}...`);
+
+    const categoryExamples = {
+        hospital: 'hospitals, clinics, medical centers',
+        police: 'police stations, police outposts',
+        pharmacy: 'pharmacies, medical stores, chemists',
+        atm: 'ATMs, banks with ATM facilities',
+        hostel: 'budget hostels, backpacker lodges, guesthouses',
+        restaurant: 'restaurants, cafes, eateries, food stalls',
+        'tourist-info': 'tourist information centers, help desks',
+        'fire-station': 'fire stations',
+        embassy: 'embassies, consulates',
+        general: 'useful places like hospitals, police, ATMs, restaurants, pharmacies'
+    };
+
+    const prompt = `I am a tourist at latitude ${lat}, longitude ${lng} in India.
+Find the nearest 8 ${categoryExamples[category] || category} within approximately ${radius / 1000}km radius.
+
+For each place, provide:
+- name: Real or realistic name of the place
+- category: One of [hospital, police, pharmacy, atm, hostel, restaurant, tourist-info, fire-station, embassy]
+- address: Approximate street address in the area
+- phone: Phone number or emergency number (use 100 for police, 108 for ambulance, 1932 for tourist police if unknown)
+- distance: Approximate distance in meters from my location
+- open24Hours: true/false
+- verified: true
+- rating: Rating out of 5
+
+IMPORTANT: Return ONLY a valid JSON array of places. Do NOT include markdown code blocks or extra text.
+
+Format:
+{
+  "places": [
+    {
+      "name": "...",
+      "category": "...",
+      "address": "...",
+      "phone": "...",
+      "distance": 1200,
+      "open24Hours": true,
+      "verified": true,
+      "rating": 4.5,
+      "lat": 28.6139,
+      "lng": 77.2090
+    }
+  ]
+}
+
+Note: lat and lng should be realistic coordinates near my location (${lat}, ${lng}).`;
+
+    const systemPrompt = 'You are a knowledgeable local guide. Provide realistic nearby places based on the coordinates. Respond ONLY with valid JSON.';
+
+    try {
+        const responseText = await callGroq(prompt, systemPrompt, 0.3);
+        return parseAIJSON(responseText);
+    } catch (error) {
+        console.error('[Nearby Places Agent Error]', error.message);
+        throw error;
+    }
+};
+
+/**
+ * Calculate Haversine distance between two coordinates (in km)
+ */
+function haversineDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
+
+/**
+ * Reorder activities within each day by geographic proximity (nearest-neighbor)
+ */
+function optimizeDayRoute(activities) {
+    if (activities.length <= 1) return activities;
+    
+    const optimized = [activities[0]];
+    const remaining = activities.slice(1);
+    
+    while (remaining.length > 0) {
+        const last = optimized[optimized.length - 1];
+        let nearestIdx = 0;
+        let nearestDist = Infinity;
+        
+        for (let i = 0; i < remaining.length; i++) {
+            const dist = haversineDistance(last.lat, last.lng, remaining[i].lat, remaining[i].lng);
+            if (dist < nearestDist) {
+                nearestDist = dist;
+                nearestIdx = i;
+            }
+        }
+        
+        const nearest = remaining.splice(nearestIdx, 1)[0];
+        nearest.distanceFromPrev = Math.round(nearestDist * 100) / 100; // km
+        optimized.push(nearest);
+    }
+    
+    return optimized;
+}
+
+/**
+ * Validate and optimize the full itinerary
+ */
+function validateItinerary(itinerary) {
+    const optimized = {};
+    const warnings = [];
+    
+    for (const [day, activities] of Object.entries(itinerary)) {
+        if (!activities || activities.length === 0) continue;
+        
+        // Reorder by nearest-neighbor
+        const reordered = optimizeDayRoute(activities);
+        
+        // Check if any day has places too far apart (>15km between consecutive places)
+        let maxDist = 0;
+        for (let i = 1; i < reordered.length; i++) {
+            const dist = haversineDistance(
+                reordered[i-1].lat, reordered[i-1].lng,
+                reordered[i].lat, reordered[i].lng
+            );
+            maxDist = Math.max(maxDist, dist);
+        }
+        
+        if (maxDist > 15) {
+            warnings.push(`${day}: Some places are ${maxDist.toFixed(1)}km apart. Consider splitting across days.`);
+        }
+        
+        // Calculate total day distance
+        const totalDist = reordered.reduce((sum, a, i) => {
+            if (i === 0) return 0;
+            return sum + haversineDistance(reordered[i-1].lat, reordered[i-1].lng, a.lat, a.lng);
+        }, 0);
+        
+        optimized[day] = reordered.map(a => ({
+            ...a,
+            distanceFromPrev: a.distanceFromPrev || 0
+        }));
+        optimized[day]._summary = {
+            placeCount: reordered.length,
+            totalTravelKm: Math.round(totalDist * 10) / 10,
+            maxGapKm: Math.round(maxDist * 10) / 10
+        };
+    }
+    
+    return { itinerary: optimized, warnings };
+}
+
 module.exports = {
     generateItinerary: generateItineraryAgent,
     generateItineraryAgent,
     recommendPlacesAgent,
     travelGuideAgent,
     chatCompletion,
-    translateAgent
+    translateAgent,
+    nearbyPlacesAgent,
+    validateItinerary,
+    haversineDistance
 };

@@ -42,28 +42,48 @@ const WEATHER_CODES: Record<number, string> = {
 };
 
 export const fetchWeather = async (lat: number, lng: number): Promise<WeatherData | null> => {
-    try {
-        const response = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true&relative_humidity_2m=true&windspeed_unit=kmh&timezone=auto`
-        );
-        
-        const data = await response.json();
-        
-        if (data && data.current_weather) {
-            const current = data.current_weather;
-            return {
-                temperature: Math.round(current.temperature),
-                windSpeed: Math.round(current.windspeed),
-                humidity: data.current && data.current.relative_humidity_2m ? data.current.relative_humidity_2m : 65, // Fallback
-                conditionCode: current.weathercode,
-                isDay: current.is_day === 1,
-                description: WEATHER_CODES[current.weathercode] || "Conditions unknown"
-            };
-        }
-        
-        return null;
-    } catch (error) {
-        console.error('[Weather] Error fetching weather:', error);
-        return null;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+  try {
+    const response = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true&relative_humidity_2m=true&windspeed_unit=kmh&timezone=auto`,
+      { signal: controller.signal }
+    );
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`Weather API error: ${response.status} ${response.statusText}`);
     }
+
+    const data = await response.json();
+
+    if (data && data.current_weather) {
+      const current = data.current_weather;
+      return {
+        temperature: Math.round(current.temperature),
+        windSpeed: Math.round(current.windspeed),
+        humidity: (data as any).current?.relative_humidity_2m ?? 65,
+        conditionCode: current.weathercode,
+        isDay: current.is_day === 1,
+        description: WEATHER_CODES[current.weathercode] || "Conditions unknown",
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.error('[Weather] Error fetching weather:', error);
+    // Optional: return a lightweight fallback to keep UI functional
+    // return {
+    //   temperature: 25,
+    //   windSpeed: 10,
+    //   humidity: 60,
+    //   conditionCode: 0,
+    //   isDay: true,
+    //   description: WEATHER_CODES[0],
+    // };
+    return null;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 };

@@ -19,9 +19,16 @@ const hostelSchema = new mongoose.Schema({
         max: 5,
         default: 0
     },
-    coordinates: {
-        lat: { type: Number, required: true },
-        lng: { type: Number, required: true }
+    location: {
+        type: {
+            type: String,
+            enum: ['Point'],
+            default: 'Point'
+        },
+        coordinates: {
+            type: [Number], // [longitude, latitude]
+            required: true
+        }
     },
     amenities: {
         type: [String],
@@ -29,7 +36,26 @@ const hostelSchema = new mongoose.Schema({
     },
     imageUrl: {
         type: String,
+    },
+    // Legacy coordinates for backward compatibility
+    coordinates: {
+        lat: { type: Number },
+        lng: { type: Number }
     }
 }, { timestamps: true });
+
+// 🔑 Geospatial index for "Near Me" queries
+hostelSchema.index({ location: '2dsphere' });
+
+// Pre-save hook to sync legacy coordinates with GeoJSON
+hostelSchema.pre('save', function(next) {
+    if (this.coordinates && this.coordinates.lat && this.coordinates.lng) {
+        this.location = {
+            type: 'Point',
+            coordinates: [this.coordinates.lng, this.coordinates.lat]
+        };
+    }
+    next();
+});
 
 module.exports = mongoose.model('Hostel', hostelSchema);

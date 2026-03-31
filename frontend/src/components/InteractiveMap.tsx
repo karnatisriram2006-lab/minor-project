@@ -11,7 +11,9 @@ import { motion, AnimatePresence } from "framer-motion"
 // Helper component for DeckGL Overlay in MapLibre
 function DeckGLOverlay(props: MapboxOverlayProps) {
   const overlay = useControl<MapboxOverlay>(() => new MapboxOverlay(props))
-  overlay.setProps(props)
+  if (overlay) {
+    overlay.setProps(props)
+  }
   return null
 }
 
@@ -78,6 +80,25 @@ export default function InteractiveMap({ points = [], center = [20.5937, 78.9629
   const [loadingRoute, setLoadingRoute] = useState(false)
   const [visibleRoute, setVisibleRoute] = useState<[number, number][]>([])
   const [isMounted, setIsMounted] = useState(false)
+  const [webglError, setWebglError] = useState(false)
+  // Map context is consumed inside child components to ensure correct scoping
+  const [darkMap, setDarkMap] = useState(false)
+  const [geoToast, setGeoToast] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' })
+  const [pendingLocation, setPendingLocation] = useState<{ lon: number; lat: number } | null>(null)
+  const [userLocation, setUserLocation] = useState<{ lon: number; lat: number } | null>(null)
+
+  // MapLocator subscribes to map context to fly to the pending location when ready
+  function MapLocator({ pendingLocation }: { pendingLocation: { lon: number; lat: number } | null }) {
+    const { current: map } = useMap()
+    useEffect(() => {
+      if (map && pendingLocation) {
+        map.flyTo({ center: [pendingLocation.lon, pendingLocation.lat], zoom: 12, duration: 1500 } as any)
+        // clear after fly
+        // Note: we can't setPendingLocation from here to avoid extra renders; the parent handles state
+      }
+    }, [map, pendingLocation])
+    return null
+  }
 
   // Prevent WebGL initialization on server — DeckGL requires browser context
   useEffect(() => { setIsMounted(true) }, [])
@@ -90,6 +111,31 @@ export default function InteractiveMap({ points = [], center = [20.5937, 78.9629
     bearing: 0,
     maxZoom: 18,
   }
+  // Locate me handler (centers the map on user location)
+  const locateMe = () => {
+    if (!('geolocation' in navigator)) {
+      console.warn('Geolocation is not supported by this browser.');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition((pos) => {
+      const { longitude, latitude } = pos.coords
+      console.debug('[InteractiveMap] Geolocation success', longitude, latitude)
+      // Persist user location marker and trigger fly when map is ready
+      setUserLocation({ lon: longitude, lat: latitude })
+      setPendingLocation({ lon: longitude, lat: latitude })
+    }, (err: any) => {
+      const msg = err?.message ?? (typeof err?.code !== 'undefined' ? `Geolocation error code ${err.code}` : 'Geolocation error')
+      // Show a user-friendly toast instead of noisy console Errors
+      setGeoToast({ visible: true, message: msg })
+      // Auto-dismiss after a short delay
+      window.setTimeout(() => setGeoToast({ visible: false, message: '' }), 4500)
+      // As a fallback, center the map to India if geolocation is unavailable
+      setPendingLocation({ lon: 78.9629, lat: 20.5937 })
+    }, { enableHighAccuracy: true, timeout: 5000 })
+  }
+  // Map theme toggle
+  const toggleDarkMap = () => setDarkMap((d) => !d)
+  // MapLocator component handles flying to a pending location when the map is ready
 
   // Fetch Route from OSRM
   useEffect(() => {
@@ -103,10 +149,16 @@ export default function InteractiveMap({ points = [], center = [20.5937, 78.9629
       try {
         const coords = points.map(p => `${p.lng},${p.lat}`).join(";")
         const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`
-        
-        const res = await fetch(url)
-        if (!res.ok) throw new Error("OSRM API Unavailable")
-        
+        let res: Response | undefined
+        let attempts = 0
+        const maxAttempts = 3
+        while (attempts < maxAttempts) {
+          res = await fetch(url)
+          if (res?.ok) break
+          attempts++
+          await new Promise(r => setTimeout(r, 500 * attempts))
+        }
+        if (!res || !res.ok) throw new Error("OSRM API Unavailable")
         const data = await res.json()
         if (data.routes && data.routes[0]) {
           // GeoJSON returns [lng, lat] natively
@@ -182,29 +234,45 @@ export default function InteractiveMap({ points = [], center = [20.5937, 78.9629
   ] : []
 
   return (
-    <div className="h-full w-full relative group bg-[#F7F7F7]">
+    <div role="region" aria-label="Travel route map" className="h-full w-full relative group bg-[#F7F7F7]">
       {/* Light placeholder shown on server / before mount */}
       {!isMounted ? (
         <div className="absolute inset-0 bg-[#F7F7F7] flex items-center justify-center">
           <div className="w-10 h-10 rounded-full border-4 border-[#FF5A5F] border-t-transparent animate-spin" />
         </div>
+      ) : webglError ? (
+        <div className="absolute inset-0 bg-[#F7F7F7] flex flex-col items-center justify-center p-8 text-center border-2 border-dashed border-[#EBEBEB] rounded-3xl m-4">
+          <div className="w-16 h-16 bg-[#484848]/5 rounded-2xl flex items-center justify-center mb-4">
+             <span className="text-2xl">🗺️</span>
+          </div>
+          <h3 className="text-lg font-bold text-[#484848] mb-2">Hardware Acceleration Disabled</h3>
+          <p className="text-sm text-[#767676] max-w-sm">
+            Your browser could not initialize WebGL, which is required for interactive 3D maps. Please enable hardware acceleration in your browser settings to view the route map.
+          </p>
+        </div>
       ) : (
-        <div className="absolute inset-0">
+        <div className="absolute inset-0" style={{ filter: darkMap ? 'brightness(0.75) saturate(0.9)' : 'none' }}>
           <Map 
             mapLib={maplibregl}
             initialViewState={INITIAL_VIEW_STATE}
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             mapStyle={MAP_STYLE as any} 
-            style={{ width: "100%", height: "100%" }}
+            style={{ width: "100%", height: "100%", filter: darkMap ? 'brightness(0.75) saturate(0.9)' : undefined }}
             reuseMaps
+            onError={(e) => {
+              if (e.error && e.error.message && e.error.message.includes("WebGL")) {
+                setWebglError(true);
+              }
+            }}
           >
             {/* Standard DeckGL Overlay */}
             <DeckGLOverlay layers={layers} />
+            <MapLocator pendingLocation={pendingLocation} />
 
             {/* Custom Markers */}
             {points.map((loc, idx) => (
-              <Marker key={`${loc.id}-${idx}`} longitude={loc.lng} latitude={loc.lat} anchor="center">
-                <div className="relative group/marker cursor-pointer">
+              <Marker key={`${loc.id}-${idx}`} longitude={loc.lng} latitude={loc.lat} anchor="center" role="button" aria-label={`Destination: ${loc.name}`}>
+                <div role="button" aria-label={`Destination: ${loc.name}`} className="relative group/marker cursor-pointer" title={loc.name}>
                   {/* Marker Pin Visual */}
                   <div className="w-8 h-8 flex items-center justify-center relative">
                     <div className="absolute w-4 h-4 bg-[#FF5A5F]/20 rounded-full animate-ping" />
@@ -230,7 +298,24 @@ export default function InteractiveMap({ points = [], center = [20.5937, 78.9629
             ))}
             
             <MapController points={points} />
+            {userLocation && (
+              <Marker longitude={userLocation.lon} latitude={userLocation.lat} anchor="center" aria-label="Your location" key="user-location">
+                <div className="relative">
+                  <div className="w-4 h-4 rounded-full bg-blue-600 border-2 border-white" />
+                  <div className="absolute w-8 h-8 rounded-full border-2 border-blue-400 opacity-40 animate-ping" style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }} />
+                </div>
+              </Marker>
+            )}
           </Map>
+          {/* Map actions: Locate, Theme toggle */}
+          <div className="absolute bottom-16 right-12 z-40 flex gap-2" aria-label="Map actions">
+            <button onClick={locateMe} aria-label="Locate me" className="w-12 h-12 rounded-full bg-white border border-[#EBEBEB] shadow-sm flex items-center justify-center">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-label="Locate"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v4"></path><path d="M12 18v4"></path><path d="M2 12h4"></path><path d="M18 12h4"></path></svg>
+            </button>
+            <button onClick={toggleDarkMap} aria-label="Toggle map theme" className="w-12 h-12 rounded-full bg-white border border-[#EBEBEB] shadow-sm flex items-center justify-center">
+              <span aria-hidden="true" style={{ fontSize: 14 }}>{darkMap ? '☀' : '🌙'}</span>
+            </button>
+          </div>
         </div>
       )}
 
@@ -257,6 +342,15 @@ export default function InteractiveMap({ points = [], center = [20.5937, 78.9629
           Zoom: {INITIAL_VIEW_STATE.zoom.toFixed(1)}
         </div>
       </div>
+
+      {/* User-facing geolocation toast */}
+      {geoToast.visible && (
+        <div role="status" aria-live="polite" className="fixed bottom-6 right-6 z-50 max-w-sm w-full bg-white border border-gray-200 shadow-lg rounded-md p-4 flex items-start gap-3">
+          <span className="mt-0.5">📍</span>
+          <span className="text-sm text-gray-800 leading-relaxed">{geoToast.message}</span>
+          <button aria-label="Dismiss geolocation toast" onClick={() => setGeoToast({ visible: false, message: '' })} className="ml-auto text-gray-500 hover:text-gray-700">×</button>
+        </div>
+      )}
     </div>
   )
 }

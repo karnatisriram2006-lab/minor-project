@@ -13,7 +13,8 @@ import {
   WifiOff,
   Settings,
   HelpCircle,
-  Sparkles
+  Sparkles,
+  MapPin
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -23,6 +24,7 @@ const navItems = [
   { name: "Dashboard", href: "/dashboard",    icon: LayoutDashboard },
   { name: "Budget",    href: "/budget",        icon: Wallet },
   { name: "Itinerary", href: "/trip-planner", icon: Map },
+  { name: "Near Me",   href: "/near-me",       icon: MapPin },
   { name: "Companion", href: "/companions",   icon: Users },
   { name: "Offline",   href: "/offline",      icon: WifiOff },
 ]
@@ -42,7 +44,7 @@ export default function Sidebar() {
   if (isAuthPage) return null
 
   const displayName = user?.displayName || "Traveler"
-  const photoUrl    = user?.photoURL || "/avatars/default.jpg"
+  const photoUrl    = user?.photoURL || "/avatars/default.svg"
   const userInitial = displayName.charAt(0).toUpperCase()
 
   return (

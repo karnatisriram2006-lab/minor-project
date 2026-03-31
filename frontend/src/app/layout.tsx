@@ -6,6 +6,8 @@ import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { cn } from "@/lib/utils";
+import { AuthProvider } from "@/context/AuthContext";
+import ChatBotWrapper from "@/components/ChatBotWrapper";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-serif" });
@@ -13,11 +15,33 @@ const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-serif"
 export const metadata: Metadata = {
   title: "YĀTRĀ — AI Travel Planner for India",
   description: "AI-powered travel platform for India. Plan trips, discover destinations, manage budgets, and connect with travel companions.",
-  viewport: "width=device-width, initial-scale=1, viewport-fit=cover",
+  openGraph: {
+    title: "YĀTRĀ — AI Travel Planner for India",
+    description: "AI-powered travel platform for India. Plan trips, discover destinations, manage budgets, and connect with travel companions.",
+    type: "website",
+    url: "https://your-domain.com",
+    images: [
+      {
+        url: "/images/og-image.svg",
+        width: 1200,
+        height: 630,
+        alt: "YĀTRĀ Travel Planning",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "YĀTRĀ — AI Travel Planner for India",
+    description: "AI-powered travel platform for India. Plan trips, discover destinations, manage budgets, and connect with travel companions.",
+    images: ["/images/og-image.svg"],
+  },
 };
 
-import { AuthProvider } from "@/context/AuthContext";
-import ChatBotWrapper from "@/components/ChatBotWrapper";
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export default function RootLayout({
   children,
@@ -25,7 +49,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={cn(inter.variable, playfair.variable)}>
+<html lang="en" suppressHydrationWarning className={cn(inter.className, playfair.className)}>
       <head>
         {/* Mobile PWA / theme color */}
         <meta name="theme-color" content="#ffffff" />
@@ -33,7 +57,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
       <body suppressHydrationWarning className={cn(
-        "min-h-screen font-sans bg-white text-[#484848] antialiased selection:bg-[#FF5A5F]/10 overflow-x-hidden"
+        "min-h-screen bg-white text-[#484848] antialiased selection:bg-[#FF5A5F]/10 overflow-x-hidden"
       )}>
         <AuthProvider>
           <ThemeProvider

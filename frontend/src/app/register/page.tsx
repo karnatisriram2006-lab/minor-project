@@ -47,6 +47,7 @@ export default function Register() {
           src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&q=80&w=1200"
           alt="Mountain landscape India"
           fill
+          sizes="(max-width: 1024px) 50vw, 50vw"
           className="object-cover opacity-30"
           priority
         />

@@ -46,10 +46,20 @@ const matchCompanions = async (req, res) => {
         let results = [];
 
         if (process.env.MONGODB_URI) {
-            results = await CompanionRequest.find({
+            // Use MongoDB aggregation pipeline for efficient matching
+            const matchStage = {
                 userId: { $ne: req.user._id },
                 status: 'active'
-            }).populate('userId', 'name interests');
+            };
+
+            // Filter by destination if provided (improves performance)
+            if (destination) {
+                matchStage.destination = { $regex: destination, $options: 'i' };
+            }
+
+            results = await CompanionRequest.find(matchStage)
+                .populate('userId', 'name interests')
+                .limit(50);
         } else {
             // Mock data for demo
             results = [
@@ -84,7 +94,12 @@ const matchCompanions = async (req, res) => {
             }
 
             return {
-                ...r,
+                _id: r._id,
+                userId: r.userId,
+                destination: r.destination,
+                dates: r.dates,
+                budgetRange: r.budgetRange,
+                interests: r.interests,
                 similarityScore: Math.round(score * 100)
             };
         }).filter(m => m.similarityScore > 0);

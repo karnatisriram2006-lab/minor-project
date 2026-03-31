@@ -22,7 +22,8 @@ import {
   Map,
   WifiOff,
   ShieldAlert,
-  Compass
+  Compass,
+  MapPin
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
@@ -67,6 +68,7 @@ export default function Navbar() {
     { name: "Dashboard",  href: "/dashboard",    icon: <LayoutDashboard className="h-5 w-5" /> },
     { name: "Trip Planner", href: "/trip-planner", icon: <Map className="h-5 w-5" /> },
     { name: "Budget",     href: "/budget",        icon: <Wallet className="h-5 w-5" /> },
+    { name: "Near Me",    href: "/near-me",       icon: <MapPin className="h-5 w-5" /> },
     { name: "Companions", href: "/companions",    icon: <Users className="h-5 w-5" /> },
     { name: "Discover",   href: "/discover",      icon: <Compass className="h-5 w-5" /> },
     { name: "Route",      href: "/route-planner", icon: <Globe className="h-5 w-5" /> },

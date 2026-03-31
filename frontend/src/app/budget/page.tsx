@@ -21,7 +21,7 @@ export default function BudgetOptimizer() {
     setLoading(true)
     
     try {
-      const { data } = await api.post("/budget", { totalBudget: Number(budget) })
+      const { data } = await api.post("/budget/optimize", { totalBudget: Number(budget) })
       setAllocation(data.allocation)
     } catch (error) {
       console.error(error)
@@ -151,7 +151,7 @@ export default function BudgetOptimizer() {
                               <p className="text-3xl font-black text-[#484848] tracking-tighter leading-none">100%</p>
                            </div>
                         </div>
-                      <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height={320}>
                         <PieChart margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
                           <Pie
                             data={chartData}

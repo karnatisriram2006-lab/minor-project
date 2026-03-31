@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { auth } from "@/lib/firebase"
 import api from "@/lib/api"
 import { Users, UserPlus, MapPin, Calendar, Percent, Sparkles, ArrowRight, ShieldCheck, Search } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -58,6 +59,11 @@ export default function Companions() {
     }
   ])
   const [isAuthorized, setIsAuthorized] = useState(true)
+  const [firebaseUser, setFirebaseUser] = useState<any>(null)
+  const continueGuest = () => {
+    setIsAuthorized(true)
+    setMatches(featuredTravelers)
+  }
 
   const handleMatch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault()
@@ -81,9 +87,18 @@ export default function Companions() {
   }
 
   useEffect(() => {
+    // Subscribe to Firebase auth state to know if user is signed in
+    const unsubscribe = auth.onAuthStateChanged((u) => {
+      setFirebaseUser(u)
+      setIsAuthorized(!!u)
+    })
+
     const fetchInitial = async () => {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
-      if (!token) { setIsAuthorized(false); return }
+      if (!firebaseUser) {
+        // Show guest view if not signed in
+        if (matches.length === 0) setMatches(featuredTravelers)
+        return
+      }
       try {
         const res = await api.get("/companion/matches")
         setMatches(res.data)
@@ -92,10 +107,17 @@ export default function Companions() {
         console.error("Initial fetch error:", err)
         const error = err as { response?: { status: number } }
         if (error.response?.status === 401) setIsAuthorized(false)
+        else {
+          // Fallback: show featured travelers if API fails
+          setMatches(featuredTravelers)
+          setIsAuthorized(true)
+        }
       }
     }
     fetchInitial()
-  }, [])
+    return unsubscribe
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [firebaseUser])
 
   /* ── Not signed in ────────────────────────────────────── */
   if (!isAuthorized) {
@@ -123,6 +145,13 @@ export default function Companions() {
           >
             Sign in
             <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+          </Button>
+          <Button
+            onClick={continueGuest}
+            variant="ghost"
+            className="h-12 px-8 rounded-xl text-sm font-semibold group transition-all active:scale-[0.97] w-full mt-2"
+          >
+            Continue as Guest
           </Button>
         </motion.div>
       </div>
