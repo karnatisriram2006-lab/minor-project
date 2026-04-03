@@ -33,12 +33,14 @@ export function PlacesExplorer({ lat, lon, city }: PlacesExplorerProps) {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full gap-2">
                 <div className="space-y-1">
-                    <h3 className="text-xl font-bold text-[#484848] tracking-tight">Explore {city || "Nearby"}</h3>
+                    <h3 className="text-lg sm:text-xl font-bold text-[#484848] tracking-tight truncate" title={`Explore ${city || "Nearby"}`}>
+                        Explore {city || "Nearby"}
+                    </h3>
                     <p className="text-xs text-[#767676] font-medium uppercase tracking-widest">Powered by OpenStreetMap</p>
                 </div>
-                <div className="flex gap-2 bg-[#F7F7F7] p-1 rounded-2xl border border-[#EBEBEB]">
+                <div className="flex gap-2 bg-[#F7F7F7] p-1 rounded-2xl border border-[#EBEBEB] overflow-x-auto sm:overflow-visible">
                     {CATEGORIES.map(cat => (
                         <button
                             key={cat.id}

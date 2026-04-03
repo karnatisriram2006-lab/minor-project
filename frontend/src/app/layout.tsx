@@ -77,7 +77,7 @@ export default function RootLayout({
               <Sidebar />
 
               {/* Main content area */}
-              <main className="flex-1 min-w-0 relative">
+            <main className="flex-1 min-w-0 relative pb-20 sm:pb-0">
                 <PageTransition>
                   {children}
                 </PageTransition>
