@@ -72,7 +72,7 @@ export default function NearMe() {
     setError("")
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/nearby?lat=${userLoc.lat}&lng=${userLoc.lng}&category=${category}&radius=${radius}`
+        `/api/nearby?lat=${userLoc.lat}&lng=${userLoc.lng}&category=${category}&radius=${radius}`
       )
       const data = await res.json()
       setPlaces(data.places || [])
