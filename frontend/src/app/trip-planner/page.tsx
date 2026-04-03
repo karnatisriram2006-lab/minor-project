@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useRef, useCallback } from "react"
 import dynamic from "next/dynamic"
+import Link from "next/link"
 import {
   Calendar,
   MapPin,
@@ -16,7 +17,11 @@ import {
   ChevronRight,
   Search,
   Users,
-  List
+  List,
+  Mic,
+  MicOff,
+  Download,
+  CheckCircle2
 } from "lucide-react"
 import { motion } from "framer-motion"
 
@@ -54,19 +59,73 @@ export default function TripPlanner() {
   const [loading, setLoading] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
   const [itinerary, setItinerary] = useState<ItineraryType | null>(null)
+  const [selectedInterests, setSelectedInterests] = useState<string[]>(["Culture", "History", "Food"])
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle")
+  const [savedTripId, setSavedTripId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     city: "Jaipur",
     days: "3",
-    interests: "Culture, History, Food",
     budget: "Luxury"
   })
+
+  const INTEREST_CHIPS = [
+    "History", "Food", "Adventure", "Beaches", "Temples",
+    "Wildlife", "Shopping", "Yoga", "Nightlife", "Art",
+    "Trekking", "Photography"
+  ]
+
+  const toggleInterest = (chip: string) => {
+    setSelectedInterests(prev =>
+      prev.includes(chip) ? prev.filter(c => c !== chip) : [...prev, chip]
+    )
+  }
+
+  // ── Voice Input (Web Speech API) ──
+  const [voiceState, setVoiceState] = useState<"idle" | "recording" | "processing">("idle")
+  const recognitionRef = useRef<any>(null)
+
+  const startVoiceInput = useCallback(() => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      alert("Speech recognition is not supported in this browser. Try Chrome or Edge.")
+      return
+    }
+
+    const recognition = new SpeechRecognition()
+    recognition.lang = "hi-IN"
+    recognition.interimResults = true
+    recognition.continuous = false
+
+    recognition.onstart = () => setVoiceState("recording")
+    recognition.onresult = (event: any) => {
+      const transcript = Array.from(event.results)
+        .map((result: any) => result[0].transcript)
+        .join("")
+      setFormData(prev => ({ ...prev, city: transcript }))
+    }
+    recognition.onend = () => setVoiceState("idle")
+    recognition.onerror = () => setVoiceState("idle")
+
+    recognitionRef.current = recognition
+    recognition.start()
+  }, [])
+
+  const stopVoiceInput = useCallback(() => {
+    recognitionRef.current?.stop()
+    setVoiceState("idle")
+  }, [])
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
     try {
-      const { data } = await api.post("/ai/itinerary", formData)
+      const { data } = await api.post("/ai/itinerary", {
+        city: formData.city,
+        days: formData.days,
+        budget: formData.budget,
+        interests: selectedInterests.join(", "),
+      })
       setItinerary(data.itinerary || data)
     } catch (err) {
       console.error("[Curation Error]", err)
@@ -82,7 +141,7 @@ export default function TripPlanner() {
             time: "09:00",
             name: `${formData.city} Heritage Discovery ${i}`,
             type: "Cultural",
-            description: `AI curated sequence for ${formData.interests} in ${formData.city}. Exploring local heritage sites.`,
+            description: `AI curated sequence for ${selectedInterests.join(", ")} in ${formData.city}. Exploring local heritage sites.`,
             lat: baseLat + (Math.random() - 0.5) * 0.1,
             lng: baseLng + (Math.random() - 0.5) * 0.1,
             status: "Suggested"
@@ -91,7 +150,7 @@ export default function TripPlanner() {
             time: "14:00",
             name: `Local Experience ${i}`,
             type: "Experiential",
-            description: `A curated local experience tailored to your interest in ${formData.interests}.`,
+            description: `A curated local experience tailored to your interest in ${selectedInterests.join(", ")}.`,
             lat: baseLat + (Math.random() - 0.5) * 0.1,
             lng: baseLng + (Math.random() - 0.5) * 0.1
           }
@@ -191,10 +250,28 @@ export default function TripPlanner() {
                     <input
                       value={formData.city}
                       onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      className="w-full bg-white h-14 rounded-xl pl-11 pr-4 font-medium text-[15px] text-[#484848] border border-[#DDDDDD] focus:outline-none focus:border-[#FF5A5F] focus:ring-4 focus:ring-[#FF5A5F]/10 transition-all placeholder:text-[#BBBBBB]"
+                      className="w-full bg-white h-14 rounded-xl pl-11 pr-12 font-medium text-[15px] text-[#484848] border border-[#DDDDDD] focus:outline-none focus:border-[#FF5A5F] focus:ring-4 focus:ring-[#FF5A5F]/10 transition-all placeholder:text-[#BBBBBB]"
                       placeholder="City or region, e.g. Jaipur"
                     />
+                    <button
+                      type="button"
+                      onClick={voiceState === "recording" ? stopVoiceInput : startVoiceInput}
+                      className={`absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                        voiceState === "recording"
+                          ? "bg-[#FF5A5F] text-white animate-pulse"
+                          : "text-[#767676] hover:text-[#FF5A5F] hover:bg-[#FF5A5F]/8"
+                      }`}
+                      aria-label={voiceState === "recording" ? "Stop voice input" : "Start voice input"}
+                    >
+                      {voiceState === "recording" ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                    </button>
                   </div>
+                  {voiceState === "recording" && (
+                    <p className="text-[11px] text-[#FF5A5F] font-medium mt-1 ml-1 flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[#FF5A5F] animate-pulse" />
+                      Listening... speak your destination
+                    </p>
+                  )}
                 </div>
 
                 {/* Days + Budget */}
@@ -236,19 +313,29 @@ export default function TripPlanner() {
                   </div>
                 </div>
 
-                {/* Interests */}
-                <div className="space-y-1.5">
+                {/* Interests - Chip Selector */}
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold text-[#767676] uppercase tracking-wide ml-1">
                     Interests
                   </Label>
-                  <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#767676]" />
-                    <input
-                      value={formData.interests}
-                      onChange={(e) => setFormData({ ...formData, interests: e.target.value })}
-                      className="w-full bg-white h-14 rounded-xl pl-11 pr-4 font-medium text-[15px] text-[#484848] border border-[#DDDDDD] focus:outline-none focus:border-[#FF5A5F] focus:ring-4 focus:ring-[#FF5A5F]/10 transition-all placeholder:text-[#BBBBBB]"
-                      placeholder="Culture, Food, History..."
-                    />
+                  <div className="flex flex-wrap gap-2">
+                    {INTEREST_CHIPS.map((chip) => {
+                      const isSelected = selectedInterests.includes(chip)
+                      return (
+                        <button
+                          key={chip}
+                          type="button"
+                          onClick={() => toggleInterest(chip)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all active:scale-[0.95] ${
+                            isSelected
+                              ? "bg-[#FF5A5F] text-white border border-[#FF5A5F]"
+                              : "bg-[#F7F7F7] text-[#767676] border border-[#EBEBEB] hover:border-[#FF5A5F]/30 hover:text-[#484848]"
+                          }`}
+                        >
+                          {chip}
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
 
@@ -297,27 +384,70 @@ export default function TripPlanner() {
                   </h2>
                   <div className="flex items-center gap-2">
                     <Button
-                      disabled={loading}
+                      disabled={loading || saveStatus === "saving"}
                       onClick={async () => {
                         try {
-                          await api.post("/trips/save", {
-                            city: formData.city,
-                            startDate: new Date(),
-                            endDate: new Date(Date.now() + (parseInt(formData.days) || 1) * 24 * 60 * 60 * 1000),
-                            budget: formData.budget === "Luxury" ? 100000 : formData.budget === "Classic" ? 50000 : 20000,
-                            itinerary: itinerary
+                          setSaveStatus("saving")
+                          const daysArray = Object.entries(itinerary).map(([dayKey, activities]) => ({
+                            day: parseInt(dayKey.replace(/\D/g, "") || "1"),
+                            activities: activities.map(a => ({
+                              name: a.name,
+                              description: a.description || "",
+                              time: a.time || "",
+                              type: a.type || "",
+                              lat: a.lat,
+                              lng: a.lng,
+                            }))
+                          }))
+
+                          // Calculate estimated numeric budget based on city + duration + level
+                          const days = parseInt(formData.days) || 3
+                          const basePerDay = formData.budget === "Luxury" ? 8000 : formData.budget === "Classic" ? 4000 : 2000
+                          const estimatedBudget = basePerDay * days
+
+                          const { data } = await api.post("/trips", {
+                            title: `${formData.city} Trip`,
+                            destination: formData.city,
+                            duration: days,
+                            budget: estimatedBudget,
+                            isPublic: true,
+                            days: daysArray,
                           })
-                          alert("Trip saved to your dashboard!")
+                          setSaveStatus("saved")
+                          setSavedTripId(data._id)
+                          setTimeout(() => setSaveStatus("idle"), 3000)
                         } catch (err) {
                           console.error("Save error:", err)
+                          setSaveStatus("error")
+                          setTimeout(() => setSaveStatus("idle"), 3000)
                         }
                       }}
                       variant="premium"
                       size="sm"
-                      className="h-8 px-3 rounded-lg text-xs font-bold"
+                      className={`h-8 px-3 rounded-lg text-xs font-bold transition-all ${
+                        saveStatus === "saved" ? "bg-[#00A699]" : saveStatus === "error" ? "bg-red-500" : ""
+                      }`}
                     >
-                      Save Trip
+                      {saveStatus === "saving" ? (
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          <span>Saving...</span>
+                        </div>
+                      ) : saveStatus === "saved" ? (
+                        "✓ Saved!"
+                      ) : saveStatus === "error" ? (
+                        "Failed"
+                      ) : (
+                        "Save Trip"
+                      )}
                     </Button>
+                    {saveStatus === "saved" && savedTripId && (
+                      <Link href={`/trips/${savedTripId}`}>
+                        <Button variant="outline" size="sm" className="h-8 px-3 rounded-lg text-xs font-semibold">
+                          View Trip
+                        </Button>
+                      </Link>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"

@@ -49,18 +49,18 @@ export default function Sidebar() {
 
   return (
     /* hidden on mobile (< lg), visible on lg+ */
-    <aside className="hidden lg:flex w-64 h-[calc(100vh-80px)] sticky top-20 bg-white border-r border-[#EBEBEB] flex-col p-5 pt-6 z-50 text-[#484848] font-sans shrink-0">
+    <aside className="hidden lg:flex w-64 h-[calc(100vh-80px)] sticky top-20 bg-white dark:bg-[#1A1A1A] border-r border-[#EBEBEB] dark:border-[#2A2A2A] flex-col p-5 pt-6 z-50 text-[#484848] dark:text-[#E0E0E0] font-sans shrink-0">
       {/* Profile */}
-      <div className="flex items-center gap-3 mb-8 pb-5 border-b border-[#EBEBEB]">
-        <Avatar className="h-10 w-10 border border-[#EBEBEB] shadow-sm rounded-full shrink-0">
+      <div className="flex items-center gap-3 mb-8 pb-5 border-b border-[#EBEBEB] dark:border-[#2A2A2A]">
+        <Avatar className="h-10 w-10 border border-[#EBEBEB] dark:border-[#2A2A2A] shadow-sm rounded-full shrink-0">
           <AvatarImage src={photoUrl} />
-          <AvatarFallback className="bg-[#F7F7F7] text-[#FF5A5F] font-bold text-sm">
+          <AvatarFallback className="bg-[#F7F7F7] dark:bg-[#2A2A2A] text-[#FF5A5F] font-bold text-sm">
             {userInitial}
           </AvatarFallback>
         </Avatar>
         <div className="flex flex-col min-w-0">
-          <p className="text-sm font-semibold text-[#484848] truncate">{displayName}</p>
-          <p className="text-[11px] text-[#767676]">Show profile</p>
+          <p className="text-sm font-semibold text-[#484848] dark:text-[#E0E0E0] truncate">{displayName}</p>
+          <p className="text-[11px] text-[#767676] dark:text-[#888]">Show profile</p>
         </div>
       </div>
 
@@ -74,14 +74,14 @@ export default function Sidebar() {
                 "group flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer",
                 "transition-colors duration-150",
                 isActive
-                  ? "bg-[#FF5A5F]/8 text-[#FF5A5F]"
-                  : "text-[#484848] hover:bg-[#F7F7F7]"
+                  ? "bg-[#FF5A5F]/8 dark:bg-[#FF5A5F]/15 text-[#FF5A5F]"
+                  : "text-[#484848] dark:text-[#E0E0E0] hover:bg-[#F7F7F7] dark:hover:bg-[#2A2A2A]"
               )}>
                 <item.icon className={cn(
                   "h-4.5 w-4.5 shrink-0",
-                  isActive ? "text-[#FF5A5F]" : "text-[#767676]"
+                  isActive ? "text-[#FF5A5F]" : "text-[#767676] dark:text-[#888]"
                 )} />
-                <span className="font-semibold text-sm text-[#484848]">{item.name}</span>
+                <span className="font-semibold text-sm">{item.name}</span>
                 {isActive && (
                   <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#FF5A5F]" />
                 )}
@@ -92,7 +92,7 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="space-y-1 pt-4 border-t border-[#EBEBEB]">
+      <div className="space-y-1 pt-4 border-t border-[#EBEBEB] dark:border-[#2A2A2A]">
         <Button
           variant="premium"
           className="w-full h-10 rounded-xl text-xs font-semibold shadow-sm flex items-center justify-center gap-2"
@@ -101,11 +101,11 @@ export default function Sidebar() {
           Get Support
         </Button>
 
-        <Button variant="ghost" className="w-full justify-start gap-3 text-[#767676] hover:text-[#484848] hover:bg-[#F7F7F7] rounded-xl px-3 h-10">
+        <Button variant="ghost" className="w-full justify-start gap-3 text-[#767676] dark:text-[#888] hover:text-[#484848] dark:hover:text-[#E0E0E0] hover:bg-[#F7F7F7] dark:hover:bg-[#2A2A2A] rounded-xl px-3 h-10">
           <Settings className="h-4 w-4" />
           <span className="font-medium text-sm">Settings</span>
         </Button>
-        <Button variant="ghost" className="w-full justify-start gap-3 text-[#767676] hover:text-[#484848] hover:bg-[#F7F7F7] rounded-xl px-3 h-10">
+        <Button variant="ghost" className="w-full justify-start gap-3 text-[#767676] dark:text-[#888] hover:text-[#484848] dark:hover:text-[#E0E0E0] hover:bg-[#F7F7F7] dark:hover:bg-[#2A2A2A] rounded-xl px-3 h-10">
           <HelpCircle className="h-4 w-4" />
           <span className="font-medium text-sm">Help Center</span>
         </Button>

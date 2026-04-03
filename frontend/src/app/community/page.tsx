@@ -12,6 +12,7 @@ import {
   Heart
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import CommunityWaitlist from "@/components/CommunityWaitlist"
 
 export default function CommunityPage() {
   return (
@@ -53,12 +54,9 @@ export default function CommunityPage() {
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-              <Button variant="premium" className="h-14 px-8 rounded-2xl text-base font-bold shadow-xl shadow-[#FF5A5F]/20 group">
-                Join the waitlist
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-              <p className="text-sm font-semibold text-[#767676]">
+            <div className="space-y-4">
+              <CommunityWaitlist />
+              <p className="text-sm font-semibold text-[#767676] text-center">
                 Already 2,400+ explorers waiting.
               </p>
             </div>

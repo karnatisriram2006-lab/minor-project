@@ -103,10 +103,12 @@ export default function InteractiveMap({ points = [], center = [20.5937, 78.9629
   // Prevent WebGL initialization on server — DeckGL requires browser context
   useEffect(() => { setIsMounted(true) }, [])
 
+  // Restore last map position from localStorage
+  const savedView = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('mapView') || 'null') : null
   const INITIAL_VIEW_STATE = {
-    longitude: 78.9629, // India Longitude
-    latitude: 20.5937,  // India Latitude
-    zoom: zoom || 4.5,
+    longitude: savedView?.longitude || 78.9629, // India Longitude
+    latitude: savedView?.latitude || 20.5937,  // India Latitude
+    zoom: savedView?.zoom || 5,
     pitch: 40,
     bearing: 0,
     maxZoom: 18,
@@ -259,9 +261,19 @@ export default function InteractiveMap({ points = [], center = [20.5937, 78.9629
             mapStyle={MAP_STYLE as any} 
             style={{ width: "100%", height: "100%", filter: darkMap ? 'brightness(0.75) saturate(0.9)' : undefined }}
             reuseMaps
+            maxBounds={[[68, 6], [98, 38]]} // Keep map within India region
             onError={(e) => {
               if (e.error && e.error.message && e.error.message.includes("WebGL")) {
                 setWebglError(true);
+              }
+            }}
+            onMove={(evt) => {
+              if (typeof window !== 'undefined') {
+                localStorage.setItem('mapView', JSON.stringify({
+                  longitude: evt.viewState.longitude,
+                  latitude: evt.viewState.latitude,
+                  zoom: evt.viewState.zoom,
+                }))
               }
             }}
           >

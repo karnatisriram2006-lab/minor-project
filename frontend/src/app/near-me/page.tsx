@@ -9,13 +9,13 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const CATEGORIES = [
-  { value: "hospital", label: "Hospitals", icon: Hospital, color: "#FF5A5F" },
-  { value: "police", label: "Police", icon: Shield, color: "#00A699" },
-  { value: "pharmacy", label: "Pharmacy", icon: Pill, color: "#8B5CF6" },
-  { value: "atm", label: "ATMs", icon: Wallet, color: "#F59E0B" },
   { value: "restaurant", label: "Restaurants", icon: Utensils, color: "#EF4444" },
-  { value: "hostel", label: "Hostels", icon: Building2, color: "#3B82F6" },
-  { value: "tourist-info", label: "Tourist Info", icon: Landmark, color: "#10B981" },
+  { value: "tourist-info", label: "Tourist Spots", icon: Landmark, color: "#10B981" },
+  { value: "hostel", label: "Hotels", icon: Building2, color: "#3B82F6" },
+  { value: "atm", label: "ATMs", icon: Wallet, color: "#F59E0B" },
+  { value: "hospital", label: "Hospitals", icon: Hospital, color: "#FF5A5F" },
+  { value: "pharmacy", label: "Pharmacies", icon: Pill, color: "#8B5CF6" },
+  { value: "police", label: "Police", icon: Shield, color: "#00A699" },
   { value: "fire-station", label: "Fire Station", icon: Flame, color: "#F97316" },
   { value: "embassy", label: "Embassy", icon: Landmark, color: "#6366F1" },
   { value: "general", label: "All Nearby", icon: MapPin, color: "#484848" },
@@ -35,25 +35,29 @@ interface NearbyPlace {
 }
 
 export default function NearMe() {
-  const [category, setCategory] = useState("hospital")
+  const [category, setCategory] = useState("restaurant")
   const [radius, setRadius] = useState("5000")
   const [places, setPlaces] = useState<NearbyPlace[]>([])
   const [loading, setLoading] = useState(false)
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null)
   const [error, setError] = useState("")
+  const [locPermission, setLocPermission] = useState<"prompt" | "granted" | "denied">("prompt")
 
   const getLocation = () => {
     if (!navigator.geolocation) {
       setError("Geolocation is not supported by your browser")
+      setLocPermission("denied")
       return
     }
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude })
         setError("")
+        setLocPermission("granted")
       },
       () => {
         setError("Location access denied. Please enable location services.")
+        setLocPermission("denied")
       },
       { enableHighAccuracy: true, timeout: 8000 }
     )
@@ -62,6 +66,12 @@ export default function NearMe() {
   useEffect(() => {
     getLocation()
   }, [])
+
+  // Auto-search when location is granted
+  useEffect(() => {
+    if (userLoc) searchNearby()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userLoc])
 
   const searchNearby = async () => {
     if (!userLoc) {
@@ -82,11 +92,6 @@ export default function NearMe() {
       setLoading(false)
     }
   }
-
-  useEffect(() => {
-    if (userLoc) searchNearby()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category, userLoc])
 
   const selectedCat = CATEGORIES.find(c => c.value === category)
   const Icon = selectedCat?.icon || MapPin

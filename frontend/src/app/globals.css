@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Enable class-based dark mode for next-themes */
+@variant dark (&:where(.dark, .dark *));
+
 @theme {
   /* ─── Airbnb Design System ─────────────────────────────── */
   --color-background: #FFFFFF;
@@ -235,7 +238,60 @@
 ::-webkit-scrollbar-thumb {
   background: #DDDDDD;
   border-radius: 999px;
-  /* Emil: smooth scrollbar appearance transition */
   transition: background 150ms ease-out;
 }
 ::-webkit-scrollbar-thumb:hover { background: #B0B0B0; }
+
+/* ─── Global Dark Mode ──────────────────────────────────── */
+.dark {
+  /* Page backgrounds */
+  --page-bg: #0F0F0F;
+  --card-bg: #1A1A1A;
+  --card-border: #2A2A2A;
+  --text-primary: #E0E0E0;
+  --text-secondary: #888888;
+  --text-muted: #666666;
+  --input-bg: #222222;
+  --input-border: #333333;
+  --hover-bg: #2A2A2A;
+}
+
+/* Auto-apply dark mode to all pages and cards */
+.dark .bg-\[\#F7F7F7\],
+.dark .bg-heritage-bone {
+  background-color: #0F0F0F !important;
+}
+
+.dark .bg-white {
+  background-color: #1A1A1A !important;
+}
+
+.dark .border-\[\#EBEBEB\],
+.dark .border-\[\#DDDDDD\] {
+  border-color: #2A2A2A !important;
+}
+
+.dark .text-\[\#484848\] {
+  color: #E0E0E0 !important;
+}
+
+.dark .text-\[\#767676\] {
+  color: #888888 !important;
+}
+
+.dark .bg-\[\#EBEBEB\],
+.dark .bg-\[\#F7F7F7\] {
+  background-color: #2A2A2A !important;
+}
+
+.dark .placeholder\:\:text-\[\#BBBBBB\]::placeholder,
+.dark .placeholder\:text-\[\#BBBBBB\]::placeholder {
+  color: #555555 !important;
+}
+
+.dark .shadow-sm,
+.dark .shadow-premium,
+.dark .shadow-xl,
+.dark .shadow-2xl {
+  --tw-shadow-color: rgba(0,0,0,0.4) !important;
+}

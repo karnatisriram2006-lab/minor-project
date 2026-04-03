@@ -23,15 +23,22 @@ import {
   WifiOff,
   ShieldAlert,
   Compass,
-  MapPin
+  MapPin,
+  Sun,
+  Moon
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useTheme } from "next-themes"
 
 export default function Navbar() {
   const pathname = usePathname()
   const { user } = useAuth()
+  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = React.useState(false)
   const [isScrolled, setIsScrolled] = React.useState(false)
   const [mobileOpen, setMobileOpen] = React.useState(false)
+
+  React.useEffect(() => { setMounted(true) }, [])
 
   React.useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10)
@@ -84,9 +91,9 @@ export default function Navbar() {
     <>
       {/* ── Top navbar ────────────────────────────────────── */}
       <header className={cn(
-        "h-16 sm:h-20 fixed top-0 left-0 right-0 z-[100] px-4 sm:px-8 flex items-center justify-between bg-white",
+        "h-16 sm:h-20 fixed top-0 left-0 right-0 z-[100] px-4 sm:px-8 flex items-center justify-between bg-white dark:bg-[#1A1A1A]",
         "transition-[border-color,box-shadow] duration-200",
-        isScrolled ? "border-b border-[#EBEBEB] shadow-sm" : "border-b border-transparent"
+        isScrolled ? "border-b border-[#EBEBEB] dark:border-[#2A2A2A] shadow-sm" : "border-b border-transparent"
       )}>
         {/* Logo + Desktop nav */}
         <div className="flex items-center gap-8">
@@ -122,6 +129,16 @@ export default function Navbar() {
         <div className="flex items-center gap-2">
           {user ? (
             <div className="flex items-center gap-2">
+              {/* Theme toggle for logged-in users */}
+              {mounted && (
+                <button
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-[#767676] hover:text-[#484848] hover:bg-[#F7F7F7] dark:hover:bg-[#333] transition-all active:scale-95"
+                  aria-label="Toggle theme"
+                >
+                  {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                </button>
+              )}
               {/* Desktop: name + logout */}
               <div className="hidden md:flex flex-col items-end">
                 <span className="text-[10px] font-semibold uppercase tracking-widest text-[#767676]">Traveler</span>
@@ -140,7 +157,7 @@ export default function Navbar() {
               </Button>
 
               <div className="hidden md:block ml-1 pl-3 border-l border-[#EBEBEB]">
-                <Link href="/dashboard">
+                <Link href="/profile">
                   <Button size="icon" variant="premium" className="h-10 w-10 rounded-full shadow-sm">
                     <User className="h-4 w-4" />
                   </Button>
@@ -148,7 +165,17 @@ export default function Navbar() {
               </div>
             </div>
           ) : (
-            <div className="hidden md:flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-2">
+              {/* Theme toggle */}
+              {mounted && (
+                <button
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-[#767676] hover:text-[#484848] hover:bg-[#F7F7F7] transition-all active:scale-95"
+                  aria-label="Toggle theme"
+                >
+                  {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                </button>
+              )}
               <Link href="/login">
                 <Button variant="ghost" className="text-[13px] font-semibold text-[#484848] h-10 px-5 rounded-xl">
                   Log in
@@ -195,14 +222,14 @@ export default function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", duration: 0.4, bounce: 0.08 }}
-              className="fixed top-0 right-0 bottom-0 z-[200] w-[85vw] max-w-sm bg-white shadow-2xl flex flex-col lg:hidden"
+              className="fixed top-0 right-0 bottom-0 z-[200] w-[85vw] max-w-sm bg-white dark:bg-[#1A1A1A] shadow-2xl flex flex-col lg:hidden"
             >
               {/* Drawer header */}
-              <div className="flex items-center justify-between px-5 py-4 border-b border-[#EBEBEB]">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-[#EBEBEB] dark:border-[#2A2A2A]">
                 <span className="text-xl font-black tracking-tighter text-[#FF5A5F]">YĀTRĀ</span>
                 <button
                   onClick={() => setMobileOpen(false)}
-                  className="w-9 h-9 flex items-center justify-center rounded-xl bg-[#F7F7F7] text-[#484848] hover:bg-[#EBEBEB] transition-colors active:scale-95"
+                  className="w-9 h-9 flex items-center justify-center rounded-xl bg-[#F7F7F7] dark:bg-[#2A2A2A] text-[#484848] dark:text-[#E0E0E0] hover:bg-[#EBEBEB] dark:hover:bg-[#333] transition-colors active:scale-95"
                   aria-label="Close menu"
                 >
                   <X className="h-4 w-4" />
@@ -211,16 +238,16 @@ export default function Navbar() {
 
               {/* User profile in drawer */}
               {user && (
-                <div className="flex items-center gap-3 px-5 py-4 border-b border-[#EBEBEB]">
-                  <Avatar className="h-11 w-11 border border-[#EBEBEB] shadow-sm rounded-full shrink-0">
+                <div className="flex items-center gap-3 px-5 py-4 border-b border-[#EBEBEB] dark:border-[#2A2A2A]">
+                  <Avatar className="h-11 w-11 border border-[#EBEBEB] dark:border-[#2A2A2A] shadow-sm rounded-full shrink-0">
                     <AvatarImage src={photoUrl} />
-                    <AvatarFallback className="bg-[#F7F7F7] text-[#FF5A5F] font-bold">
+                    <AvatarFallback className="bg-[#F7F7F7] dark:bg-[#2A2A2A] text-[#FF5A5F] font-bold">
                       {userInitial}
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-[#484848] truncate">{displayName}</p>
-                    <p className="text-xs text-[#767676] truncate">{user.email}</p>
+                    <p className="text-sm font-semibold text-[#484848] dark:text-[#E0E0E0] truncate">{displayName}</p>
+                    <p className="text-xs text-[#767676] dark:text-[#888] truncate">{user.email}</p>
                   </div>
                 </div>
               )}
@@ -238,11 +265,11 @@ export default function Navbar() {
                         className={cn(
                           "flex items-center gap-4 px-4 py-3.5 rounded-xl transition-colors",
                           isActive
-                            ? "bg-[#FF5A5F]/8 text-[#FF5A5F]"
-                            : "text-[#484848] hover:bg-[#F7F7F7]"
+                            ? "bg-[#FF5A5F]/8 dark:bg-[#FF5A5F]/15 text-[#FF5A5F]"
+                            : "text-[#484848] dark:text-[#E0E0E0] hover:bg-[#F7F7F7] dark:hover:bg-[#2A2A2A]"
                         )}
                       >
-                        <span className={cn("shrink-0", isActive ? "text-[#FF5A5F]" : "text-[#767676]")}>
+                        <span className={cn("shrink-0", isActive ? "text-[#FF5A5F]" : "text-[#767676] dark:text-[#888]")}>
                           {item.icon}
                         </span>
                         <span className="font-semibold text-sm">{item.name}</span>
@@ -254,7 +281,16 @@ export default function Navbar() {
               </nav>
 
               {/* Drawer footer */}
-              <div className="px-4 pb-6 pt-4 border-t border-[#EBEBEB] space-y-2">
+              <div className="px-4 pb-6 pt-4 border-t border-[#EBEBEB] dark:border-[#2A2A2A] space-y-2">
+                {/* Theme toggle in mobile */}
+                <button
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-[#484848] dark:text-[#E0E0E0] hover:bg-[#F7F7F7] dark:hover:bg-[#2A2A2A] transition-colors"
+                >
+                  {theme === "dark" ? <Sun className="h-5 w-5 text-[#767676] dark:text-[#888]" /> : <Moon className="h-5 w-5 text-[#767676] dark:text-[#888]" />}
+                  <span className="font-semibold text-sm">{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+                </button>
+
                 {!user ? (
                   <div className="space-y-2">
                     <Link href="/register">

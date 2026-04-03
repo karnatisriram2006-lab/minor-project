@@ -41,49 +41,47 @@ const WEATHER_CODES: Record<number, string> = {
     99: "Thunderstorm with heavy hail"
 };
 
-export const fetchWeather = async (lat: number, lng: number): Promise<WeatherData | null> => {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000);
+export const fetchWeather = async (lat: number, lng: number, retries = 2): Promise<WeatherData | null> => {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-  try {
-    const response = await fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true&relative_humidity_2m=true&windspeed_unit=kmh&timezone=auto`,
-      { signal: controller.signal }
-    );
-    clearTimeout(timeoutId);
+    try {
+      const response = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true&relative_humidity_2m=true&windspeed_unit=kmh&timezone=auto`,
+        { signal: controller.signal }
+      );
+      clearTimeout(timeoutId);
 
-    if (!response.ok) {
-      throw new Error(`Weather API error: ${response.status} ${response.statusText}`);
+      if (!response.ok) {
+        throw new Error(`Weather API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data && data.current_weather) {
+        const current = data.current_weather;
+        return {
+          temperature: Math.round(current.temperature),
+          windSpeed: Math.round(current.windspeed),
+          humidity: (data as any).current?.relative_humidity_2m ?? 65,
+          conditionCode: current.weathercode,
+          isDay: current.is_day === 1,
+          description: WEATHER_CODES[current.weathercode] || "Conditions unknown",
+        };
+      }
+
+      return null;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof DOMException && error.name === 'AbortError') return null;
+      
+      if (attempt < retries) {
+        await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+        continue;
+      }
+      return null;
     }
-
-    const data = await response.json();
-
-    if (data && data.current_weather) {
-      const current = data.current_weather;
-      return {
-        temperature: Math.round(current.temperature),
-        windSpeed: Math.round(current.windspeed),
-        humidity: (data as any).current?.relative_humidity_2m ?? 65,
-        conditionCode: current.weathercode,
-        isDay: current.is_day === 1,
-        description: WEATHER_CODES[current.weathercode] || "Conditions unknown",
-      };
-    }
-
-    return null;
-  } catch (error) {
-    console.error('[Weather] Error fetching weather:', error);
-    // Optional: return a lightweight fallback to keep UI functional
-    // return {
-    //   temperature: 25,
-    //   windSpeed: 10,
-    //   humidity: 60,
-    //   conditionCode: 0,
-    //   isDay: true,
-    //   description: WEATHER_CODES[0],
-    // };
-    return null;
-  } finally {
-    clearTimeout(timeoutId);
   }
+  return null;
 };

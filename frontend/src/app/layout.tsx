@@ -8,13 +8,14 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 import { cn } from "@/lib/utils";
 import { AuthProvider } from "@/context/AuthContext";
 import ChatBotWrapper from "@/components/ChatBotWrapper";
+import { PageTransition } from "@/components/PageTransition";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-serif" });
 
 export const metadata: Metadata = {
   metadataBase: new URL('http://localhost:3000'),
-  title: "YĀTRĀ — AI Travel Planner for India",
+  title: { default: "%s | YĀTRĀ — AI Travel Planner for India", template: "%s | YĀTRĀ" },
   description: "AI-powered travel platform for India. Plan trips, discover destinations, manage budgets, and connect with travel companions.",
   openGraph: {
     title: "YĀTRĀ — AI Travel Planner for India",
@@ -54,17 +55,17 @@ export default function RootLayout({
       <head>
         {/* Mobile PWA / theme color */}
         <meta name="theme-color" content="#ffffff" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
       <body suppressHydrationWarning className={cn(
-        "min-h-screen bg-white text-[#484848] antialiased selection:bg-[#FF5A5F]/10 overflow-x-hidden"
+        "min-h-screen bg-[#F7F7F7] dark:bg-[#0F0F0F] text-[#484848] dark:text-[#E0E0E0] antialiased selection:bg-[#FF5A5F]/10 overflow-x-hidden"
       )}>
         <AuthProvider>
           <ThemeProvider
             attribute="class"
             defaultTheme="light"
-            enableSystem={false}
+            enableSystem
             disableTransitionOnChange
           >
             {/* Top navbar (all breakpoints) */}
@@ -77,7 +78,9 @@ export default function RootLayout({
 
               {/* Main content area */}
               <main className="flex-1 min-w-0 relative">
-                {children}
+                <PageTransition>
+                  {children}
+                </PageTransition>
               </main>
             </div>
 

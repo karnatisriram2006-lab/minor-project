@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import {
   Sparkles,
   Clock,
@@ -45,33 +45,49 @@ export default function Dashboard() {
   const { weather, loading: weatherLoading, getWeather } = useWeather()
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
-      setUser(currentUser)
-      if (currentUser) {
-        try {
-          const { data } = await api.get("/trips")
-          const userTrips = data.trips || []
-          setTrips(userTrips)
-          
-          if (userTrips.length > 0 && userTrips[0].city) {
-            const cityName = userTrips[0].city
+    const fetchTrips = async (currentUser: FirebaseUser) => {
+      try {
+        const { data } = await api.get("/trips")
+        const userTrips = data.trips || []
+        setTrips(userTrips)
+        
+        if (userTrips.length > 0) {
+          const first = userTrips[0]
+          const cityName = first.city || first.destination
+          if (cityName) {
             getWeather(cityName)
-            
-            // Fetch coordinates for Places Explorer
             geocodeCity(cityName).then(res => {
               if (res) setCoords({ lat: res.lat, lng: res.lng })
             })
           }
-        } catch (err) {
-          console.error("Error fetching trips:", err)
-        } finally {
-          setLoadingTrips(false)
         }
+      } catch (err) {
+        console.error("Error fetching trips:", err)
+      } finally {
+        setLoadingTrips(false)
+      }
+    }
+
+    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
+      setUser(currentUser)
+      if (currentUser) {
+        await fetchTrips(currentUser)
       } else {
         setLoadingTrips(false)
       }
     })
-    return () => unsubscribe()
+
+    // Refresh trips when window regains focus (e.g., after saving a trip)
+    const onFocus = () => {
+      if (auth.currentUser) {
+        fetchTrips(auth.currentUser)
+      }
+    }
+    window.addEventListener('focus', onFocus)
+    return () => {
+      unsubscribe()
+      window.removeEventListener('focus', onFocus)
+    }
   }, [getWeather])
 
   const displayName = user?.displayName?.split(" ")[0] || "Traveler"
@@ -151,17 +167,38 @@ export default function Dashboard() {
 
   const latestTrip = trips[0] || null
   
-  const itinerary = latestTrip?.itinerary?.[0]?.activities?.map((act: string, i: number) => ({
-    time: i === 0 ? "09:00" : i === 1 ? "12:00" : "15:00",
-    title: act,
+  // Convert budget to number if it's a string
+  const budgetValue = useMemo(() => {
+    if (!latestTrip) return 0
+    const b = latestTrip.budget
+    
+    // Handle numeric strings like "24000"
+    if (typeof b === 'string' && b) {
+      const parsed = parseInt(b.replace(/[^0-9]/g, ''))
+      if (!isNaN(parsed) && parsed > 0) return parsed
+      
+      const lower = b.toLowerCase()
+      if (lower.includes('luxury') || lower === 'high') return 24000
+      if (lower.includes('classic') || lower.includes('mid') || lower === 'medium') return 12000
+      if (lower.includes('economy') || lower.includes('budget') || lower === 'low') return 6000
+    }
+    if (typeof b === 'number' && b > 0) return b
+    
+    return 12000
+  }, [latestTrip])
+  
+  // Build itinerary from real trip data or show empty state
+  const itinerary = latestTrip?.days?.[0]?.activities?.map((act: any, i: number) => ({
+    time: act.time || `${9 + i * 3}:00`,
+    title: act.name || "Activity",
     done: false
   })) || [
-    { time: "09:00", title: "No activities planned", done: false },
+    { time: "--:--", title: "No activities planned yet", done: false },
   ]
 
-  const tripLocation = latestTrip?.city || "Discovery Mode"
-  const tripDate = latestTrip?.dates?.startDate 
-    ? new Date(latestTrip.dates.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+  const tripLocation = latestTrip?.destination || latestTrip?.city || "Discovery Mode"
+  const tripDate = latestTrip?.createdAt 
+    ? new Date(latestTrip.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
     : "No upcoming trip"
 
   const nearbyCompanions = [
@@ -195,7 +232,7 @@ export default function Dashboard() {
           >
             <div className="w-2 h-2 rounded-full bg-[#00A699] animate-pulse" />
             <span className="text-xs font-semibold text-[#767676]">
-              {latestTrip ? `${latestTrip.city} • Active` : "Exploring India"}
+              {latestTrip ? `${latestTrip.destination || latestTrip.city} • Active` : "Exploring India"}
             </span>
           </motion.div>
         </div>
@@ -351,7 +388,7 @@ export default function Dashboard() {
                 <div className="space-y-2">
                   <div className="flex justify-between items-baseline">
                     <span className="text-xl font-bold text-[#484848]">
-                      {latestTrip ? `₹${latestTrip.budget?.toLocaleString('en-IN') || '0'}` : "₹0"}
+                      {budgetValue > 0 ? `₹${budgetValue.toLocaleString('en-IN')}` : "₹0"}
                     </span>
                     <span className="text-xs font-semibold text-[#00A699] bg-[#00A699]/8 px-2 py-0.5 rounded-full">On track</span>
                   </div>
@@ -494,6 +531,8 @@ export default function Dashboard() {
                 src={latestTrip ? "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800&auto=format&fit=crop&q=80" : "https://images.unsplash.com/photo-1506461883276-594a12b11cf3?w=800&auto=format&fit=crop&q=80"}
                 alt={tripLocation}
                 fill
+                priority
+                loading="eager"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 className="object-cover group-hover:scale-105 transition-transform duration-700"
               />
@@ -502,7 +541,7 @@ export default function Dashboard() {
                 <div>
                   <p className="text-white font-bold text-sm">{tripLocation}</p>
                   <p className="text-white/70 text-xs">
-                    {latestTrip ? `${latestTrip.city} Adventure` : "Ready for your next journey?"}
+                    {latestTrip ? `${latestTrip.destination || latestTrip.city} Adventure` : "Ready for your next journey?"}
                   </p>
                 </div>
                 <Link href={latestTrip ? "/map" : "/trip-planner"}>
@@ -529,66 +568,54 @@ export default function Dashboard() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {/* Day 1 */}
-            <div className="bg-white rounded-2xl border border-[#EBEBEB] shadow-sm overflow-hidden">
-              <div className="px-5 py-4 border-b border-[#EBEBEB] flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: '#FF5A5F' }}>
-                  <div className="text-center leading-none">
-                    <div className="text-[9px] opacity-70">OCT</div>
-                    <div className="text-base font-extrabold -mt-0.5">14</div>
+            {latestTrip && latestTrip.days && latestTrip.days.length > 0 ? (
+              latestTrip.days.slice(0, 2).map((day: any, dayIdx: number) => (
+                <div key={dayIdx} className={`bg-white rounded-2xl border border-[#EBEBEB] shadow-sm overflow-hidden ${dayIdx > 0 ? 'opacity-60' : ''}`}>
+                  <div className="px-5 py-4 border-b border-[#EBEBEB] flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white text-xs font-bold ${dayIdx === 0 ? '' : 'bg-[#F7F7F7] border border-[#EBEBEB] text-[#484848]'}`} style={dayIdx === 0 ? { backgroundColor: '#FF5A5F' } : {}}>
+                      <div className="text-center leading-none">
+                        <div className="text-[9px] opacity-70">DAY</div>
+                        <div className="text-base font-extrabold -mt-0.5">{day.day || dayIdx + 1}</div>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-[#484848]">Day {day.day || dayIdx + 1} — {latestTrip.destination}</h3>
+                      <p className="text-xs text-[#767676]">{day.activities?.length || 0} activities planned</p>
+                    </div>
+                  </div>
+                  <div className="p-5 space-y-3">
+                    {day.activities?.slice(0, 4).map((act: any, i: number) => (
+                      <div key={i} className="flex items-center gap-3">
+                        <span className="text-xs font-medium text-[#767676] w-12 shrink-0">{act.time || "--:--"}</span>
+                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${dayIdx === 0 ? 'bg-[#FF5A5F]' : 'bg-[#DDDDDD]'}`} />
+                        <p className="text-sm font-medium text-[#484848]">{act.name}</p>
+                      </div>
+                    ))}
+                    {(!day.activities || day.activities.length === 0) && (
+                      <p className="text-xs text-[#BBBBBB]">No activities planned</p>
+                    )}
                   </div>
                 </div>
-                <div>
-                  <h3 className="text-sm font-bold text-[#484848]">Day 1 — Pink City</h3>
-                  <p className="text-xs text-[#767676]">Jaipur old town exploration</p>
+              ))
+            ) : (
+              /* Empty state — no trips */
+              <div className="col-span-full flex flex-col items-center justify-center py-16 bg-white rounded-2xl border-2 border-dashed border-[#EBEBEB] text-center space-y-4">
+                <div className="w-14 h-14 rounded-2xl bg-[#F7F7F7] flex items-center justify-center border border-[#EBEBEB]">
+                  <Route className="h-7 w-7 text-[#BBBBBB]" />
                 </div>
-              </div>
-              <div className="p-5 space-y-3">
-                {[
-                  { time: "06:00", title: "Sunrise at Jal Mahal" },
-                  { time: "09:30", title: "Guided walk: Johari Bazaar" },
-                  { time: "13:00", title: "Rajasthani lunch" },
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <span className="text-xs font-medium text-[#767676] w-12 shrink-0">{item.time}</span>
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#FF5A5F] shrink-0" />
-                    <p className="text-sm font-medium text-[#484848]">{item.title}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Day 2 */}
-            <div className="bg-white rounded-2xl border border-[#EBEBEB] shadow-sm overflow-hidden opacity-60">
-              <div className="px-5 py-4 border-b border-[#EBEBEB] flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[#484848] text-xs font-bold bg-[#F7F7F7] border border-[#EBEBEB]">
-                  <div className="text-center leading-none">
-                    <div className="text-[9px] opacity-60">OCT</div>
-                    <div className="text-base font-extrabold -mt-0.5">15</div>
-                  </div>
+                <div className="space-y-1.5">
+                  <p className="text-sm font-semibold text-[#484848]">No trips planned yet</p>
+                  <p className="text-xs text-[#767676] max-w-xs">Start by planning your first AI-powered trip to any destination in India.</p>
                 </div>
-                <div>
-                  <h3 className="text-sm font-bold text-[#484848]">Day 2 — The Citadels</h3>
-                  <p className="text-xs text-[#767676]">Amer Fort & Nahargarh</p>
-                </div>
+                <Link href="/trip-planner">
+                  <Button variant="premium" className="h-10 px-6 rounded-xl text-sm font-semibold group transition-all active:scale-[0.97]">
+                    <Sparkles className="h-4 w-4 mr-1.5" />
+                    Plan my first trip
+                    <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
               </div>
-              <div className="p-5 space-y-3">
-                {[
-                  { time: "08:00", title: "Amer Fort exploration" },
-                  { time: "12:00", title: "Panoramic lunch at Nahargarh" },
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <span className="text-xs font-medium text-[#767676] w-12 shrink-0">{item.time}</span>
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#DDDDDD] shrink-0" />
-                    <p className="text-sm font-medium text-[#484848]">{item.title}</p>
-                  </div>
-                ))}
-                <div className="flex items-center gap-3 pt-2">
-                  <Clock className="h-4 w-4 text-[#BBBBBB]" />
-                  <p className="text-xs text-[#BBBBBB]">More activities to be added</p>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 

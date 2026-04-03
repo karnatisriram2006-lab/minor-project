@@ -279,9 +279,9 @@ export default function Home() {
           </div>
 
           <div className="flex flex-wrap justify-center gap-8 text-xs font-medium text-[#767676]">
-            <Link href="#" className="hover:text-[#484848] transition-colors">Documentation</Link>
-            <Link href="#" className="hover:text-[#484848] transition-colors">Privacy Policy</Link>
-            <Link href="#" className="hover:text-[#484848] transition-colors">Contact Us</Link>
+            <Link href="/docs" className="hover:text-[#484848] transition-colors">Documentation</Link>
+            <Link href="/privacy" className="hover:text-[#484848] transition-colors">Privacy Policy</Link>
+            <Link href="/contact" className="hover:text-[#484848] transition-colors">Contact Us</Link>
           </div>
 
           <div className="text-xs text-[#767676]">
