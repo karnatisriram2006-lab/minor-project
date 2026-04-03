@@ -271,7 +271,7 @@ export default function InteractiveMap({ points = [], center = [20.5937, 78.9629
 
             {/* Custom Markers */}
             {points.map((loc, idx) => (
-              <Marker key={`${loc.id}-${idx}`} longitude={loc.lng} latitude={loc.lat} anchor="center" role="button" aria-label={`Destination: ${loc.name}`}>
+              <Marker key={`${loc.id}-${idx}`} longitude={loc.lng} latitude={loc.lat} anchor="center">
                 <div role="button" aria-label={`Destination: ${loc.name}`} className="relative group/marker cursor-pointer" title={loc.name}>
                   {/* Marker Pin Visual */}
                   <div className="w-8 h-8 flex items-center justify-center relative">

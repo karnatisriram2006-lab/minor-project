@@ -13,13 +13,14 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-serif" });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('http://localhost:3000'),
   title: "YĀTRĀ — AI Travel Planner for India",
   description: "AI-powered travel platform for India. Plan trips, discover destinations, manage budgets, and connect with travel companions.",
   openGraph: {
     title: "YĀTRĀ — AI Travel Planner for India",
     description: "AI-powered travel platform for India. Plan trips, discover destinations, manage budgets, and connect with travel companions.",
     type: "website",
-    url: "https://your-domain.com",
+    url: "http://localhost:3000",
     images: [
       {
         url: "/images/og-image.svg",
