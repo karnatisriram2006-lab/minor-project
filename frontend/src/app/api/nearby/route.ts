@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+  const backendUrl = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
   
   try {
     const res = await fetch(
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('[API Proxy /nearby Error]', error.message)
     return NextResponse.json(
-      { message: 'Unable to fetch nearby places', error: error.message },
+      { message: 'Unable to fetch nearby places. Please try again.', error: error.message },
       { status: 502 }
     )
   }
