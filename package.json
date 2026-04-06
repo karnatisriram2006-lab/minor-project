@@ -1,0 +1,21 @@
+{
+  "name": "yatra-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "YĀTRĀ Project Monorepo",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:backend": "npm run dev --workspace=backend",
+    "build:frontend": "npm run build --workspace=frontend",
+    "start:frontend": "npm run start --workspace=frontend",
+    "lint:frontend": "npm run lint --workspace=frontend",
+    "install:all": "npm install"
+  },
+  "devDependencies": {
+    "next": "^16.2.1"
+  }
+}
