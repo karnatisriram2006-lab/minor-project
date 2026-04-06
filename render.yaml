@@ -20,18 +20,3 @@ services:
         sync: false
       - key: GROQ_MODEL
         value: llama3-8b-8192
-
-  # Frontend Service (Next.js)
-  - type: web
-    name: incredible-india-frontend
-    env: node
-    plan: free
-    rootDir: frontend
-    buildCommand: npm install && npm run build
-    startCommand: npm run start
-    staticPublishNum: 0
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: NEXT_PUBLIC_BACKEND_URL
-        value: https://incredible-india-backend.onrender.com
