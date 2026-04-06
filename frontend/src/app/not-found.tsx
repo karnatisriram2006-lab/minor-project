@@ -1,3 +1,4 @@
+"use client"
 import Link from "next/link"
 
 export default function NotFound() {
@@ -13,16 +14,27 @@ export default function NotFound() {
           </svg>
         </div>
         <div className="space-y-2">
-          <h1 className="text-3xl font-black tracking-tight text-[#484848]">Looks like you took a wrong turn</h1>
+          <h1 className="text-3xl font-black tracking-tight text-[#484848]">Page not found</h1>
           <p className="text-sm text-[#767676] leading-relaxed">
-            Even the best explorers lose their way sometimes. Let&apos;s get you back on track.
+            The page you requested could not be found. Explore India’s incredible destinations instead.
           </p>
         </div>
-        <Link href="/dashboard" className="inline-block">
-          <button className="px-6 py-3 rounded-xl bg-[#FF5A5F] text-white font-semibold hover:bg-[#e14b51] transition-colors active:scale-[0.97]">
-            Go back home
-          </button>
-        </Link>
+        <form onSubmit={e => { e.preventDefault(); const q = (e.currentTarget.elements.namedItem('q') as HTMLInputElement | null)?.value; if (q) window.location.assign(`/discover?q=${encodeURIComponent(q)}`) }} className="flex gap-2 justify-center mt-2">
+          <input name="q" placeholder="Search destinations" className="px-4 py-2 rounded-md border border-[#EBEBEB] w-64" />
+          <button type="submit" className="px-4 py-2 rounded-md bg-[#FF5A5F] text-white font-semibold">Search</button>
+        </form>
+        <div className="flex gap-3 justify-center mt-2">
+          <Link href="/dashboard">
+            <button className="px-6 py-3 rounded-xl bg-[#FF5A5F] text-white font-semibold hover:bg-[#e14b51] transition-colors">
+              Go to Dashboard
+            </button>
+          </Link>
+          <Link href="/trip-planner">
+            <button className="px-6 py-3 rounded-xl bg-[#1F9BEA] text-white font-semibold hover:bg-[#1678c7] transition-colors">
+              Plan a trip
+            </button>
+          </Link>
+        </div>
       </div>
     </div>
   )

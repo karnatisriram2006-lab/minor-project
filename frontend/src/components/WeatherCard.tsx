@@ -1,96 +1,85 @@
 "use client"
+import React from 'react'
 
-import React from 'react';
-import { Cloud, Sun, CloudRain, Wind, Droplets, Thermometer, CloudLightning } from 'lucide-react';
-import { WeatherData } from '@/lib/weatherService';
-import { motion } from 'framer-motion';
+export function WeatherCard({ data, city, loading }: { data: any | null; city: string; loading?: boolean }) {
+  const cityName = city || data?.city || 'Current Location'
+  const tempVal = typeof data?.temperature === 'number' ? data.temperature
+    : typeof data?.temp === 'number' ? data.temp
+    : (data?.current_weather?.temperature ?? undefined)
+  const conditionText = data?.description || data?.condition || data?.current_weather?.description || (data?.weather?.description as string)
+  const iconSrc = data?.icon || data?.iconUrl || undefined
+  const verdict = conditionText ? (typeof conditionText === 'string' ? conditionText : 'Weather') : 'Weather data unavailable'
 
-interface WeatherCardProps {
-    data: WeatherData | null;
-    city: string;
-    loading?: boolean;
+  if (loading) {
+    return <div className="p-4 bg-white rounded-2xl border border-[#EBEBEB] shadow-sm animate-pulse h-28" />
+  }
+  if (!data && tempVal === undefined && !iconSrc && !conditionText) {
+    return null
+  }
+
+  const wind = (data?.windSpeed ?? data?.wind?.speed ?? 0)
+  const humidity = (data?.humidity ?? 0)
+  const verified = data?.verified ?? false
+
+  return (
+    <div className="bg-white rounded-2xl border border-[#EBEBEB] shadow-sm p-5 max-w-md mx-auto sm:mx-0 sm:max-w-full">
+      <div className="flex items-center justify-between mb-2">
+        <div className="text-sm font-semibold uppercase tracking-wide text-gray-700">CURRENT LOCATION</div>
+        <div className="text-xs font-semibold px-3 py-1.5 rounded-full" style={{ backgroundColor: 'var(--color-teal-100)', color: 'var(--color-teal-700)' }}>LIVE WEATHER</div>
+      </div>
+
+      <div className="flex items-center gap-6 mt-2 mb-4">
+        <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'var(--color-pink-100)' }}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-pink-500)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2"></path>
+            <path d="M12 20v2"></path>
+            <path d="M4.93 4.93l1.41 1.41"></path>
+            <path d="M18.66 18.66l1.41 1.41"></path>
+            <path d="M4.93 19.07l1.41-1.41"></path>
+            <path d="M18.66 4.29l1.41-1.41"></path>
+          </svg>
+        </div>
+        <div className="flex-1">
+          <div className="flex items-end gap-2 mb-1">
+            <span className="text-5xl font-extrabold align-middle">{tempVal ?? '—'}</span>
+            <span className="text-3xl font-semibold align-super ml-1">°C</span>
+          </div>
+          <div className="text-xl font-semibold text-gray-700">{conditionText ? verdict : ''}</div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 mt-2">
+        <div className="bg-gray-100 rounded-xl p-4 flex items-center gap-3" style={{ borderColor: 'var(--color-teal-100)' }}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-teal-700)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 10h12a4 4 0 0 1 0 8H4" />
+            <path d="M6 10a6 6 0 1 0 6-6" />
+          </svg>
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wide text-gray-600">Wind</div>
+            <div className="font-semibold text-gray-800">{Math.round(wind)} km/h</div>
+          </div>
+        </div>
+        <div className="bg-gray-100 rounded-xl p-4 flex items-center gap-3" style={{ borderColor: 'var(--color-teal-100)' }}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-pink-500)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6" />
+            <path d="M7 12l5-4 5 4" />
+          </svg>
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wide text-gray-600">Humidity</div>
+            <div className="font-semibold text-gray-800">{humidity}%</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 h-8" style={{ backgroundColor: 'var(--color-bottom, #2f2f2f)' }}>
+        <div className="flex items-center h-full px-4 text-sm text-white">
+          <span>OPEN-METEO REALTIME</span>
+          <span className="ml-auto flex items-center gap-2 text-teal-300"><span className="h-2 w-2 rounded-full bg-teal-400" /> VERIFIED</span>
+        </div>
+      </div>
+    </div>
+  )
 }
 
-const WeatherIcon = ({ code, isDay, className }: { code: number; isDay: boolean; className?: string }) => {
-    if (code === 0) return <Sun className={className} />;
-    if (code >= 1 && code <= 3) return <Cloud className={className} />;
-    if (code >= 51 && code <= 65) return <CloudRain className={className} />;
-    if (code >= 95) return <CloudLightning className={className} />;
-    return <Cloud className={className} />;
-};
-
-export function WeatherCard({ data, city, loading }: WeatherCardProps) {
-    if (loading) {
-        return (
-            <div className="w-full bg-white rounded-3xl border border-[#EBEBEB] p-6 animate-pulse">
-                <div className="h-4 w-24 bg-gray-100 rounded-full mb-4" />
-                <div className="h-10 w-32 bg-gray-100 rounded-xl mb-6" />
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="h-12 bg-gray-50 rounded-2xl" />
-                    <div className="h-12 bg-gray-50 rounded-2xl" />
-                </div>
-            </div>
-        );
-    }
-
-    if (!data) return null;
-
-    return (
-        <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="w-full bg-white rounded-3xl border border-[#EBEBEB] shadow-sm overflow-hidden"
-        >
-            <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-bold text-[#484848] uppercase tracking-wider">{city}</h3>
-                    <div className="px-2.5 py-1 rounded-full bg-[#00A699]/8 text-[#00A699] text-[10px] font-bold uppercase tracking-widest border border-[#00A699]/20">
-                        Live Weather
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-6 mb-6">
-                    <div className="w-16 h-16 rounded-2xl bg-[#FF5A5F]/5 flex items-center justify-center text-[#FF5A5F]">
-                        <WeatherIcon code={data.conditionCode} isDay={data.isDay} className="h-8 w-8" />
-                    </div>
-                    <div>
-                        <div className="flex items-baseline gap-1">
-                            <span className="text-4xl font-black text-[#484848] tracking-tighter">{data.temperature}°</span>
-                            <span className="text-lg font-bold text-[#767676]">C</span>
-                        </div>
-                        <p className="text-sm font-medium text-[#767676] capitalize">{data.description}</p>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-[#F7F7F7] p-3 rounded-2xl border border-[#EBEBEB] flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-[#00A699]">
-                            <Wind className="h-4 w-4" />
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-bold text-[#767676] uppercase tracking-wide">Wind</p>
-                            <p className="text-xs font-bold text-[#484848]">{data.windSpeed} km/h</p>
-                        </div>
-                    </div>
-                    <div className="bg-[#F7F7F7] p-3 rounded-2xl border border-[#EBEBEB] flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-[#FF5A5F]">
-                            <Droplets className="h-4 w-4" />
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-bold text-[#767676] uppercase tracking-wide">Humidity</p>
-                            <p className="text-xs font-bold text-[#484848]">{data.humidity}%</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div className="bg-[#484848] px-6 py-2.5 flex items-center justify-between">
-                <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest">Open-Meteo Realtime</span>
-                <div className="flex items-center gap-1.5">
-                   <div className="w-1.5 h-1.5 rounded-full bg-[#00A699] animate-pulse" />
-                   <span className="text-[10px] font-bold text-white uppercase tracking-widest">Verified</span>
-                </div>
-            </div>
-        </motion.div>
-    );
-}
+export default WeatherCard

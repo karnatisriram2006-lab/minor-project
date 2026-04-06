@@ -1,4 +1,5 @@
 "use client"
+/* Forced update marker: v2.0.0 - Leaflet Redesign */
 
 import dynamic from "next/dynamic"
 import { useState, useMemo } from "react"
@@ -13,8 +14,8 @@ import api from "@/lib/api"
 const InteractiveMap = dynamic(() => import("@/components/InteractiveMap"), {
   ssr: false,
   loading: () => (
-    <div className="h-full w-full bg-[#F7F7F7] flex items-center justify-center">
-      <div className="w-10 h-10 rounded-full border-4 border-[#FF5A5F] border-t-transparent animate-spin" />
+    <div className="h-full w-full bg-[#f5f3ef] flex items-center justify-center">
+      <div className="w-10 h-10 rounded-full border-4 border-[#E8391A] border-t-transparent animate-spin" />
     </div>
   ),
 })
@@ -43,10 +44,8 @@ export default function RoutePlanner() {
   const [newPlace, setNewPlace] = useState("")
   const [optimizedRoute, setOptimizedRoute] = useState<OptimizedStop[]>([])
   const [loading, setLoading] = useState(false)
-
   const [isGeocoding, setIsGeocoding] = useState(false)
 
-  // Real geocoder using Nominatim OpenStreetMap API
   const getCoordinates = async (name: string): Promise<{ lat: number, lng: number } | null> => {
     try {
       const response = await axios.get(`https://nominatim.openstreetmap.org/search`, {
@@ -54,13 +53,10 @@ export default function RoutePlanner() {
           q: name,
           format: "json",
           limit: 1,
-          countrycodes: "in" // Restrict to India for better accuracy
+          countrycodes: "in"
         },
-        headers: {
-          "User-Agent": "Yatra-Travel-Planner"
-        }
+        headers: { "User-Agent": "Yatra-Travel-Planner" }
       });
-
       if (response.data && response.data.length > 0) {
         return {
           lat: parseFloat(response.data[0].lat),
@@ -79,7 +75,6 @@ export default function RoutePlanner() {
     if (newPlace.trim() && !isGeocoding) {
       setIsGeocoding(true)
       const coords = await getCoordinates(newPlace.trim());
-      
       if (coords) {
         setPlaces([...places, { 
           id: Date.now().toString(), 
@@ -89,7 +84,7 @@ export default function RoutePlanner() {
         setNewPlace("")
         setOptimizedRoute([])
       } else {
-        alert("Could not find the location. Please try a more specific name.")
+        alert("Could not find the location.")
       }
       setIsGeocoding(false)
     }
@@ -126,67 +121,56 @@ export default function RoutePlanner() {
 
   const mapPoints = useMemo(() => {
     const dataSource = optimizedRoute.length > 0 ? optimizedRoute : places;
-    return dataSource.map(p => ({
+    return dataSource.filter(p => !!p && p.lat && p.lng).map((p, idx) => ({
       id: p.id,
       name: p.name,
       lat: p.lat,
       lng: p.lng,
-      description: `Stop ${"visitOrder" in p ? p.visitOrder : ""}`
+      description: `Stop ${idx + 1}`
     }))
   }, [places, optimizedRoute])
 
   return (
-    <div className="min-h-screen bg-[#F7F7F7] text-[#484848] pt-0 pb-24 sm:pt-4 sm:pb-12 font-sans">
-
+    <div className="min-h-screen bg-[#f8f9fa] text-[#1a1a1a] pt-0 pb-24 sm:pt-4 sm:pb-12 font-sans">
       <div className="container mx-auto px-6 max-w-6xl space-y-10">
-
-        {/* ── Page Header ────────────────────────────────────── */}
+        
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#FF5A5F] bg-[#FF5A5F]/8 px-3 py-1 rounded-full border border-[#FF5A5F]/15">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#E8391A] bg-[#E8391A]/8 px-3 py-1 rounded-full border border-[#E8391A]/15">
               <Navigation className="h-3.5 w-3.5" />
               Route Optimizer
             </span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-[#484848] tracking-tight">
-            Plan your <span className="text-[#FF5A5F]">route</span>
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+            Plan your <span className="text-[#E8391A]">route</span>
           </h1>
-          <p className="text-[#767676] text-base max-w-xl leading-relaxed">
-            Add your destinations and we&apos;ll calculate the most efficient route across India.
+          <p className="text-[#777] text-base max-w-xl leading-relaxed">
+            Add destinations and calculate the most efficient route across India.
           </p>
         </div>
 
-        {/* ── Main Grid ──────────────────────────────────────── */}
         <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
-
-          {/* Left: Input + Results */}
           <div className="xl:col-span-2 space-y-5">
-
-            {/* Stop input card */}
-            <div className="bg-white rounded-2xl border border-[#EBEBEB] shadow-sm overflow-hidden">
-              <div className="px-6 py-5 border-b border-[#EBEBEB] flex items-center justify-between">
+            <div className="bg-white rounded-2xl border border-[#f0ede8] shadow-sm overflow-hidden">
+              <div className="px-6 py-5 border-b border-[#f0ede8] flex items-center justify-between">
                 <div>
-                  <h2 className="text-base font-bold text-[#484848] tracking-tight">Stops</h2>
-                  <p className="text-xs text-[#767676] mt-0.5">Add at least 2 destinations</p>
+                  <h2 className="text-base font-bold tracking-tight">Stops</h2>
+                  <p className="text-xs text-[#777] mt-0.5">{places.length} destinations added</p>
                 </div>
-                <span className="text-xs font-semibold text-[#767676] bg-[#F7F7F7] px-3 py-1.5 rounded-lg border border-[#EBEBEB]">
-                  {places.length} stop{places.length !== 1 ? "s" : ""}
-                </span>
               </div>
 
               <div className="p-5 space-y-4">
-                {/* Add place form */}
                 <form onSubmit={handleAddPlace} className="flex gap-2">
                   <Input
                     placeholder="Add a destination..."
                     value={newPlace}
                     onChange={(e) => setNewPlace(e.target.value)}
-                    className="flex-1 h-11 rounded-xl bg-[#F7F7F7] border-[#EBEBEB] focus:border-[#FF5A5F] focus:ring-4 focus:ring-[#FF5A5F]/10 text-sm font-medium text-[#484848] placeholder:text-[#BBBBBB] transition-all px-4"
+                    className="flex-1 h-11 rounded-xl bg-gray-50 border-[#f0ede8] focus:border-[#E8391A]"
                   />
                   <Button
                     type="submit"
                     disabled={isGeocoding}
-                    className="h-11 w-11 bg-[#FF5A5F] hover:bg-[#e04f54] text-white rounded-xl shrink-0 transition-all active:scale-95 p-0 flex items-center justify-center shadow-sm disabled:opacity-50"
+                    className="h-11 w-11 bg-[#E8391A] text-white rounded-xl grow-0"
                   >
                     {isGeocoding ? (
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -196,158 +180,63 @@ export default function RoutePlanner() {
                   </Button>
                 </form>
 
-                {/* Places list */}
-                <div className="space-y-2 max-h-72 overflow-y-auto">
+                <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
                   <AnimatePresence mode="popLayout">
                     {places.map((place, index) => (
                       <motion.div
                         key={place.id}
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.97 }}
-                        layout
-                        className="flex items-center justify-between px-4 py-3 bg-[#F7F7F7] rounded-xl border border-[#EBEBEB] hover:border-[#FF5A5F]/20 hover:bg-white transition-all group"
+                        className="flex items-center justify-between px-4 py-3 bg-gray-50 rounded-xl border border-[#f0ede8] hover:border-[#E8391A]/20 transition-all"
                       >
                         <div className="flex items-center gap-3 overflow-hidden">
-                          <div className="w-7 h-7 rounded-lg bg-[#FF5A5F]/10 text-[#FF5A5F] flex items-center justify-center text-xs font-bold shrink-0">
+                          <div className="w-7 h-7 rounded-lg bg-[#E8391A] text-white flex items-center justify-center text-xs font-bold">
                             {index + 1}
                           </div>
-                          <span className="font-medium text-[#484848] text-sm truncate">{place.name}</span>
+                          <span className="font-medium text-sm truncate">{place.name}</span>
                         </div>
                         <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleRemovePlace(place.id)}
-                          className="h-8 w-8 text-[#BBBBBB] hover:text-[#FF5A5F] hover:bg-[#FF5A5F]/5 rounded-lg shrink-0 transition-colors"
+                          variant="ghost" size="icon" onClick={() => handleRemovePlace(place.id)}
+                          className="text-gray-400 hover:text-[#E8391A]"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </motion.div>
                     ))}
                   </AnimatePresence>
-
-                  {places.length === 0 && (
-                    <div className="py-10 text-center space-y-2 border-2 border-dashed border-[#EBEBEB] rounded-xl">
-                      <MapPin className="h-8 w-8 text-[#DDDDDD] mx-auto" />
-                      <p className="text-xs text-[#BBBBBB] font-medium">No stops added yet</p>
-                    </div>
-                  )}
                 </div>
 
-                {/* Optimize button */}
                 <Button
-                  variant="premium"
-                  className="w-full h-12 rounded-xl text-sm font-semibold shadow-sm transition-all active:scale-[0.98] disabled:opacity-50"
-                  onClick={handleOptimize}
+                   variant="premium" onClick={handleOptimize}
                   disabled={places.length < 2 || loading}
+                  className="w-full h-12 rounded-xl text-sm font-bold bg-[#E8391A] text-white"
                 >
-                  {loading ? (
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span>Optimizing route...</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <Route className="h-4 w-4" />
-                      <span>Optimize route</span>
-                    </div>
-                  )}
+                  {loading ? "Optimizing..." : "Optimize route"}
                 </Button>
               </div>
             </div>
 
-            {/* Optimized results */}
-            <AnimatePresence>
-              {optimizedRoute.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                  className="bg-[#484848] rounded-2xl border border-[#484848] overflow-hidden"
-                >
-                  <div className="px-6 py-4 border-b border-white/10 flex items-center gap-3">
-                    <Compass className="h-5 w-5 text-[#FF5A5F]" />
-                    <div>
-                      <h3 className="text-sm font-bold text-white">Optimized Route</h3>
-                      <p className="text-[11px] text-white/40 font-medium">Best travel order</p>
+            {optimizedRoute.length > 0 && (
+              <div className="bg-[#1a1a1a] rounded-2xl p-5 space-y-4">
+                <div className="flex items-center gap-3 border-b border-white/10 pb-4">
+                  <Compass className="h-5 w-5 text-[#E8391A]" />
+                  <h3 className="text-sm font-bold text-white">Suggested Order</h3>
+                </div>
+                {optimizedRoute.map((place) => (
+                  <div key={place.id} className="flex items-center gap-3 px-4 py-3 bg-white/5 rounded-xl border border-white/10">
+                    <div className="w-7 h-7 rounded-lg bg-white text-[#1a1a1a] flex items-center justify-center text-xs font-bold">
+                      {place.visitOrder}
                     </div>
+                    <span className="font-medium text-white text-sm">{place.name}</span>
                   </div>
-                  <div className="p-4 space-y-2">
-                    {optimizedRoute.map((place) => (
-                      <div key={place.id} className="flex items-center gap-3 px-4 py-3 bg-white/8 rounded-xl border border-white/8 hover:bg-white/12 transition-colors">
-                        <div className="w-7 h-7 rounded-lg bg-white text-[#484848] flex items-center justify-center text-xs font-bold shrink-0">
-                          {place.visitOrder}
-                        </div>
-                        <span className="font-medium text-white text-sm">{place.name}</span>
-                      </div>
-                    ))}
-                    <div className="flex items-center gap-2 pt-2 px-2">
-                      <Sparkles className="h-3.5 w-3.5 text-[#FF5A5F]" />
-                      <span className="text-[11px] text-white/40 font-medium">{optimizedRoute.length} stops optimized</span>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Right: Map placeholder */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="xl:col-span-3 sticky top-28"
-          >
-            <div className="bg-white rounded-2xl border border-[#EBEBEB] shadow-sm overflow-hidden flex flex-col" style={{ height: '620px' }}>
-              {/* Map card header */}
-              <div className="px-6 py-4 border-b border-[#EBEBEB] flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#FF5A5F]/8 flex items-center justify-center text-[#FF5A5F]">
-                    <Map className="h-4.5 w-4.5" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-[#484848]">Route Map</h3>
-                    <p className="text-[11px] text-[#767676]">Visual route preview</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-[#FF5A5F] animate-pulse" />
-                  <span className="text-[11px] font-semibold text-[#767676]">Live</span>
-                </div>
-              </div>
-
-              {/* Map body — Interactive Map */}
-              <div
-                className="flex-1 relative overflow-hidden"
-                style={{
-                  backgroundColor: '#FAFAFA'
-                }}
-              >
-                <InteractiveMap points={mapPoints} />
-
-                {/* Info footnote */}
-                <div className="absolute bottom-5 left-5 right-5 flex items-start gap-3 bg-white/90 backdrop-blur-md rounded-xl px-4 py-3 border border-[#EBEBEB] shadow-sm z-10">
-                  <Info className="h-4 w-4 text-[#767676] shrink-0 mt-0.5" />
-                  <p className="text-[11px] text-[#767676] leading-relaxed">
-                    Visualizing your travel sequence. Add stops and optimize to update the route path.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* ── CTA strip ──────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl border border-[#EBEBEB] p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="space-y-1">
-            <h3 className="text-base font-bold text-[#484848]">Ready to plan your full trip?</h3>
-            <p className="text-sm text-[#767676]">Generate a day-by-day AI itinerary from the Trip Planner.</p>
+          <div className="xl:col-span-3 h-[620px] rounded-2xl overflow-hidden border border-[#f0ede8] shadow-sm relative">
+            <InteractiveMap points={mapPoints as any} />
           </div>
-          <Button variant="premium" className="h-11 px-6 rounded-xl text-sm font-semibold shrink-0 group transition-all active:scale-[0.97]">
-            Open Trip Planner
-            <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-          </Button>
         </div>
 
       </div>

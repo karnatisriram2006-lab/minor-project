@@ -58,35 +58,37 @@ const generateItineraryAgent = async (city, days, interests, budget) => {
 User Interests: ${interests}
 Budget Level: ${budget}
 
-CRITICAL GEOGRAPHIC RULES:
+GEOGRAPHIC RULES:
 1. Group places that are CLOSE TOGETHER on the same day (within 5-10km of each other).
 2. NEVER put places on opposite ends of the city on the same day.
-3. Start each day from a central location and visit nearby places in a logical route.
-4. Maximum 4-5 places per day to allow realistic travel time.
-5. Include realistic travel time between places (15-45 min within city).
-6. Order places within each day by geographic proximity (shortest path).
+3. FOLLOW A ONE-WAY ROUTE: Avoid backtracking. The sequence should follow a continuous path across the city.
+4. Start each day at a logical starting point and move toward the others in a linear or circular fashion.
+5. Maximum 4-5 places per day to allow realistic travel time.
+6. Order places within each day by geographic proximity to form a single, efficient route.
 
-Requirement: Provide a day-by-day itinerary in JSON format.
-Each activity must include: name, description (max 10 words), time, type, lat, lng.
+Return a day-by-day itinerary in JSON. Do NOT include lat or lng — coordinates will be added separately.
+Each activity must include: name, description (max 15 words), time (HH:MM AM/PM), type, visitDuration.
+
+PRIORITIZE:
+1. Start with iconic, must-visit heritage sites (e.g. "Taj Mahal") early in the day when crowds are thinner.
+2. Include 1-2 local culinary gems or street food markets per day tailored to the city's specialty.
+3. Provide a LOGICAL narrative flow (e.g. Morning: spiritual/heritage -> Afternoon: museum/cultural activity -> Evening: scenic viewpoint/relaxing market).
 
 Format:
 {
   "itinerary": {
     "day1": [
-      { "name": "...", "description": "...", "time": "09:00 AM", "type": "culture", "lat": 27.1751, "lng": 78.0421, "visitDuration": "2 hours" }
+      { "name": "Exact Place Name", "description": "Short description", "time": "09:00 AM", "type": "culture", "visitDuration": "2 hours" }
     ],
     "day2": [
-      { "name": "...", "description": "...", "time": "10:00 AM", "type": "landmark", "lat": 27.1751, "lng": 78.0421, "visitDuration": "1.5 hours" }
+      { "name": "Exact Place Name", "description": "Short description", "time": "10:00 AM", "type": "landmark", "visitDuration": "1.5 hours" }
     ]
   }
 }
 
-Note: 
-- All lat/lng must be accurate coordinates within ${city}, India.
-- Places in the same day MUST be geographically close to each other.
-- Include visitDuration for each place (e.g., "1 hour", "2 hours").`;
+IMPORTANT: Use the exact, well-known name of each place so it can be found on a map (e.g. "Ramoji Film City" not "Film City").`;
 
-    const systemPrompt = "You are a professional Indian Travel Planner who optimizes routes geographically. Group nearby places together. Respond ONLY with valid JSON.";
+    const systemPrompt = "You are a professional Indian Travel Planner. Group nearby places together. Respond ONLY with valid JSON. Do not include coordinates.";
 
     try {
         const responseText = await callGroq(prompt, systemPrompt, 0.2);
@@ -296,10 +298,26 @@ function haversineDistance(lat1, lon1, lat2, lon2) {
  * Reorder activities within each day by geographic proximity (nearest-neighbor)
  */
 function optimizeDayRoute(activities) {
-    if (activities.length <= 1) return activities;
+    if (activities.length <= 2) return activities;
     
-    const optimized = [activities[0]];
-    const remaining = activities.slice(1);
+    // Find the two points furthest apart ("extreme points") to start from one of them.
+    // This ensures a "one-way" route rather than a "star" pattern starting from the middle.
+    let maxDist = -1;
+    let startIdx = 0;
+    
+    for (let i = 0; i < activities.length; i++) {
+        for (let j = i + 1; j < activities.length; j++) {
+            const d = haversineDistance(activities[i].lat, activities[i].lng, activities[j].lat, activities[j].lng);
+            if (d > maxDist) {
+                maxDist = d;
+                // Pick the one with smaller latitude (southernmost) as a consistent "extreme" start
+                startIdx = activities[i].lat < activities[j].lat ? i : j;
+            }
+        }
+    }
+
+    const remaining = [...activities];
+    const optimized = [remaining.splice(startIdx, 1)[0]];
     
     while (remaining.length > 0) {
         const last = optimized[optimized.length - 1];
@@ -323,6 +341,15 @@ function optimizeDayRoute(activities) {
 }
 
 /**
+ * Check if an activity has valid India coordinates
+ */
+function hasValidCoords(act) {
+    const lat = Number(act.lat);
+    const lng = Number(act.lng);
+    return lat > 6 && lat < 38 && lng > 68 && lng < 98;
+}
+
+/**
  * Validate and optimize the full itinerary
  */
 function validateItinerary(itinerary) {
@@ -332,15 +359,25 @@ function validateItinerary(itinerary) {
     for (const [day, activities] of Object.entries(itinerary)) {
         if (!activities || activities.length === 0) continue;
         
-        // Reorder by nearest-neighbor
-        const reordered = optimizeDayRoute(activities);
+        // Separate stops with valid geocoded coords from those that failed geocoding
+        const validActs = activities.filter(hasValidCoords);
+        const nullActs  = activities.filter(a => !hasValidCoords(a));
+
+        if (nullActs.length > 0) {
+            console.warn(`[Validate] ${day}: ${nullActs.length} place(s) skipped in route optimization (no coords): ${nullActs.map(a => a.name).join(', ')}`);
+        }
         
-        // Check if any day has places too far apart (>15km between consecutive places)
+        // PRESERVE AI'S ORIGINAL ORDER: The AI knows the best times (e.g. sunrise/meal times)
+        // We only use optimizeDayRoute as a reference, but we output the original order
+        // to maintain the logical "narrative" of the trip.
+        const reordered = [ ...validActs, ...nullActs ];
+        
+        // Check distance gaps only among geocoded stops
         let maxDist = 0;
-        for (let i = 1; i < reordered.length; i++) {
+        for (let i = 1; i < validActs.length; i++) {
             const dist = haversineDistance(
-                reordered[i-1].lat, reordered[i-1].lng,
-                reordered[i].lat, reordered[i].lng
+                validActs[i-1].lat, validActs[i-1].lng,
+                validActs[i].lat,   validActs[i].lng
             );
             maxDist = Math.max(maxDist, dist);
         }
@@ -349,10 +386,10 @@ function validateItinerary(itinerary) {
             warnings.push(`${day}: Some places are ${maxDist.toFixed(1)}km apart. Consider splitting across days.`);
         }
         
-        // Calculate total day distance
-        const totalDist = reordered.reduce((sum, a, i) => {
+        // Calculate total day distance for geocoded stops
+        const totalDist = validActs.reduce((sum, a, i) => {
             if (i === 0) return 0;
-            return sum + haversineDistance(reordered[i-1].lat, reordered[i-1].lng, a.lat, a.lng);
+            return sum + haversineDistance(validActs[i-1].lat, validActs[i-1].lng, a.lat, a.lng);
         }, 0);
         
         optimized[day] = reordered.map(a => ({
@@ -361,6 +398,7 @@ function validateItinerary(itinerary) {
         }));
         optimized[day]._summary = {
             placeCount: reordered.length,
+            geocodedCount: validActs.length,
             totalTravelKm: Math.round(totalDist * 10) / 10,
             maxGapKm: Math.round(maxDist * 10) / 10
         };

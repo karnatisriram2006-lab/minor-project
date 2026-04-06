@@ -7,6 +7,7 @@ const {
     validateItinerary
 } = require('../services/groqService');
 const { getFromCache, saveToCache, getTouristPlaces } = require('../services/itineraryStorageService');
+const { enrichItineraryCoords } = require('../services/geocodeService');
 
 // @desc    Generate AI itinerary (Travel Planning Agent)
 // @route   POST /api/ai/itinerary
@@ -18,7 +19,10 @@ const createItinerary = async (req, res) => {
         return res.status(400).json({ message: 'City and days are required' });
     }
 
-    const cacheKey = `itinerary-${city.toLowerCase()}-${days}-${budget}-${interests}`;
+    // ⬆ Bump this version whenever the itinerary format/geocoding changes.
+    // Old cache entries are silently ignored and fresh geocoded results are stored.
+    const CACHE_VERSION = 'v3-linear-route';
+    const cacheKey = `itinerary-${CACHE_VERSION}-${city.toLowerCase()}-${days}-${budget}-${interests}`;
 
     try {
         console.log(`[AI Itinerary] Generating for ${city}, ${days} days...`);
@@ -28,24 +32,22 @@ const createItinerary = async (req, res) => {
             return res.json(cachedResult);
         }
 
-        // Generate raw itinerary from AI
+        // Generate raw itinerary from AI (no lat/lng — coordinates are geocoded below)
         const rawItinerary = await generateItineraryAgent(city, days, interests || 'general', budget || 'medium');
-        
-        // Validate and optimize geographically
-        const { itinerary: optimizedItinerary, warnings } = validateItinerary(rawItinerary.itinerary || rawItinerary);
-        
-        console.log(`[AI Itinerary] Successfully generated and optimized itinerary for ${city}`);
-        if (warnings.length > 0) {
-            console.log('[AI Itinerary] Warnings:', warnings);
-        }
-        
-        const result = {
-            itinerary: optimizedItinerary,
-            warnings,
-            city,
-            days
-        };
-        
+        const rawDays = rawItinerary.itinerary || rawItinerary;
+
+        // Step 1: Geocode every stop via Nominatim for accurate coordinates
+        console.log(`[AI Itinerary] Geocoding coordinates for ${city}...`);
+        const geocodedDays = await enrichItineraryCoords(rawDays, city);
+
+        // Step 2: Validate and optimize route order now that real coords are available
+        const { itinerary: optimizedItinerary, warnings } = validateItinerary(geocodedDays);
+
+        console.log(`[AI Itinerary] Successfully generated itinerary for ${city}`);
+        if (warnings.length > 0) console.log('[AI Itinerary] Warnings:', warnings);
+
+        const result = { itinerary: optimizedItinerary, warnings, city, days };
+
         await saveToCache(cacheKey, result);
         res.json(result);
     } catch (error) {

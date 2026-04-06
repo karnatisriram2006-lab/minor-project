@@ -16,6 +16,7 @@ const emergencyRoutes = require('./routes/emergencyRoutes');
 const tripRoutes = require('./routes/tripRoutes');
 const poiRoutes = require('./routes/poiRoutes');
 const waitlistRoutes = require('./routes/waitlistRoutes');
+const messagesRoutes = require('./routes/messages');
 
 // Connect to database
 connectDB();
@@ -65,6 +66,7 @@ app.use('/api/emergency', emergencyRoutes);
 app.use('/api/trips', tripRoutes);
 app.use('/api/nearby', poiRoutes);
 app.use('/api/waitlist', waitlistRoutes);
+app.use('/api/messages', messagesRoutes);
 
 // User requested aliases
 app.post('/api/chat', (req, res) => res.redirect(307, '/api/ai/chat'));

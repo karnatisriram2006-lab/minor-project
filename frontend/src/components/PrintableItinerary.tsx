@@ -25,7 +25,7 @@ export function PrintableItinerary({ city, itinerary, days }: PrintableItinerary
   if (!itinerary) return null;
 
   return (
-    <div id="printable-itinerary-content" className="bg-white text-[#484848] font-sans w-[800px] fixed top-0 left-0 -z-50 pointer-events-none">
+    <div id="printable-itinerary-content" className="bg-white text-[#484848] font-sans w-[800px] fixed top-[-9999px] left-[-9999px] -z-50 pointer-events-none opacity-0">
       
       {/* ── Page 1/Cover & Intro Header ───────────────────────── */}
       <div className="p-16 border-b-2 border-[#EBEBEB]">

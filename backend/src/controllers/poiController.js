@@ -49,21 +49,38 @@ const findNearby = async (req, res) => {
             throw new Error(`Nominatim returned ${response.status}`);
         }
 
+        // Haversine formula to calculate distance in meters
+        const calculateDistance = (lat1, lon1, lat2, lon2) => {
+            const R = 6371000; // Earth's radius in meters
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        };
+
         const data = await response.json();
 
         // Transform Nominatim results to frontend format
-        const places = data.map(el => ({
-            name: el.display_name?.split(',')[0] || "Unnamed Place",
-            category: amenity,
-            address: el.display_name || "Address unavailable",
-            phone: "N/A", // Nominatim doesn't always include phone
-            distance: 0,
-            open24Hours: false,
-            verified: true,
-            rating: 4.0,
-            lat: parseFloat(el.lat),
-            lng: parseFloat(el.lon)
-        }));
+        const places = data.map(el => {
+            const placeLat = parseFloat(el.lat);
+            const placeLng = parseFloat(el.lon);
+            return {
+                name: el.display_name?.split(',')[0] || "Unnamed Place",
+                category: amenity,
+                address: el.display_name || "Address unavailable",
+                phone: "N/A",
+                distance: calculateDistance(parseFloat(lat), parseFloat(lng), placeLat, placeLng),
+                open24Hours: false,
+                verified: true,
+                rating: 4.0,
+                lat: placeLat,
+                lng: placeLng
+            };
+        });
 
         if (places.length === 0) {
             return res.json({ 

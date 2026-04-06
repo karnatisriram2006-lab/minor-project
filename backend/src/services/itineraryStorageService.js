@@ -41,7 +41,7 @@ const saveToCache = async (key, itinerary) => {
         await Cache.findOneAndUpdate(
             { key },
             { value: itinerary },
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
         );
         console.log(`[Storage Service] Cached new itinerary in MongoDB for: ${key}`);
     } catch (error) {

@@ -37,6 +37,7 @@ export const metadata: Metadata = {
     description: "AI-powered travel platform for India. Plan trips, discover destinations, manage budgets, and connect with travel companions.",
     images: ["/images/og-image.svg"],
   },
+  manifest: "/manifest.json",
 };
 
 export const viewport = {
@@ -54,7 +55,7 @@ export default function RootLayout({
 <html lang="en" suppressHydrationWarning className={cn(inter.className, playfair.className)}>
       <head>
         {/* Mobile PWA / theme color */}
-        <meta name="theme-color" content="#ffffff" />
+        <meta name="theme-color" content="#E8651A" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>

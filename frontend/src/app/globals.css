@@ -20,6 +20,14 @@
   --color-accent: #FF5A5F;
   --color-accent-foreground: #FFFFFF;
 
+  /* Design tokens for weather UI */
+  --color-teal-100: #d6fbf7; /* light teal badge background */
+  --color-teal-700: #0b7a71;  /* teal text for badge */
+  --color-pink-100: #fbe7f0; /* light pink tile */
+  --color-pink-500: #f472b6;  /* pink accent */
+  --color-bottom: #2f2f2f;    /* bottom bar background */
+  --color-bottom-verified: #10b981; /* verified dot color */
+
   --color-destructive: oklch(0.602 0.158 24.5);
   --color-destructive-foreground: oklch(0.985 0.001 106);
 
@@ -211,6 +219,14 @@
   .spring-bounce {
     transition: transform 500ms cubic-bezier(0.32, 0.72, 0, 1);
   }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 
 /* ─── Reduced motion: keep opacity, remove movement ─────── */
@@ -294,4 +310,124 @@
 .dark .shadow-xl,
 .dark .shadow-2xl {
   --tw-shadow-color: rgba(0,0,0,0.4) !important;
+}
+
+/* ─── Leaflet Map Overrides (Google Maps Style) ─────────── */
+
+/* Hide default Leaflet controls — we use custom ones */
+.leaflet-control-zoom { display: none !important; }
+.leaflet-control-attribution { display: none !important; }
+
+/* Map background color */
+.leaflet-container {
+  background: #f5f3ef !important;
+  font-family: inherit !important;
+}
+
+/* Subtle tile enhancement */
+.leaflet-tile-pane {
+  filter: saturate(1.05) brightness(1.01);
+}
+
+/* Smooth tile fade-in */
+.leaflet-tile {
+  transition: opacity 0.25s ease !important;
+}
+
+/* Popup redesign */
+.leaflet-popup-content-wrapper {
+  border-radius: 12px !important;
+  box-shadow:
+    0 8px 24px rgba(0,0,0,0.14),
+    0 2px 6px rgba(0,0,0,0.08) !important;
+  border: none !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  min-width: 220px !important;
+}
+.leaflet-popup-content {
+  margin: 0 !important;
+  width: auto !important;
+}
+.leaflet-popup-tip-container {
+  margin-top: -1px !important;
+}
+.leaflet-popup-close-button {
+  top: 8px !important;
+  right: 8px !important;
+  width: 22px !important;
+  height: 22px !important;
+  background: rgba(255,255,255,0.25) !important;
+  border-radius: 50% !important;
+  color: white !important;
+  font-size: 15px !important;
+  line-height: 22px !important;
+  text-align: center !important;
+  padding: 0 !important;
+  z-index: 10 !important;
+}
+.leaflet-popup-close-button:hover {
+  background: rgba(255,255,255,0.4) !important;
+}
+
+/* Marker hover scale */
+.leaflet-marker-icon:hover {
+  z-index: 1000 !important;
+}
+
+/* Cluster marker overrides */
+.marker-cluster,
+.marker-cluster-small,
+.marker-cluster-medium,
+.marker-cluster-large {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.marker-cluster div,
+.marker-cluster-small div,
+.marker-cluster-medium div,
+.marker-cluster-large div {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: white !important;
+  font-weight: 700 !important;
+}
+
+/* Smooth panel transition */
+.itinerary-panel {
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hide day tabs scrollbar */
+.day-tabs-row {
+  scrollbar-width: none;
+}
+.day-tabs-row::-webkit-scrollbar {
+  display: none;
+}
+
+/* ─── Itinerary Panel Animations ─────────────────────────── */
+
+@keyframes spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.6; transform: scale(0.85); }
+}
+
+/* Stop card hover glow */
+.stop-card:hover {
+  border-color: #FFD5CC !important;
+  box-shadow: 0 4px 20px rgba(232, 57, 26, 0.08) !important;
+  transform: translateY(-1px);
+}
+
+/* Timeline connector breathing effect for active stop */
+.timeline-dot-active {
+  box-shadow: 0 0 0 4px rgba(232, 57, 26, 0.15) !important;
 }

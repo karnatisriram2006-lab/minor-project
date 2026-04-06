@@ -63,6 +63,8 @@ export default function Companions() {
     }
   ])
   const [isAuthorized, setIsAuthorized] = useState(true)
+  // Messaging status for companion connections (UI feedback)
+  const [sendStatus, setSendStatus] = useState<"idle" | "sending" | "sent" | "error">("idle")
   const [firebaseUser, setFirebaseUser] = useState<any>(null)
   const continueGuest = () => {
     setIsAuthorized(true)
@@ -122,6 +124,25 @@ export default function Companions() {
     return unsubscribe
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [firebaseUser])
+
+  // Helper: convert a real match into a Companion-like object for the modal
+  const handleConnectFromMatch = (match: any) => {
+    const name = match.name || 'Traveler'
+    const initials = (name.split(' ').map((p: string) => p[0]).slice(0, 2).join('') || 'TR')
+    const comp: Companion = {
+      id: match.id || 'm-' + Math.random().toString(36).slice(2, 7),
+      name,
+      initials: initials.toUpperCase(),
+      destination: match.destination || '',
+      travelDates: (match.travelDates || match.dates || ''),
+      budgetRange: match.budgetRange || '',
+      interests: match.interests || [],
+      matchScore: match.similarityScore ?? match.matchScore ?? 0,
+      bio: match.bio || '',
+      verified: !!match.verified
+    }
+    setShowConnectModal(comp)
+  }
 
   /* ── Not signed in ────────────────────────────────────── */
   if (!isAuthorized) {
@@ -341,7 +362,7 @@ export default function Companions() {
                         </div>
                         <Button
                           variant="premium"
-                          onClick={() => setShowConnectModal(companion)}
+                          onClick={() => handleConnectFromMatch(companion as any)}
                           className="h-10 px-5 rounded-xl text-xs font-semibold shrink-0 group/btn transition-all active:scale-[0.97]"
                         >
                           <MessageSquare className="h-4 w-4 mr-1.5" />
@@ -354,7 +375,7 @@ export default function Companions() {
               </div>
             )}
 
-            <AnimatePresence mode="popLayout">
+              <AnimatePresence mode="popLayout">
               {loading ? (
                 /* Skeleton */
                 <motion.div
@@ -468,8 +489,8 @@ export default function Companions() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-6"
-            onClick={() => setShowConnectModal(null)}
-          >
+                onClick={() => setShowConnectModal(null)}
+              >
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 16 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -506,14 +527,35 @@ export default function Companions() {
                 </Button>
                 <Button
                   variant="premium"
-                  onClick={() => {
-                    // TODO: POST to /api/messages
-                    setShowConnectModal(null)
-                    setConnectMsg("")
+                  onClick={async () => {
+                    // Send message via API
+                    if (!connectMsg || connectMsg.trim().length < 3) {
+                      // simple inline validation feedback via console and no-op if too short
+                      console.warn('Message too short')
+                      return
+                    }
+                    try {
+                      setSendStatus("sending")
+                      const resp = await fetch('/api/messages', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ toName: showConnectModal?.name, destination: showConnectModal?.destination, message: connectMsg }),
+                      })
+                      if (!resp.ok) throw new Error('Failed to send')
+                      setSendStatus("sent")
+                      setTimeout(() => {
+                        setShowConnectModal(null)
+                        setConnectMsg("")
+                        setSendStatus("idle")
+                      }, 1000)
+                    } catch {
+                      setSendStatus("error")
+                    }
                   }}
                   className="flex-1 h-12 rounded-xl text-sm font-semibold"
                 >
-                  Send Message
+                  <MessageSquare className="h-4 w-4 mr-1.5" />
+                  {sendStatus === 'sending' ? 'Sending...' : 'Send Message'}
                 </Button>
               </div>
             </motion.div>
