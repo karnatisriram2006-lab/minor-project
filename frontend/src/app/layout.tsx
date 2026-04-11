@@ -16,15 +16,23 @@ import { LanguageProvider } from "@/context/LanguageContext";
 import { UpdateAvailableBanner } from "@/components/OfflineComponents";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
-const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-serif" });
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-serif",
+});
 
 export const metadata: Metadata = {
-  metadataBase: new URL('http://localhost:3000'),
-  title: { default: "%s | YĀTRĀ — AI Travel Planner for India", template: "%s | YĀTRĀ" },
-  description: "AI-powered travel platform for India. Plan trips, discover destinations, manage budgets, and connect with travel companions.",
+  metadataBase: new URL("http://localhost:3000"),
+  title: {
+    default: "%s | YĀTRĀ — AI Travel Planner for India",
+    template: "%s | YĀTRĀ",
+  },
+  description:
+    "AI-powered travel platform for India. Plan trips, discover destinations, manage budgets, and connect with travel companions.",
   openGraph: {
     title: "YĀTRĀ — AI Travel Planner for India",
-    description: "AI-powered travel platform for India. Plan trips, discover destinations, manage budgets, and connect with travel companions.",
+    description:
+      "AI-powered travel platform for India. Plan trips, discover destinations, manage budgets, and connect with travel companions.",
     type: "website",
     url: "http://localhost:3000",
     images: [
@@ -39,7 +47,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "YĀTRĀ — AI Travel Planner for India",
-    description: "AI-powered travel platform for India. Plan trips, discover destinations, manage budgets, and connect with travel companions.",
+    description:
+      "AI-powered travel platform for India. Plan trips, discover destinations, manage budgets, and connect with travel companions.",
     images: ["/images/og-image.svg"],
   },
   manifest: "/manifest.json",
@@ -57,16 +66,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-<html lang="en" suppressHydrationWarning className={cn(inter.className, playfair.className)}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={cn(inter.className, playfair.className)}
+    >
       <head>
         {/* Mobile PWA / theme color */}
         <meta name="theme-color" content="#E8651A" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
-      <body suppressHydrationWarning className={cn(
-        "min-h-screen bg-[#F7F7F7] dark:bg-[#0F0F0F] text-[#484848] dark:text-[#E0E0E0] antialiased selection:bg-[#FF5A5F]/10 overflow-x-hidden"
-      )}>
+      <body
+        suppressHydrationWarning
+        className={cn(
+          "min-h-screen bg-[#F7F7F7] dark:bg-[#0F0F0F] text-[#484848] dark:text-[#E0E0E0] antialiased selection:bg-[#FF5A5F]/10 overflow-x-hidden",
+        )}
+      >
         <OfflineBanner />
         <UpdateAvailableBanner />
         <GlobalErrorBoundary>
@@ -87,10 +103,8 @@ export default function RootLayout({
                   <Sidebar />
 
                   {/* Main content area */}
-                <main className="flex-1 min-w-0 relative pb-20 sm:pb-0">
-                    <PageTransition>
-                      {children}
-                    </PageTransition>
+                  <main className="flex-1 min-w-0 relative pb-20 sm:pb-0">
+                    <PageTransition>{children}</PageTransition>
                   </main>
                 </div>
 
@@ -99,7 +113,7 @@ export default function RootLayout({
 
                 {/* AI Chat bot */}
                 <ChatBotWrapper />
-                
+
                 {/* PWA Service Worker */}
                 <PwaRegistrar />
               </LanguageProvider>

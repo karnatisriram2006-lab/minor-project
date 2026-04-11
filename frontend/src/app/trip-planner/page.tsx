@@ -18,6 +18,7 @@ import {
   Plus,
   TrendingUp,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -161,7 +162,7 @@ export default function TripPlanner() {
   // Load offline itinerary if present
   useEffect(() => {
     try {
-      const stored = localStorage.getItem('offline-itinerary');
+      const stored = localStorage.getItem("offline-itinerary");
       if (stored && !itinerary) {
         setItinerary(JSON.parse(stored));
       }
@@ -169,15 +170,15 @@ export default function TripPlanner() {
       // ignore parse errors
     }
   }, []);
-  
+
   // Persist itinerary to localStorage for offline use
   useEffect(() => {
     if (!itinerary) return;
     try {
-      localStorage.setItem('offline-itinerary', JSON.stringify(itinerary));
+      localStorage.setItem("offline-itinerary", JSON.stringify(itinerary));
     } catch {
       // Quota exceeded or other storage error
-      console.warn('Failed to save itinerary offline');
+      console.warn("Failed to save itinerary offline");
     }
   }, [itinerary]);
   // Fetch budget summary if trip is saved
@@ -431,9 +432,33 @@ export default function TripPlanner() {
   }
 
   const handleSave = async () => {
-    if (!itinerary) return;
+    console.log("[SAVE] Button clicked - Starting save process");
+
+    if (!itinerary) {
+      console.warn("[SAVE] No itinerary to save");
+      setSaveStatus("error");
+      setTimeout(() => setSaveStatus("idle"), 3000);
+      return;
+    }
+
+    console.log("[SAVE] Itinerary found, processing...", {
+      days: Object.keys(itinerary).length,
+      city: formData.city,
+      budget: totalBudget,
+    });
+
+    // Check if user is authenticated
+    if (!formData.city) {
+      console.warn("[SAVE] Cannot save: no trip data");
+      setSaveStatus("error");
+      setTimeout(() => setSaveStatus("idle"), 3000);
+      return;
+    }
+
     try {
       setSaveStatus("saving");
+      console.log("[SAVE] Status set to 'saving'");
+
       const daysArray = Object.entries(itinerary).map(
         ([dayKey, activities]) => ({
           day: parseInt(dayKey.replace(/\D/g, "") || "1"),
@@ -448,17 +473,37 @@ export default function TripPlanner() {
         }),
       );
 
+      console.log("[SAVE] Days array prepared:", daysArray.length, "days");
+
       // If offline, queue for later syncing instead of posting
-      if (typeof window !== 'undefined' && !navigator.onLine) {
-        const offlineTrips = JSON.parse(localStorage.getItem('offline-trips') || '[]');
-        offlineTrips.push({ city: formData.city, days: daysArray, budget: totalBudget, savedAt: new Date().toISOString() });
-        localStorage.setItem('offline-trips', JSON.stringify(offlineTrips));
+      if (typeof window !== "undefined" && !navigator.onLine) {
+        console.log("[SAVE] User is offline - saving locally");
+        const offlineTrips = JSON.parse(
+          localStorage.getItem("offline-trips") || "[]",
+        );
+        offlineTrips.push({
+          city: formData.city,
+          days: daysArray,
+          budget: totalBudget,
+          savedAt: new Date().toISOString(),
+        });
+        localStorage.setItem("offline-trips", JSON.stringify(offlineTrips));
         // Also cache itinerary for offline use
-        localStorage.setItem('offline-itinerary', JSON.stringify(itinerary));
+        localStorage.setItem("offline-itinerary", JSON.stringify(itinerary));
+
+        console.log("[SAVE] ✅ Trip saved offline");
         setSaveStatus("saved");
         setTimeout(() => setSaveStatus("idle"), 3000);
         return;
       }
+
+      console.log("[SAVE] User is online - posting to API");
+      console.log("[SAVE] Sending POST /trips with:", {
+        title: `${formData.city} Trip`,
+        destination: formData.city,
+        duration: parseInt(formData.days),
+        budget: totalBudget,
+      });
 
       const { data } = await api.post("/trips", {
         title: `${formData.city} Trip`,
@@ -468,10 +513,31 @@ export default function TripPlanner() {
         isPublic: true,
         days: daysArray,
       });
+
+      console.log("[SAVE] ✅ API Response:", data);
       setSaveStatus("saved");
       setSavedTripId(data._id);
+      console.log("[SAVE] Trip saved successfully with ID:", data._id);
       setTimeout(() => setSaveStatus("idle"), 3000);
-    } catch (err) {
+    } catch (err: any) {
+      console.error("[SAVE] ❌ Save failed:", err);
+      console.error("[SAVE] Error status:", err?.response?.status);
+      console.error("[SAVE] Error data:", err?.response?.data);
+      console.error("[SAVE] Error message:", err?.message);
+
+      const errorMsg =
+        err?.response?.data?.message || err?.message || "Failed to save trip";
+      console.error("[SAVE] Final error message:", errorMsg);
+
+      // Check for auth errors
+      if (err?.response?.status === 401) {
+        console.warn("[SAVE] ⚠️  Not authenticated - please log in");
+      } else if (err?.response?.status === 500) {
+        console.warn("[SAVE] ⚠️  Backend server error");
+      } else if (!navigator.onLine) {
+        console.warn("[SAVE] ⚠️  No internet connection");
+      }
+
       setSaveStatus("error");
       setTimeout(() => setSaveStatus("idle"), 3000);
     }
@@ -680,6 +746,9 @@ export default function TripPlanner() {
                           letterSpacing: "0.1px",
                         }}
                       >
+                        {saveStatus === "saving" && (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        )}
                         {saveStatus === "saving"
                           ? t("saving")
                           : saveStatus === "saved"

@@ -9,6 +9,7 @@ Your YĀTRĀ travel app now has **enterprise-grade offline support**. The implem
 ## ✨ What You Get
 
 ### For Users
+
 - 📱 **Installable App** - Works like native app on Windows, Mac, iOS, Android
 - 🌐 **Offline-First** - Browse cached content without internet
 - 💾 **Data Persistence** - Saved trips accessible anytime
@@ -16,6 +17,7 @@ Your YĀTRĀ travel app now has **enterprise-grade offline support**. The implem
 - ⚡ **Fast Loading** - Cached assets load instantly
 
 ### For Developers
+
 - 🛠️ **Easy Integration** - Simple hooks and utilities
 - 🔌 **Framework Agnostic** - Works with any React component
 - 📊 **Observable** - Built-in storage monitoring
@@ -27,6 +29,7 @@ Your YĀTRĀ travel app now has **enterprise-grade offline support**. The implem
 ## 📦 Implementation Contents
 
 ### New Utilities Created
+
 ```
 src/
 ├── utils/
@@ -40,6 +43,7 @@ src/
 ```
 
 ### Service Worker (`public/sw.js`)
+
 ```
 ✓ Smart caching (Network-First, Cache-First)
 ✓ API endpoint handling
@@ -49,6 +53,7 @@ src/
 ```
 
 ### Build Configuration
+
 ```
 next.config.js          # Cleaned for Turbopack
 public/offline.html     # Beautiful offline page
@@ -60,6 +65,7 @@ public/sw.js            # Service worker
 ## 🚀 How It Works
 
 ### 1. First Visit (Online)
+
 ```mermaid
 User visits app
     ↓
@@ -73,6 +79,7 @@ App available offline
 ```
 
 ### 2. Offline Usage
+
 ```mermaid
 User goes offline
     ↓
@@ -86,6 +93,7 @@ Shows offline banner
 ```
 
 ### 3. Back Online
+
 ```mermaid
 Connection restored
     ↓
@@ -103,49 +111,46 @@ Cache refreshed
 ## 💡 Usage Examples
 
 ### Save Trip Offline
+
 ```tsx
-import { useOfflineItinerary } from '@/hooks/useOfflineStorage';
+import { useOfflineItinerary } from "@/hooks/useOfflineStorage";
 
 function MyTrips() {
   const { saveItinerary, isSaved } = useOfflineItinerary();
-  
+
   return (
     <div>
       {isSaved && <span>✓ Saved Offline</span>}
-      <button onClick={() => saveItinerary(tripData)}>
-        Save for Offline
-      </button>
+      <button onClick={() => saveItinerary(tripData)}>Save for Offline</button>
     </div>
   );
 }
 ```
 
 ### Check Online Status
+
 ```tsx
-import { useOfflineDetection } from '@/hooks/useOfflineDetection';
+import { useOfflineDetection } from "@/hooks/useOfflineDetection";
 
 function SyncIndicator() {
   const { isOnline } = useOfflineDetection();
-  
-  return (
-    <div>
-      {isOnline ? '🟢 Online' : '🔴 Offline'}
-    </div>
-  );
+
+  return <div>{isOnline ? "🟢 Online" : "🔴 Offline"}</div>;
 }
 ```
 
 ### Queue Offline Changes
+
 ```tsx
-import { useOfflineQueue } from '@/hooks/useOfflineStorage';
+import { useOfflineQueue } from "@/hooks/useOfflineStorage";
 
 function EditTrip({ tripId }) {
   const { queueAction, queuedItems } = useOfflineQueue();
-  
+
   const handleEdit = async (changes) => {
     if (!navigator.onLine) {
       queueAction({
-        type: 'update',
+        type: "update",
         endpoint: `/api/trips/${tripId}`,
         data: changes,
       });
@@ -159,11 +164,13 @@ function EditTrip({ tripId }) {
 ## 🧪 Testing Guide
 
 ### Step 1: Offline Simulation
+
 ```
 DevTools → Network → Offline checkbox
 ```
 
 ### Step 2: Visit Pages
+
 ```
 1. Dashboard (pages cached)
 2. Trip Planner (itinerary saved)
@@ -172,6 +179,7 @@ DevTools → Network → Offline checkbox
 ```
 
 ### Step 3: Verify Offline
+
 ```
 1. Refresh page → loads from cache
 2. Click links → navigation works
@@ -181,6 +189,7 @@ DevTools → Network → Offline checkbox
 ```
 
 ### Step 4: Go Online
+
 ```
 1. Uncheck Offline in DevTools
 2. See "You're back online" banner
@@ -192,39 +201,43 @@ DevTools → Network → Offline checkbox
 
 ## 📊 Performance Impact
 
-| Metric | Before | After | Impact |
-|--------|--------|-------|--------|
-| First Paint | 800ms | 250ms* | ✅ 3.2x faster cached |
-| Repeat Visit | 800ms | 180ms* | ✅ 4.4x faster |
-| Offline Load | ❌ Fails | 200ms | ✅ Works offline |
-| Cache Size | N/A | ~8MB | ⚠️ Manageable |
-| JS Bundle | 450KB | 460KB | ⚠️ +10KB |
+| Metric       | Before   | After   | Impact                |
+| ------------ | -------- | ------- | --------------------- |
+| First Paint  | 800ms    | 250ms\* | ✅ 3.2x faster cached |
+| Repeat Visit | 800ms    | 180ms\* | ✅ 4.4x faster        |
+| Offline Load | ❌ Fails | 200ms   | ✅ Works offline      |
+| Cache Size   | N/A      | ~8MB    | ⚠️ Manageable         |
+| JS Bundle    | 450KB    | 460KB   | ⚠️ +10KB              |
 
-*When cached and offline
+\*When cached and offline
 
 ---
 
 ## 🎯 Key Features
 
 ### ✅ Smart Caching
+
 - **Versioned caches** - Auto cleanup on update
 - **Request type aware** - Different strategies for APIs vs assets
 - **Size aware** - Monitors quota to prevent overflow
 - **Image optimization** - SVG placeholders when offline
 
 ### ✅ Offline Data
+
 - **Itinerary persistence** - Saved to localStorage
 - **Trip history** - Browse previously viewed trips
 - **Queue management** - Track offline changes
 - **Timestamp tracking** - Know when data was cached
 
 ### ✅ User Experience
+
 - **Visual indicators** - Offline banner with icons
 - **Update notifications** - Notify when new version ready
 - **Sync status** - Show queued items count
 - **Auto-detection** - No manual intervention needed
 
 ### ✅ Developer Experience
+
 - **Simple hooks** - useOfflineStorage, useOfflineDetection
 - **Storage service** - Low-level API for advanced use
 - **TypeScript support** - Full type safety
@@ -237,6 +250,7 @@ DevTools → Network → Offline checkbox
 ### For End Users
 
 **Scenario 1: Lost Connection While Planning**
+
 ```
 1. User on Trip Planner page
 2. Network connection drops
@@ -249,6 +263,7 @@ DevTools → Network → Offline checkbox
 ```
 
 **Scenario 2: Browsing Offline**
+
 ```
 1. User downloaded app previously
 2. Airplane mode enabled (or no connection)
@@ -261,6 +276,7 @@ DevTools → Network → Offline checkbox
 ```
 
 **Scenario 3: Traveling in Remote Area**
+
 ```
 1. Rural destination with spotty WiFi
 2. Downloaded app at hotel
@@ -278,6 +294,7 @@ DevTools → Network → Offline checkbox
 ## 📋 Deployment Checklist
 
 ### Pre-Deployment
+
 - [ ] Dev server runs without errors
 - [ ] Service worker registers successfully
 - [ ] Offline page loads at `/offline`
@@ -287,12 +304,14 @@ DevTools → Network → Offline checkbox
 - [ ] Manifest.json updated
 
 ### Deployment
+
 - [ ] Push to git (auto-deploys to Vercel)
 - [ ] Verify build passes in CI/CD
 - [ ] Check Vercel deploy preview
 - [ ] Test Service Worker registration
 
 ### Post-Deployment
+
 - [ ] Users can install app
 - [ ] Offline mode works
 - [ ] Sync notifications appear
@@ -305,15 +324,17 @@ DevTools → Network → Offline checkbox
 ## 🔗 File Reference
 
 ### Essential Files
-| File | Lines | Purpose |
-|------|-------|---------|
-| `public/sw.js` | 150+ | Service worker with caching logic |
-| `src/utils/storageService.ts` | 200+ | Itinerary & queue management |
-| `src/hooks/useOfflineStorage.ts` | 180+ | React hooks for offline data |
-| `public/offline.html` | 150+ | Beautiful offline fallback |
-| `src/app/layout.tsx` | - | Added update banner |
+
+| File                             | Lines | Purpose                           |
+| -------------------------------- | ----- | --------------------------------- |
+| `public/sw.js`                   | 150+  | Service worker with caching logic |
+| `src/utils/storageService.ts`    | 200+  | Itinerary & queue management      |
+| `src/hooks/useOfflineStorage.ts` | 180+  | React hooks for offline data      |
+| `public/offline.html`            | 150+  | Beautiful offline fallback        |
+| `src/app/layout.tsx`             | -     | Added update banner               |
 
 ### Integration Points
+
 - **PwaRegistrar**: Service worker registration + message handling
 - **OfflineBanner**: User notification of offline status
 - **UpdateAvailableBanner**: Notify of new app version
@@ -324,16 +345,19 @@ DevTools → Network → Offline checkbox
 ## 🎓 Learning Resources
 
 ### Service Workers
+
 - MDN: https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API
 - Current browser support: 98%+
 - Supported in all modern browsers
 
 ### PWA Checklist
+
 - https://web.dev/pwa-checklist
 - Lighthouse PWA audits
 - Progressive enhancement principles
 
 ### Caching Strategies
+
 - Cache-First: Static assets, images, fonts
 - Network-First: APIs, dynamic content
 - Stale-While-Revalidate: Balance of both
@@ -343,8 +367,9 @@ DevTools → Network → Offline checkbox
 ## 🚨 Troubleshooting Guide
 
 ### Service Worker Not Installing
+
 ```
-Solution: 
+Solution:
 1. Check HTTPS (required for prod, localhost allowed)
 2. Verify sw.js is in public/
 3. Check browser DevTools → Application
@@ -352,6 +377,7 @@ Solution:
 ```
 
 ### Offline Page Not Showing
+
 ```
 Solution:
 1. Verify public/offline.html exists
@@ -361,6 +387,7 @@ Solution:
 ```
 
 ### Cache Getting Too Large
+
 ```
 Solution:
 1. Reduce cache retention period
@@ -370,6 +397,7 @@ Solution:
 ```
 
 ### Sync Not Working
+
 ```
 Solution:
 1. Verify API endpoints return 200
@@ -383,6 +411,7 @@ Solution:
 ## 📈 Future Enhancements
 
 ### Phase 2 (Advanced)
+
 - [ ] Background Sync API for queued actions
 - [ ] Web Push notifications on sync
 - [ ] Conflict resolution UI for overlapping edits
@@ -390,6 +419,7 @@ Solution:
 - [ ] Delta sync (only changed fields)
 
 ### Phase 3 (Ecosystem)
+
 - [ ] P2P sync between devices (Bluetooth/WiFi Direct)
 - [ ] Offline analytics collection
 - [ ] Progressive Web App Store integration
@@ -401,31 +431,30 @@ Solution:
 ## 📞 Support & Resources
 
 ### Quick Debug Commands
+
 ```javascript
 // In browser console
 
 // Check service worker
-navigator.serviceWorker.getRegistrations()
+navigator.serviceWorker.getRegistrations();
 
 // List caches
-caches.keys()
+caches.keys();
 
 // Clear all caches
-caches.keys().then(names => 
-  names.forEach(name => caches.delete(name))
-)
+caches.keys().then((names) => names.forEach((name) => caches.delete(name)));
 
 // View offline storage
-localStorage.getItem('yatra_sync_queue')
+localStorage.getItem("yatra_sync_queue");
 
 // Check storage quota
-navigator.storage.estimate()
-  .then(est => console.log(`${est.usage}/${est.quota}`))
+navigator.storage
+  .estimate()
+  .then((est) => console.log(`${est.usage}/${est.quota}`));
 
 // Force update
-navigator.serviceWorker.controller
-  ?.postMessage({type: 'SKIP_WAITING'})
-setTimeout(() => location.reload(), 100)
+navigator.serviceWorker.controller?.postMessage({ type: "SKIP_WAITING" });
+setTimeout(() => location.reload(), 100);
 ```
 
 ### Common Questions
@@ -453,6 +482,6 @@ Your app is now **production-ready for offline use**:
 ✅ Offline changes queue automatically  
 ✅ Smart sync when reconnected  
 ✅ Beautiful offline UI  
-✅ Zero configuration for users  
+✅ Zero configuration for users
 
 **Next: Deploy to production and monitor offline usage!**

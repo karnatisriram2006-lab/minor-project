@@ -3,6 +3,7 @@
 ## Quick Commands
 
 ### Commit PWA Changes
+
 ```bash
 cd /d/Minorproject
 git add .
@@ -20,6 +21,7 @@ git push origin main
 ```
 
 ### Verify Build
+
 ```bash
 cd frontend
 npm run build
@@ -28,6 +30,7 @@ npm run build
 ```
 
 ### Test Locally
+
 ```bash
 cd frontend
 npm run dev
@@ -40,6 +43,7 @@ npm run dev
 ## 📋 Pre-Deployment Checklist
 
 ### Code Quality
+
 - [ ] No console errors or warnings
 - [ ] Service worker registers successfully
 - [ ] Offline page loads at /offline
@@ -48,6 +52,7 @@ npm run dev
 - [ ] No React infinite loop warnings
 
 ### Offline Features
+
 - [ ] Can go offline in DevTools
 - [ ] Pages still load from cache
 - [ ] Images show placeholder or cache
@@ -56,6 +61,7 @@ npm run dev
 - [ ] Changes queue locally
 
 ### File Structure
+
 - [ ] public/sw.js exists
 - [ ] public/offline.html exists
 - [ ] src/utils/storageService.ts exists
@@ -65,6 +71,7 @@ npm run dev
 - [ ] next.config.js cleaned up
 
 ### Build Verification
+
 ```bash
 node -e "console.log(require('fs').existsSync('/d/Minorproject/frontend/public/sw.js'))"
 # Should output: true
@@ -78,6 +85,7 @@ node -e "console.log(require('fs').existsSync('/d/Minorproject/frontend/public/o
 ## 🌐 Vercel Deployment
 
 ### Auto-Deploy Flow
+
 ```
 1. Push to main branch
    ↓
@@ -91,6 +99,7 @@ node -e "console.log(require('fs').existsSync('/d/Minorproject/frontend/public/o
 ```
 
 ### Manual Deploy
+
 ```bash
 # If using Vercel CLI
 vercel
@@ -100,6 +109,7 @@ vercel
 ```
 
 ### Post-Deploy Verification
+
 ```
 1. Open https://your-app.vercel.app
 2. Open DevTools → Application → Service Workers
@@ -114,6 +124,7 @@ vercel
 ## 📊 Monitoring
 
 ### Check Installation Metrics
+
 ```javascript
 // In analytics dashboard
 - Track PWA installations
@@ -123,17 +134,19 @@ vercel
 ```
 
 ### Error Tracking
+
 ```javascript
 // Set up error bounds
 if (import.meta.env.PROD) {
-  window.addEventListener('error', (event) => {
-    console.error('PWA Error:', event);
+  window.addEventListener("error", (event) => {
+    console.error("PWA Error:", event);
     // Send to error tracking service
   });
 }
 ```
 
 ### Performance Monitoring
+
 ```javascript
 // Measure offline performance
 const start = performance.now();
@@ -147,6 +160,7 @@ console.log(`Operation took ${duration}ms`);
 ## 🔄 Sync Backend Configuration
 
 ### API Endpoints Needed for Sync
+
 ```
 POST /api/sync
 Purpose: Sync offline changes
@@ -168,24 +182,25 @@ Response: { updated trip }
 ```
 
 ### Batch Sync Implementation
+
 ```typescript
 // In storageService.ts if needed
 async function batchSync() {
   const queue = storageService.getSyncQueue();
-  
-  const response = await fetch('/api/sync', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ 
-      actions: queue.map(q => ({
+
+  const response = await fetch("/api/sync", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      actions: queue.map((q) => ({
         type: q.type,
         endpoint: q.endpoint,
         data: q.data,
-        id: q.id
-      }))
-    })
+        id: q.id,
+      })),
+    }),
   });
-  
+
   if (response.ok) {
     storageService.clearSyncQueue();
   }
@@ -199,18 +214,21 @@ async function batchSync() {
 ### Installation Testing
 
 **Windows/Mac:**
+
 - [ ] Click address bar install button
 - [ ] App installs to taskbar
 - [ ] Launching from taskbar works
 - [ ] In standalone mode (no URL bar)
 
 **iOS:**
+
 - [ ] Safari → Share → Add to Home Screen
 - [ ] App appears on home screen
 - [ ] Launches full screen
 - [ ] Back button works correctly
 
 **Android:**
+
 - [ ] Chrome → Menu → Install app
 - [ ] App appears in app drawer
 - [ ] Launches full screen
@@ -240,9 +258,10 @@ async function batchSync() {
 ## 📝 Documentation
 
 ### For Users
+
 ```
 Users should know:
-1. App is installable from browser 
+1. App is installable from browser
 2. First visit caches data automatically
 3. Offline mode works after first visit
 4. Changes made offline sync automatically
@@ -250,6 +269,7 @@ Users should know:
 ```
 
 ### For Developers
+
 ```
 Developers integrating should use:
 1. useOfflineItinerary() - for saving trips
@@ -259,6 +279,7 @@ Developers integrating should use:
 ```
 
 ### For Ops/DevOps
+
 ```
 Monitoring points:
 1. Service worker registration errors
@@ -275,29 +296,32 @@ Monitoring points:
 ### If Issues Occur
 
 **Option 1: Disable Service Worker**
+
 ```javascript
 // In next.config.js temporarily
 const nextConfig = {
   // ... config
   experimental: {
-    disabled: true  // Disable PWA
-  }
-}
+    disabled: true, // Disable PWA
+  },
+};
 ```
 
 **Option 2: Clear All Caches**
+
 ```javascript
 // In service worker message handler
-self.addEventListener('message', (event) => {
-  if (event.data.type === 'CLEAR_CACHE') {
-    caches.keys().then(names => {
-      names.forEach(name => caches.delete(name));
+self.addEventListener("message", (event) => {
+  if (event.data.type === "CLEAR_CACHE") {
+    caches.keys().then((names) => {
+      names.forEach((name) => caches.delete(name));
     });
   }
 });
 ```
 
 **Option 3: Force Update**
+
 ```bash
 # If service worker stuck, increment version
 // In sw.js
@@ -309,6 +333,7 @@ const CACHE_VERSION = 'v2';  // Was 'v1'
 ## 🎯 Post-Deployment Actions
 
 ### Immediate (First 24h)
+
 - [ ] Monitor error logs for issues
 - [ ] Check user reports/feedback
 - [ ] Verify service worker working
@@ -316,6 +341,7 @@ const CACHE_VERSION = 'v2';  // Was 'v1'
 - [ ] Verify offline mode works
 
 ### Week 1
+
 - [ ] Track PWA installation count
 - [ ] Monitor sync success rate
 - [ ] Check cache size metrics
@@ -323,6 +349,7 @@ const CACHE_VERSION = 'v2';  // Was 'v1'
 - [ ] Gather user feedback
 
 ### Week 2+
+
 - [ ] Optimize based on data
 - [ ] Add analytics events
 - [ ] Plan enhancements
@@ -334,11 +361,13 @@ const CACHE_VERSION = 'v2';  // Was 'v1'
 ## 📞 Support Contacts
 
 ### For Deployment Issues
+
 - Vercel Support: https://vercel.com/support
 - Next.js Community: https://github.com/vercel/next.js
 - PWA Resources: https://web.dev/pwa
 
 ### For Debugging
+
 ```
 1. Check browser console
 2. Open DevTools → Application
@@ -352,6 +381,7 @@ const CACHE_VERSION = 'v2';  // Was 'v1'
 ## 📈 Next Phase Enhancements
 
 ### Coming Soon
+
 - [ ] Background sync API
 - [ ] Web push notifications
 - [ ] Offline analytics
@@ -359,6 +389,7 @@ const CACHE_VERSION = 'v2';  // Was 'v1'
 - [ ] Cross-device sync
 
 ### Future
+
 - [ ] P2P messaging
 - [ ] E2E encryption
 - [ ] Zero-knowledge storage
@@ -388,6 +419,7 @@ const CACHE_VERSION = 'v2';  // Was 'v1'
 ## 🎉 You're Ready!
 
 Your YĀTRĀ app now has **enterprise-grade offline support**. Users can:
+
 - ✅ Install as standalone app
 - ✅ Use without internet
 - ✅ Sync changes automatically

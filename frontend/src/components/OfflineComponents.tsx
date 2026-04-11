@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { X, RefreshCw, Check } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { X, RefreshCw, Check } from "lucide-react";
 
 /**
  * Component that shows update available notification
@@ -18,14 +18,15 @@ export function UpdateAvailableBanner() {
       }
     };
 
-    window.addEventListener('sw-update-available', handleUpdateAvailable);
-    return () => window.removeEventListener('sw-update-available', handleUpdateAvailable);
+    window.addEventListener("sw-update-available", handleUpdateAvailable);
+    return () =>
+      window.removeEventListener("sw-update-available", handleUpdateAvailable);
   }, []);
 
   const handleUpdate = () => {
     setIsReloading(true);
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.controller?.postMessage({ type: 'SKIP_WAITING' });
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.controller?.postMessage({ type: "SKIP_WAITING" });
       setTimeout(() => {
         window.location.reload();
       }, 100);
@@ -49,7 +50,7 @@ export function UpdateAvailableBanner() {
               disabled={isReloading}
               className="text-sm font-medium px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
             >
-              {isReloading ? 'Updating...' : 'Update Now'}
+              {isReloading ? "Updating..." : "Update Now"}
             </button>
             <button
               onClick={() => setShowBanner(false)}
@@ -81,7 +82,7 @@ export function SyncStatusIndicator() {
   useEffect(() => {
     const updateStatus = () => {
       // This would integrate with your sync system
-      const queue = localStorage.getItem('yatra_sync_queue');
+      const queue = localStorage.getItem("yatra_sync_queue");
       const count = queue ? JSON.parse(queue).length : 0;
       setQueueCount(count);
     };
@@ -97,12 +98,12 @@ export function SyncStatusIndicator() {
     };
 
     updateStatus();
-    window.addEventListener('app-sync-start', handleSyncStart);
-    window.addEventListener('app-sync-complete', handleSyncComplete);
+    window.addEventListener("app-sync-start", handleSyncStart);
+    window.addEventListener("app-sync-complete", handleSyncComplete);
 
     return () => {
-      window.removeEventListener('app-sync-start', handleSyncStart);
-      window.removeEventListener('app-sync-complete', handleSyncComplete);
+      window.removeEventListener("app-sync-start", handleSyncStart);
+      window.removeEventListener("app-sync-complete", handleSyncComplete);
     };
   }, []);
 
@@ -119,7 +120,7 @@ export function SyncStatusIndicator() {
         <>
           <Check className="w-4 h-4 text-green-600" />
           <span className="text-gray-700">
-            {queueCount} item{queueCount !== 1 ? 's' : ''} queued
+            {queueCount} item{queueCount !== 1 ? "s" : ""} queued
             {lastSync && ` • Last sync: ${lastSync}`}
           </span>
         </>

@@ -1,18 +1,24 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { WifiOff, Wifi } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { WifiOff, Wifi } from "lucide-react";
 
 export default function OfflineBanner() {
   const [isOnline, setIsOnline] = useState(true);
   const [showBanner, setShowBanner] = useState(false);
 
   useEffect(() => {
-    // Set initial state
-    setIsOnline(navigator.onLine);
+    // Set initial state - check if already offline
+    const isCurrentlyOnline = navigator.onLine;
+    setIsOnline(isCurrentlyOnline);
+    // Show banner if already offline
+    if (!isCurrentlyOnline) {
+      setShowBanner(true);
+    }
 
     const handleOnline = () => {
       setIsOnline(true);
+      setShowBanner(true);
       // Hide banner after 3 seconds when coming back online
       setTimeout(() => setShowBanner(false), 3000);
     };
@@ -22,12 +28,12 @@ export default function OfflineBanner() {
       setShowBanner(true);
     };
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, []);
 
@@ -36,9 +42,7 @@ export default function OfflineBanner() {
   return (
     <div
       className={`fixed top-0 left-0 right-0 z-50 px-4 py-3 flex items-center gap-3 transition-all duration-300 ${
-        isOnline
-          ? 'bg-green-500/90 text-white'
-          : 'bg-red-500/90 text-white'
+        isOnline ? "bg-green-500/90 text-white" : "bg-red-500/90 text-white"
       }`}
     >
       {isOnline ? (
@@ -57,4 +61,3 @@ export default function OfflineBanner() {
     </div>
   );
 }
-
