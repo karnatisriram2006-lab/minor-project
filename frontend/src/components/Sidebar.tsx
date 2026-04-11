@@ -14,24 +14,28 @@ import {
   Settings,
   HelpCircle,
   Sparkles,
-  MapPin
+  MapPin,
+  Globe2
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-
-const navItems = [
-  { name: "Dashboard", href: "/dashboard",    icon: LayoutDashboard },
-  { name: "Budget",    href: "/budget",        icon: Wallet },
-  { name: "Itinerary", href: "/trip-planner", icon: Map },
-  { name: "Near Me",   href: "/near-me",       icon: MapPin },
-  { name: "Companion", href: "/companions",   icon: Users },
-  { name: "Offline",   href: "/offline",      icon: WifiOff },
-]
+import { useTranslations } from "next-intl"
 
 export default function Sidebar() {
   const pathname = usePathname()
   const [user, setUser] = useState<FirebaseUser | null>(null)
+  const t = useTranslations("Navbar")
+
+  const navItems = [
+    { name: t("dashboard"), href: "/dashboard",    icon: LayoutDashboard },
+    { name: t("budget"),    href: "/budget",        icon: Wallet },
+    { name: t("itinerary"), href: "/trip-planner", icon: Map },
+    { name: t("community"), href: "/community",    icon: Globe2 },
+    { name: t("nearMe"),   href: "/near-me",       icon: MapPin },
+    { name: t("companion"), href: "/companions",   icon: Users },
+    { name: t("offline"),   href: "/offline",      icon: WifiOff },
+  ]
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
@@ -43,26 +47,28 @@ export default function Sidebar() {
   const isAuthPage = pathname === "/login" || pathname === "/register" || pathname === "/"
   if (isAuthPage) return null
 
-  const displayName = user?.displayName || "Traveler"
+  const displayName = user?.displayName || t("traveler")
   const photoUrl    = user?.photoURL || "/avatars/default.svg"
   const userInitial = displayName.charAt(0).toUpperCase()
 
   return (
     /* hidden on mobile (< lg), visible on lg+ */
-    <aside className="hidden lg:flex w-64 h-[calc(100vh-80px)] sticky top-20 bg-white dark:bg-[#1A1A1A] border-r border-[#EBEBEB] dark:border-[#2A2A2A] flex-col p-5 pt-6 z-50 text-[#484848] dark:text-[#E0E0E0] font-sans shrink-0">
+    <aside className="hidden lg:flex w-64 h-[calc(100vh-80px)] sticky top-20 bg-white dark:bg-[#1A1A1A] border-r border-[#EBEBEB] dark:border-[#2A2A2A] flex-col p-5 pt-6 z-50 text-[#484848] dark:text-[#E0E0E0] font-sans shrink-0 no-print">
       {/* Profile */}
-      <div className="flex items-center gap-3 mb-8 pb-5 border-b border-[#EBEBEB] dark:border-[#2A2A2A]">
-        <Avatar className="h-10 w-10 border border-[#EBEBEB] dark:border-[#2A2A2A] shadow-sm rounded-full shrink-0">
-          <AvatarImage src={photoUrl} />
-          <AvatarFallback className="bg-[#F7F7F7] dark:bg-[#2A2A2A] text-[#FF5A5F] font-bold text-sm">
-            {userInitial}
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex flex-col min-w-0">
-          <p className="text-sm font-semibold text-[#484848] dark:text-[#E0E0E0] truncate">{displayName}</p>
-          <p className="text-[11px] text-[#767676] dark:text-[#888]">Show profile</p>
+      <Link href="/profile">
+        <div className="flex items-center gap-3 mb-8 pb-5 border-b border-[#EBEBEB] dark:border-[#2A2A2A] hover:bg-[#F7F7F7] dark:hover:bg-[#2A2A2A] p-2 -mx-2 rounded-xl transition-colors cursor-pointer">
+          <Avatar className="h-10 w-10 border border-[#EBEBEB] dark:border-[#2A2A2A] shadow-sm rounded-full shrink-0">
+            <AvatarImage src={photoUrl} />
+            <AvatarFallback className="bg-[#F7F7F7] dark:bg-[#2A2A2A] text-[#FF5A5F] font-bold text-sm">
+              {userInitial}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col min-w-0">
+            <p className="text-sm font-semibold text-[#484848] dark:text-[#E0E0E0] truncate">{displayName}</p>
+            <p className="text-[11px] text-[#767676] dark:text-[#888]">{t("viewProfile")}</p>
+          </div>
         </div>
-      </div>
+      </Link>
 
       {/* Navigation */}
       <nav className="flex-1 space-y-0.5">
@@ -98,16 +104,16 @@ export default function Sidebar() {
           className="w-full h-10 rounded-xl text-xs font-semibold shadow-sm flex items-center justify-center gap-2"
         >
           <Sparkles className="h-3.5 w-3.5" />
-          Get Support
+          {t("getSupport")}
         </Button>
 
         <Button variant="ghost" className="w-full justify-start gap-3 text-[#767676] dark:text-[#888] hover:text-[#484848] dark:hover:text-[#E0E0E0] hover:bg-[#F7F7F7] dark:hover:bg-[#2A2A2A] rounded-xl px-3 h-10">
           <Settings className="h-4 w-4" />
-          <span className="font-medium text-sm">Settings</span>
+          <span className="font-medium text-sm">{t("settings")}</span>
         </Button>
         <Button variant="ghost" className="w-full justify-start gap-3 text-[#767676] dark:text-[#888] hover:text-[#484848] dark:hover:text-[#E0E0E0] hover:bg-[#F7F7F7] dark:hover:bg-[#2A2A2A] rounded-xl px-3 h-10">
           <HelpCircle className="h-4 w-4" />
-          <span className="font-medium text-sm">Help Center</span>
+          <span className="font-medium text-sm">{t("helpCenter")}</span>
         </Button>
       </div>
     </aside>

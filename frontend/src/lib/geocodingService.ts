@@ -26,25 +26,17 @@ const LOCAL_COORDS: Record<string, { lat: number; lng: number; displayName?: str
   Bangalore: { lat: 12.9716, lng: 77.5946, displayName: 'Bengaluru' },
 };
 
+const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const apiUrl = rawApiUrl.endsWith('/') ? rawApiUrl.slice(0, -1) : rawApiUrl;
+
 export const geocodeCity = async (city: string): Promise<GeocodeResult | null> => {
   if (!city) return null
-  // Try remote geocoding first
+  // Try remote geocoding via our backend proxy first
   try {
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`,
-      {
-        headers: {
-          'User-Agent': 'YatraMatrix-Travel-App/1.0'
-        }
-      }
-    )
-    const data = await response.json()
-    if (data && data.length > 0) {
-      return {
-        lat: parseFloat(data[0].lat),
-        lng: parseFloat(data[0].lon),
-        displayName: data[0].display_name
-      }
+    const response = await fetch(`${apiUrl}/route/geocode?q=${encodeURIComponent(city)}`);
+    if (response.ok) {
+      const data = await response.json();
+      return data;
     }
   } catch (e) {
     // fall back to local cache
@@ -76,17 +68,12 @@ export const geocodeCity = async (city: string): Promise<GeocodeResult | null> =
 
 export const reverseGeocode = async (lat: number, lng: number): Promise<string | null> => {
     try {
-        const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
-            {
-                headers: {
-                    'User-Agent': 'YatraMatrix-Travel-App/1.0'
-                }
-            }
-        );
-        
-        const data = await response.json();
-        return data.display_name || null;
+        const response = await fetch(`${apiUrl}/route/reverse?lat=${lat}&lon=${lng}`);
+        if (response.ok) {
+          const data = await response.json();
+          return data.display_name || null;
+        }
+        return null;
     } catch (error) {
         console.error('[Geocoding] Error fetching address:', error);
         return null;

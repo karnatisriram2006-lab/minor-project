@@ -11,16 +11,19 @@ import {
   Users,
   ArrowRight,
   CheckCircle2,
-  Calculator
+  Calculator,
+  Trash2
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
 import Link from "next/link"
+import { useTranslations } from "next-intl"
 
 import { WeatherCard } from "@/components/WeatherCard"
 import { PlacesExplorer } from "@/components/PlacesExplorer"
 import { useWeather } from "@/hooks/useWeather"
 import { geocodeCity } from "@/lib/geocodingService"
+import { imageService } from "@/services/imageService"
 
 import { auth } from "@/lib/firebase"
 import { User as FirebaseUser } from "firebase/auth"
@@ -43,16 +46,23 @@ export default function Dashboard() {
   const [loadingTrips, setLoadingTrips] = useState(true)
   const [coords, setCoords] = useState<{lat: number, lng: number} | null>(null)
   const { weather, loading: weatherLoading, getWeather } = useWeather()
+  const t = useTranslations("Dashboard")
 
   useEffect(() => {
     const fetchTrips = async (currentUser: FirebaseUser) => {
       try {
         const { data } = await api.get("/trips")
-        const userTrips = data.trips || []
-        setTrips(userTrips)
+        const rawTrips = data.trips || []
+        // Enrich trips with images
+        const enriched = await Promise.all(rawTrips.map(async (t: any) => {
+          const img = await imageService.getPlaceImage(t.destination || t.title, t.city || t.destination);
+          return { ...t, placeImage: img };
+        }));
+
+        setTrips(enriched)
         
-        if (userTrips.length > 0) {
-          const first = userTrips[0]
+        if (enriched.length > 0) {
+          const first = enriched[0]
           const cityName = first.city || first.destination
           if (cityName) {
             getWeather(cityName)
@@ -89,6 +99,15 @@ export default function Dashboard() {
       window.removeEventListener('focus', onFocus)
     }
   }, [getWeather])
+
+  const handleDeleteTrip = async (tripId: string) => {
+    try {
+      await api.delete(`/trips/${tripId}`)
+      setTrips(current => current.filter(t => t._id !== tripId))
+    } catch (err) {
+      console.error("Failed to delete trip:", err)
+    }
+  }
 
   const displayName = user?.displayName?.split(" ")[0] || "Traveler"
 
@@ -159,10 +178,10 @@ export default function Dashboard() {
   }
 
   const quickActions = [
-    { label: "Plan a trip", href: "/trip-planner", icon: <Sparkles className="h-4 w-4" />, color: "#FF5A5F" },
-    { label: "Find companions", href: "/companions", icon: <Users className="h-4 w-4" />, color: "#00A699" },
-    { label: "Cost Estimator", href: "/cost-estimator", icon: <Calculator className="h-4 w-4" />, color: "#484848" },
-    { label: "Budget planner", href: "/budget", icon: <Wallet className="h-4 w-4" />, color: "#FC642D" },
+    { label: t("planATrip"), href: "/trip-planner", icon: <Sparkles className="h-4 w-4" />, color: "#FF5A5F" },
+    { label: t("findCompanions"), href: "/companions", icon: <Users className="h-4 w-4" />, color: "#00A699" },
+    { label: t("costEstimator"), href: "/cost-estimator", icon: <Calculator className="h-4 w-4" />, color: "#484848" },
+    { label: t("budgetPlanner"), href: "/budget", icon: <Wallet className="h-4 w-4" />, color: "#FC642D" },
   ]
 
   const latestTrip = trips[0] || null
@@ -218,11 +237,11 @@ export default function Dashboard() {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-1"
           >
-            <p className="text-xs font-semibold text-[#767676] uppercase tracking-widest">Dashboard</p>
+            <p className="text-xs font-semibold text-[#767676] uppercase tracking-widest">{t("dashboard")}</p>
             <h1 className="text-2xl sm:text-3xl font-bold text-[#484848] tracking-tight">
-              Good morning, <span className="text-[#FF5A5F]">{displayName}</span> 👋
+              {t("greeting")}, <span className="text-[#FF5A5F]">{displayName}</span> 👋
             </h1>
-            <p className="text-sm text-[#767676]">Your next adventure awaits. Here&apos;s your travel overview.</p>
+            <p className="text-sm text-[#767676]">{t("subtitle")}</p>
           </motion.div>
 
           <motion.div
@@ -232,7 +251,7 @@ export default function Dashboard() {
           >
             <div className="w-2 h-2 rounded-full bg-[#00A699] animate-pulse" />
             <span className="text-xs font-semibold text-[#767676]">
-              {latestTrip ? `${latestTrip.destination || latestTrip.city} • Active` : "Exploring India"}
+              {latestTrip ? `${latestTrip.destination || latestTrip.city} • ${t("active")}` : t("exploringIndia")}
             </span>
           </motion.div>
         </div>
@@ -381,8 +400,8 @@ export default function Dashboard() {
                     <Wallet className="h-4 w-4" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-[#484848]">Budget</h4>
-                    <p className="text-xs text-[#767676]">Trip spending</p>
+                    <h4 className="text-sm font-bold text-[#484848]">{t("budget")}</h4>
+                    <p className="text-xs text-[#767676]">{t("tripSpending")}</p>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -390,7 +409,7 @@ export default function Dashboard() {
                     <span className="text-xl font-bold text-[#484848]">
                       {budgetValue > 0 ? `₹${budgetValue.toLocaleString('en-IN')}` : "₹0"}
                     </span>
-                    <span className="text-xs font-semibold text-[#00A699] bg-[#00A699]/8 px-2 py-0.5 rounded-full">On track</span>
+                    <span className="text-xs font-semibold text-[#00A699] bg-[#00A699]/8 px-2 py-0.5 rounded-full">{t("onTrack")}</span>
                   </div>
                   <div className="w-full h-2 bg-[#F7F7F7] rounded-full overflow-hidden">
                     <motion.div
@@ -528,7 +547,7 @@ export default function Dashboard() {
               style={{ height: '160px' }}
             >
               <Image
-                src={latestTrip ? "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800&auto=format&fit=crop&q=80" : "https://images.unsplash.com/photo-1506461883276-594a12b11cf3?w=800&auto=format&fit=crop&q=80"}
+                src={latestTrip?.placeImage || (latestTrip ? "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800&q=80" : "https://images.unsplash.com/photo-1506461883276-594a12b11cf3?w=800&q=80")}
                 alt={tripLocation}
                 fill
                 priority
@@ -558,11 +577,11 @@ export default function Dashboard() {
         <div className="space-y-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold text-[#FF5A5F] uppercase tracking-widest mb-1">Itinerary</p>
-              <h2 className="text-xl font-bold text-[#484848] tracking-tight">What&apos;s ahead</h2>
+              <p className="text-xs font-semibold text-[#FF5A5F] uppercase tracking-widest mb-1">{t("dashboard")}</p>
+              <h2 className="text-xl font-bold text-[#484848] tracking-tight">{t("whatsAhead")}</h2>
             </div>
             <Button variant="premium" className="h-10 px-5 rounded-xl text-sm font-semibold group transition-all active:scale-[0.97]">
-              View full plan
+              {t("viewFullPlan")}
               <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
@@ -604,16 +623,74 @@ export default function Dashboard() {
                   <Route className="h-7 w-7 text-[#BBBBBB]" />
                 </div>
                 <div className="space-y-1.5">
-                  <p className="text-sm font-semibold text-[#484848]">No trips planned yet</p>
-                  <p className="text-xs text-[#767676] max-w-xs">Start by planning your first AI-powered trip to any destination in India.</p>
+                  <p className="text-sm font-semibold text-[#484848]">{t("noTripsFound")}</p>
+                  <p className="text-xs text-[#767676] max-w-xs">{t("noActiveSpending")}</p>
                 </div>
                 <Link href="/trip-planner">
                   <Button variant="premium" className="h-10 px-6 rounded-xl text-sm font-semibold group transition-all active:scale-[0.97]">
                     <Sparkles className="h-4 w-4 mr-1.5" />
-                    Plan my first trip
+                    {t("planFirstTrip")}
                     <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── All Saved Trips Section ──────────────────────── */}
+        <div className="space-y-5 pt-8 border-t border-[#EBEBEB]">
+          <div>
+            <p className="text-xs font-semibold text-[#00A699] uppercase tracking-widest mb-1">{t("myHistory")}</p>
+            <h2 className="text-xl font-bold text-[#484848] tracking-tight">{t("allSavedTrips")}</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {trips.length > 0 ? (
+              trips.map((trip: any) => (
+                <div key={trip._id} className="bg-white rounded-2xl border border-[#EBEBEB] shadow-sm overflow-hidden flex flex-col group">
+                  <div className="relative h-32 bg-[#F7F7F7] w-full">
+                    <Image
+                      src={trip.placeImage || "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800&q=80"}
+                      alt={trip.title || trip.destination || "Trip image"}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent flex justify-between items-end">
+                      <p className="text-white font-bold text-sm tracking-wide shadow-sm truncate pr-2">
+                        {trip.title || (trip.destination ? `Trip to ${trip.destination}` : "Saved Trip")}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="p-4 flex-1 flex flex-col justify-between space-y-4">
+                    <div className="flex justify-between items-center text-xs text-[#767676]">
+                      <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5"/> {trip.duration || trip.days?.length || 3} Days</span>
+                      <span className="bg-[#F7F7F7] px-2.5 py-1 rounded-md border border-[#EBEBEB] text-[#484848] font-bold">
+                         {typeof trip.budget === 'string' ? trip.budget : `₹${trip.budget || 0}`}
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                       <Link href={`/trip-planner?load=${trip._id}`} className="flex-1">
+                         <Button variant="outline" className="w-full h-9 rounded-xl border-[#EBEBEB] text-xs font-bold hover:bg-[#F7F7F7]">
+                           View Itinerary
+                         </Button>
+                       </Link>
+                       <Button 
+                         variant="outline" 
+                         onClick={() => handleDeleteTrip(trip._id)}
+                         className="h-9 w-9 p-0 rounded-xl text-[#767676] hover:text-[#FF5A5F] hover:bg-[#FF5A5F]/10 hover:border-[#FF5A5F]/30 border-[#EBEBEB] shrink-0 transition-all focus:ring-2 focus:ring-[#FF5A5F]/20"
+                         title="Delete this trip"
+                       >
+                         <Trash2 className="h-4 w-4" />
+                       </Button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full py-12 flex flex-col items-center justify-center bg-white rounded-2xl border border-dashed border-[#EBEBEB]">
+                 <p className="text-sm font-semibold text-[#767676]">No trips found</p>
+                 <p className="text-xs text-[#BBBBBB] mt-1">Save a trip in the planner to see it here.</p>
               </div>
             )}
           </div>

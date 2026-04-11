@@ -25,18 +25,24 @@ import {
   Compass,
   MapPin,
   Sun,
-  Moon
+  Moon,
+  Search
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useTheme } from "next-themes"
+import SearchTypeahead from "./SearchTypeahead"
+import { useTranslations } from "next-intl"
+import { LanguageSwitcher } from "@/components/LanguageSwitcher"
 
 export default function Navbar() {
   const pathname = usePathname()
   const { user } = useAuth()
   const { theme, setTheme } = useTheme()
+  const t = useTranslations("Navbar")
   const [mounted, setMounted] = React.useState(false)
   const [isScrolled, setIsScrolled] = React.useState(false)
   const [mobileOpen, setMobileOpen] = React.useState(false)
+  const [isSearchOpen, setIsSearchOpen] = React.useState(false)
 
   React.useEffect(() => { setMounted(true) }, [])
 
@@ -65,22 +71,20 @@ export default function Navbar() {
   }
 
   const navItems = [
-    { name: "Dashboard",  href: "/dashboard",    icon: <LayoutDashboard className="h-5 w-5" /> },
-    { name: "Explore",    href: "/companions",    icon: <Globe className="h-5 w-5" /> },
-    { name: "Planner",    href: "/trip-planner",  icon: <Sparkles className="h-5 w-5" /> },
-    { name: "Community",  href: "/community",     icon: <Users className="h-5 w-5" /> },
+    { name: t("dashboard"),  href: "/dashboard",    icon: <LayoutDashboard className="h-5 w-5" /> },
+    { name: t("explore"),    href: "/companions",    icon: <Globe className="h-5 w-5" /> },
+    { name: t("planner"),    href: "/trip-planner",  icon: <Sparkles className="h-5 w-5" /> },
+    { name: t("community"),  href: "/community",     icon: <Users className="h-5 w-5" /> },
   ]
 
   const allMobileLinks = [
-    { name: "Dashboard",  href: "/dashboard",    icon: <LayoutDashboard className="h-5 w-5" /> },
-    { name: "Trip Planner", href: "/trip-planner", icon: <Map className="h-5 w-5" /> },
-    { name: "Budget",     href: "/budget",        icon: <Wallet className="h-5 w-5" /> },
-    { name: "Near Me",    href: "/near-me",       icon: <MapPin className="h-5 w-5" /> },
-    { name: "Companions", href: "/companions",    icon: <Users className="h-5 w-5" /> },
-    { name: "Discover",   href: "/discover",      icon: <Compass className="h-5 w-5" /> },
-    { name: "Route",      href: "/route-planner", icon: <Globe className="h-5 w-5" /> },
-    { name: "Emergency",  href: "/emergency",     icon: <ShieldAlert className="h-5 w-5" /> },
-    { name: "Offline",    href: "/offline",       icon: <WifiOff className="h-5 w-5" /> },
+    { name: t("dashboard"),  href: "/dashboard",    icon: <LayoutDashboard className="h-5 w-5" /> },
+    { name: t("planner"),    href: "/trip-planner", icon: <Map className="h-5 w-5" /> },
+    { name: t("budget"),     href: "/budget",        icon: <Wallet className="h-5 w-5" /> },
+    { name: t("nearMe"),     href: "/near-me",       icon: <MapPin className="h-5 w-5" /> },
+    { name: t("companion"),  href: "/companions",    icon: <Users className="h-5 w-5" /> },
+    { name: t("explore"),    href: "/discover",      icon: <Compass className="h-5 w-5" /> },
+    { name: t("offline"),    href: "/offline",       icon: <WifiOff className="h-5 w-5" /> },
   ]
 
   const displayName = user?.displayName?.split(" ")[0] || "Traveler"
@@ -91,18 +95,23 @@ export default function Navbar() {
     <>
       {/* ── Top navbar ────────────────────────────────────── */}
       <header className={cn(
-        "h-16 sm:h-20 fixed top-0 left-0 right-0 z-[100] px-4 sm:px-8 flex items-center justify-between bg-white dark:bg-[#1A1A1A]",
+        "h-16 sm:h-20 fixed top-0 left-0 right-0 z-[100] px-4 sm:px-8 flex items-center justify-between bg-white dark:bg-[#1A1A1A] no-print",
         "transition-[border-color,box-shadow] duration-200",
         isScrolled ? "border-b border-[#EBEBEB] dark:border-[#2A2A2A] shadow-sm" : "border-b border-transparent"
       )}>
         {/* Logo + Desktop nav */}
-        <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center gap-2">
+        <div className="flex-1 flex items-center gap-8">
+          <Link href="/" className="flex items-center gap-2 shrink-0">
             <span className="text-2xl font-black tracking-tighter text-[#FF5A5F]">YĀTRĀ</span>
           </Link>
 
+          {/* New Global Search */}
+          <div className="hidden lg:flex flex-1 justify-center max-w-md mx-[2vw]">
+            <SearchTypeahead />
+          </div>
+
           {/* Desktop nav links */}
-          <nav className="hidden lg:flex items-center gap-1">
+          <nav className="hidden xl:flex items-center gap-1 shrink-0">
             {navItems.map((item) => {
               const isActive = pathname === item.href
               return (
@@ -129,6 +138,7 @@ export default function Navbar() {
         <div className="flex items-center gap-2">
           {user ? (
             <div className="flex items-center gap-2">
+              <LanguageSwitcher />
               {/* Theme toggle for logged-in users */}
               {mounted && (
                 <button
@@ -166,6 +176,7 @@ export default function Navbar() {
             </div>
           ) : (
             <div className="hidden md:flex items-center gap-2">
+              <LanguageSwitcher />
               {/* Theme toggle */}
               {mounted && (
                 <button
@@ -190,15 +201,39 @@ export default function Navbar() {
           )}
 
           {/* Hamburger — mobile only */}
-          <button
-            onClick={() => setMobileOpen(true)}
-            className="lg:hidden flex items-center justify-center w-10 h-10 rounded-xl text-[#484848] hover:bg-[#F7F7F7] transition-colors active:scale-95"
-            aria-label="Open menu"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="lg:hidden flex items-center justify-center w-10 h-10 rounded-xl text-[#484848] hover:bg-[#F7F7F7] dark:text-[#E0E0E0] transition-colors active:scale-95"
+              aria-label="Search"
+            >
+              <Search className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="lg:hidden flex items-center justify-center w-10 h-10 rounded-xl text-[#484848] hover:bg-[#F7F7F7] transition-colors active:scale-95"
+              aria-label="Open menu"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+          </div>
         </div>
       </header>
+
+      {/* ── Mobile Search Overlay ─────────────────────────── */}
+      <AnimatePresence>
+        {isSearchOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: "-100%" }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: "-100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="fixed inset-0 z-[1000] bg-white dark:bg-[#1A1A1A] lg:hidden"
+          >
+            <SearchTypeahead isMobile onClose={() => setIsSearchOpen(false)} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Mobile slide-in menu ──────────────────────────── */}
       <AnimatePresence>

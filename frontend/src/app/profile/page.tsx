@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { User, MapPin, Languages, Compass, Calendar, CheckCircle2, Loader2 } from "lucide-react"
+import axios from 'axios'
 
 const TRAVEL_STYLES = [
   { value: "backpacker", label: "Backpacker", desc: "Budget-friendly, off-the-beaten-path" },
@@ -35,14 +36,25 @@ export default function ProfilePage() {
   const [stats, setStats] = useState({ trips: 0, destinations: 0 })
 
   useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+        const token = await auth.currentUser?.getIdToken();
+        const res = await axios.get(`${apiUrl}/profile`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setStats({ trips: res.data.stats.tripsCount || 0, destinations: res.data.stats.publicTripsCount || 0 });
+        // Assume interests/languages are part of profile
+      } catch (err) {
+        console.error('Failed to load profile from backend:', err);
+      }
+    };
+
     const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
       setUser(currentUser)
       if (currentUser) {
         setHomeCity(currentUser.displayName || "")
-        try {
-          // TODO: Fetch from backend
-          setStats({ trips: 3, destinations: 8 })
-        } catch { /* ignore */ }
+        await fetchProfile();
       }
       setLoading(false)
     })
@@ -58,8 +70,16 @@ export default function ProfilePage() {
   const handleSave = async () => {
     setSaving(true)
     try {
-      // TODO: PUT /api/users/profile
-      await new Promise(r => setTimeout(r, 1000))
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+      const token = await user?.getIdToken();
+      await axios.put(`${apiUrl}/profile`, {
+        name: displayName,
+        nationality: homeCity,
+        language: languages[0],
+        interests: JSON.stringify(interests)
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     } catch { /* ignore */ } finally {

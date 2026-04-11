@@ -53,7 +53,7 @@ export default function MobileBottomNav() {
       <div className="h-20 lg:hidden" aria-hidden="true" />
 
       <nav
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-[100] bg-white/95 dark:bg-[#1A1A1A]/95 backdrop-blur-md border-t border-[#EBEBEB] dark:border-[#2A2A2A]"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-[100] bg-white/95 dark:bg-[#1A1A1A]/95 backdrop-blur-md border-t border-[#EBEBEB] dark:border-[#2A2A2A] no-print"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div className="flex items-stretch h-16">

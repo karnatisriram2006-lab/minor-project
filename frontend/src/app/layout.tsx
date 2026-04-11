@@ -9,6 +9,9 @@ import { cn } from "@/lib/utils";
 import { AuthProvider } from "@/context/AuthContext";
 import ChatBotWrapper from "@/components/ChatBotWrapper";
 import { PageTransition } from "@/components/PageTransition";
+import PwaRegistrar from "@/components/PwaRegistrar";
+import { GlobalErrorBoundary } from "@/components/GlobalErrorBoundary";
+import { LanguageProvider } from "@/context/LanguageContext";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-serif" });
@@ -62,36 +65,43 @@ export default function RootLayout({
       <body suppressHydrationWarning className={cn(
         "min-h-screen bg-[#F7F7F7] dark:bg-[#0F0F0F] text-[#484848] dark:text-[#E0E0E0] antialiased selection:bg-[#FF5A5F]/10 overflow-x-hidden"
       )}>
-        <AuthProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="light"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {/* Top navbar (all breakpoints) */}
-            <Navbar />
+        <GlobalErrorBoundary>
+          <AuthProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="light"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <LanguageProvider>
+                {/* Top navbar (all breakpoints) */}
+                <Navbar />
 
-            {/* Page body: sidebar + main content */}
-            <div className="flex min-h-screen pt-16 sm:pt-20">
-              {/* Sidebar — desktop only (hidden lg:flex inside component) */}
-              <Sidebar />
+                {/* Page body: sidebar + main content */}
+                <div className="flex min-h-screen pt-16 sm:pt-20">
+                  {/* Sidebar — desktop only (hidden lg:flex inside component) */}
+                  <Sidebar />
 
-              {/* Main content area */}
-            <main className="flex-1 min-w-0 relative pb-20 sm:pb-0">
-                <PageTransition>
-                  {children}
-                </PageTransition>
-              </main>
-            </div>
+                  {/* Main content area */}
+                <main className="flex-1 min-w-0 relative pb-20 sm:pb-0">
+                    <PageTransition>
+                      {children}
+                    </PageTransition>
+                  </main>
+                </div>
 
-            {/* Mobile bottom tab bar */}
-            <MobileBottomNav />
+                {/* Mobile bottom tab bar */}
+                <MobileBottomNav />
 
-            {/* AI Chat bot */}
-            <ChatBotWrapper />
-          </ThemeProvider>
-        </AuthProvider>
+                {/* AI Chat bot */}
+                <ChatBotWrapper />
+                
+                {/* PWA Service Worker */}
+                <PwaRegistrar />
+              </LanguageProvider>
+            </ThemeProvider>
+          </AuthProvider>
+        </GlobalErrorBoundary>
       </body>
     </html>
   );

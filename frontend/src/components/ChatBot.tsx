@@ -99,7 +99,7 @@ export default function ChatBot() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] right-4 lg:bottom-6 lg:right-6 z-[120] w-14 h-14 rounded-full bg-[#FF5A5F] text-white shadow-lg flex items-center justify-center cursor-pointer border-4 border-white overflow-hidden"
+        className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] right-4 lg:bottom-6 lg:right-6 z-[120] w-14 h-14 rounded-full bg-[#FF5A5F] text-white shadow-lg flex items-center justify-center cursor-pointer border-4 border-white overflow-hidden no-print"
       >
         <AnimatePresence mode="wait">
           {isOpen ? (
@@ -122,7 +122,7 @@ export default function ChatBot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.97 }}
             transition={{ type: "spring", duration: 0.4, bounce: 0.1 }}
-            className="fixed bottom-[calc(8.5rem+env(safe-area-inset-bottom,0px))] right-2 left-2 sm:left-auto lg:bottom-24 lg:right-6 z-[110] flex flex-col h-[480px] max-h-[calc(100dvh-12rem)] sm:w-[350px] bg-white rounded-2xl shadow-xl border border-[#EBEBEB] overflow-hidden"
+            className="fixed bottom-[calc(8.5rem+env(safe-area-inset-bottom,0px))] right-2 left-2 sm:left-auto lg:bottom-24 lg:right-6 z-[110] flex flex-col h-[480px] max-h-[calc(100dvh-12rem)] sm:w-[350px] bg-white rounded-2xl shadow-xl border border-[#EBEBEB] overflow-hidden no-print"
           >
             {/* 1. CHAT HEADER */}
             <header className="px-5 py-5 border-b border-gray-50 flex items-center justify-between bg-white">

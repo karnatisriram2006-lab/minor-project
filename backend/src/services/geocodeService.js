@@ -30,15 +30,6 @@ async function geocodePlace(name, city = '') {
         return result;
     }
 
-    // Retry without city scope for lesser-known places
-    if (city) {
-        const fallbackKey = `${name}, India`.toLowerCase();
-        if (_cache.has(fallbackKey)) return _cache.get(fallbackKey);
-        const fallback = await _nominatimFetch(`${name}, India`);
-        _cache.set(fallbackKey, fallback);
-        if (fallback) return fallback;
-    }
-
     _cache.set(cacheKey, null);
     return null;
 }
@@ -82,6 +73,20 @@ function isValidIndiaCoord(lat, lng) {
 }
 
 /**
+ * Calculate Haversine distance between two coordinates (in km)
+ */
+function haversineDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
+
+/**
  * Enrich an itinerary object by geocoding any stop whose coordinates are
  * missing, zero, or outside India's bounding box.
  *
@@ -91,6 +96,16 @@ function isValidIndiaCoord(lat, lng) {
  */
 async function enrichItineraryCoords(itinerary, city = '') {
     const enriched = {};
+    const MAX_DISTANCE_KM = 60; // Max allowed distance from city center
+
+    // Fetch city center once for distance validation
+    let cityCenter = null;
+    if (city) {
+        cityCenter = await geocodePlace(city, '');
+        if (cityCenter) {
+            console.log(`[Geocode] City center for ${city}: ${cityCenter.lat}, ${cityCenter.lng}`);
+        }
+    }
 
     for (const [day, activities] of Object.entries(itinerary)) {
         if (!Array.isArray(activities)) {
@@ -101,7 +116,17 @@ async function enrichItineraryCoords(itinerary, city = '') {
         const enrichedActivities = [];
         for (const act of activities) {
             // Always geocode from Nominatim — never trust AI-generated coordinates
-            const coords = await geocodePlace(act.name, city);
+            let coords = await geocodePlace(act.name, city);
+            
+            // Validate distance from city center if available
+            if (coords && cityCenter) {
+                const dist = haversineDistance(cityCenter.lat, cityCenter.lng, coords.lat, coords.lng);
+                if (dist > MAX_DISTANCE_KM) {
+                    console.warn(`[Geocode] ⚠ "${act.name}" geocoded too far from ${city} (${dist.toFixed(1)}km). Rejecting coordinates.`);
+                    coords = null; // Mark as not found to prevent map distortion
+                }
+            }
+
             if (coords) {
                 console.log(`[Geocode] ✓ "${act.name}" → ${coords.lat}, ${coords.lng}`);
                 enrichedActivities.push({ ...act, lat: coords.lat, lng: coords.lng });
@@ -119,4 +144,4 @@ async function enrichItineraryCoords(itinerary, city = '') {
     return enriched;
 }
 
-module.exports = { geocodePlace, enrichItineraryCoords, isValidIndiaCoord };
+module.exports = { geocodePlace, enrichItineraryCoords, isValidIndiaCoord, haversineDistance };

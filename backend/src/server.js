@@ -3,7 +3,10 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 console.log('[Server] Environment loaded. Groq Model:', process.env.GROQ_MODEL || 'llama3-8b-8192', '| API Key set:', !!process.env.GROQ_API_KEY);
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
 const connectDB = require('./config/db');
+const { globalLimiter } = require('./middleware/rateLimiter');
 
 // Route imports
 const authRoutes = require('./routes/authRoutes');
@@ -17,11 +20,22 @@ const tripRoutes = require('./routes/tripRoutes');
 const poiRoutes = require('./routes/poiRoutes');
 const waitlistRoutes = require('./routes/waitlistRoutes');
 const messagesRoutes = require('./routes/messages');
+const profileRoutes = require('./routes/profileRoutes');
 
 // Connect to database
 connectDB();
 
 const app = express();
+
+// Global Request/Response Logger for Debugging
+app.use((req, res, next) => {
+    const start = Date.now();
+    res.on('finish', () => {
+        const duration = Date.now() - start;
+        console.warn(`[BACKEND TRACE] ${req.method} ${req.originalUrl} → ${res.statusCode} (${duration}ms)`);
+    });
+    next();
+});
 
 // Middleware
 const allowedOrigins = process.env.ALLOWED_ORIGINS 
@@ -31,24 +45,18 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 console.log('[Server] CORS Allowed Origins:', allowedOrigins.includes('*') ? 'ALL (*)' : allowedOrigins.join(', '));
 
 app.use(cors({
-    origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps/CURL) or if * is allowed
-        if (!origin || allowedOrigins.includes('*')) {
-            return callback(null, origin || true);
-        }
-        
-        if (allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, origin);
-        } else {
-            console.warn(`[CORS Blocked] Origin: ${origin}`);
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
+    origin: true, // Echo back the request origin for maximum compatibility with credentials
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
+
+app.use(helmet());
+if (process.env.NODE_ENV !== 'test') {
+    app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+}
+app.use(globalLimiter);
+app.use(express.json({ limit: '10kb' }));
 
 // Main Root Route
 app.get('/', (req, res) => {
@@ -67,27 +75,26 @@ app.use('/api/trips', tripRoutes);
 app.use('/api/nearby', poiRoutes);
 app.use('/api/waitlist', waitlistRoutes);
 app.use('/api/messages', messagesRoutes);
-
-// User requested aliases
-app.post('/api/chat', (req, res) => res.redirect(307, '/api/ai/chat'));
-app.post('/api/budget', (req, res) => res.redirect(307, '/api/budget/optimize'));
+app.use('/api/profile', profileRoutes);
 
 // 404 handler
 app.use((req, res, next) => {
+    console.warn(`[404 NOT MATCHED] ${req.method} ${req.originalUrl}`);
     res.status(404).json({ message: `Route ${req.originalUrl} not found` });
 });
 
 // Error handler
 app.use((err, req, res, next) => {
     const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+    console.error(`[Error] ${req.method} ${req.originalUrl} → ${statusCode}: ${err.message}`);
+    if (process.env.NODE_ENV !== 'production') console.error(err.stack);
     res.status(statusCode).json({
-        message: err.message,
-        stack: process.env.NODE_ENV === 'production' ? null : err.stack,
+        message: err.message || 'An unexpected error occurred',
+        ...(process.env.NODE_ENV !== 'production' && { stack: err.stack }),
     });
 });
 
 const PORT = process.env.PORT || 5000;
-
 app.listen(PORT, () => {
     console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
 });

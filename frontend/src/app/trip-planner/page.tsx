@@ -1,18 +1,23 @@
 "use client";
-/* Forced update marker: v2.0.1 - Fix Syntax Errors */
+/* Forced update marker: v2.0.2 - Rename Clock Icon to ClockIcon */
 
 import { useState, useMemo, useRef, useCallback, useEffect } from "react"
 import dynamic from "next/dynamic"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import {
-  Clock,
+  Clock as ClockIcon,
   Navigation,
   Wallet,
   ChevronRight,
   Download,
   CheckCircle2,
   Map as MapIcon,
-  List
+  Image as ImageIcon,
+  List,
+  Plus,
+  TrendingUp,
+  AlertCircle
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -20,9 +25,15 @@ import { cn } from "@/lib/utils"
 import api from "@/lib/api"
 import { exportElementToPDF } from "@/lib/pdfExport"
 import { PrintableItinerary } from "@/components/PrintableItinerary"
-import { ItineraryRoutes } from '@/components/ItineraryRoutes'
-import { ItineraryForm } from "@/components/ItineraryForm"
 import { fetchCoordinates } from '@/services/geoService'
+import { generateItinerarySchedule, ScheduledStop } from "@/utils/scheduler"
+import { fetchRoute } from "@/services/routeService"
+import { ItineraryForm } from "@/components/ItineraryForm"
+import { ItineraryRoutes } from "@/components/ItineraryRoutes"
+import { GenerationProgress } from "@/components/AI/GenerationProgress"
+import { useItineraryStream } from "@/hooks/useItineraryStream"
+import { imageService } from "@/services/imageService"
+import Image from "next/image"
 
 const InteractiveMap = dynamic(() => import("@/components/InteractiveMap"), {
   ssr: false,
@@ -46,95 +57,253 @@ interface ItineraryStop {
   lng: number;
   status?: string;
   index: number;
+  placeImage?: string;
 }
 
 type ItineraryType = Record<string, ItineraryStop[]>
 
+import { useTranslations } from 'next-intl'
+
 export default function TripPlanner() {
-  const [loading, setLoading] = useState(false)
-  const [isExporting, setIsExporting] = useState(false)
-  const [itinerary, setItinerary] = useState<ItineraryType | null>(null)
-  const [activeDay, setActiveDay] = useState(0)
-  const [activeStop, setActiveStop] = useState<string | number | null>(null)
-  const [panelOpen, setPanelOpen] = useState(true)
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle")
-  const [savedTripId, setSavedTripId] = useState<string | null>(null)
-  const [focusLeg, setFocusLeg] = useState<{ from: [number, number]; to: [number, number] } | null>(null)
-  const [formData, setFormData] = useState({ city: "Jaipur", days: "3", budget: "Luxury" }) 
+  let t: any
+  try {
+    t = useTranslations("TripPlanner")
+  } catch {
+    t = (s: string) => s
+  }
+  const [isExporting, setIsExporting]     = useState(false)
+  const [itinerary, setItinerary]         = useState<ItineraryType | null>(null)
+  const [activeDay, setActiveDay]         = useState(0)
+  const [activeStop, setActiveStop]       = useState<string | number | null>(null)
+  const [panelOpen, setPanelOpen]         = useState(true)
+  const [saveStatus, setSaveStatus]       = useState<"idle" | "saving" | "saved" | "error">("idle")
+  const [focusLeg, setFocusLeg]           = useState<{ from: [number, number]; to: [number, number] } | null>(null)
+  const [formData, setFormData]           = useState({ city: "Jaipur", days: "3", budget: "Luxury", startTime: "09:00" })
+  const [modePreferences, setModePreferences] = useState<Record<number, string>>({})
+  const [legDurations, setLegDurations]   = useState<Record<number, number>>({})
+  const [isSyncingRoutes, setIsSyncingRoutes] = useState(false)
+  const [savedTripId, setSavedTripId]     = useState<string | null>(null)
+  const [budgetSummary, setBudgetSummary] = useState<any>(null)
+  
+  const searchParams = useSearchParams();
+  const loadId = searchParams.get('load');
 
-  const handleGenerate = async (genData: any) => {
-    setFormData({ city: genData.city, days: genData.days, budget: genData.budget })
-    setLoading(true)
-
-    try {
-      const { data } = await api.post("/ai/itinerary", genData)
-      const rawItinerary = data.itinerary || data
-      
-      const processed: ItineraryType = {}
-      let globalIdx = 0
-      Object.keys(rawItinerary).forEach((dayKey) => {
-        processed[dayKey] = rawItinerary[dayKey].map((stop: any) => ({
-          ...stop,
-          id: stop.name + globalIdx, 
-          index: globalIdx++,
-          category: stop.type || 'Culture'
-        }))
-      })
-      setItinerary(processed)
-    } catch (err) {
-      console.error("[Curation Error]", err)
-      const dynamicMock: ItineraryType = {}
-      const dayCount = parseInt(genData.days) || 3
-      const baseLat = genData.city.toLowerCase().includes("agra") ? 27.1751 : 26.9124
-      const baseLng = genData.city.toLowerCase().includes("agra") ? 78.0421 : 75.7873
-
-      let globalIdx = 0
-      for (let i = 1; i <= dayCount; i++) {
-        dynamicMock[`Day ${i}`] = [
-          {
-            id: `stop-${globalIdx}`,
-            index: globalIdx++,
-            time: "09:00",
-            name: `${genData.city} Heritage Discovery ${i}`,
-            type: "Cultural",
-            category: "Culture",
-            description: `AI curated sequence for travelers in ${genData.city}. Exploring local heritage sites.`,
-            lat: baseLat + (Math.random() - 0.5) * 0.05,
-            lng: baseLng + (Math.random() - 0.5) * 0.05,
-            status: "Suggested"
+  // Load public trip on mount bypass auth if available
+  useEffect(() => {
+    if (loadId && !itinerary && !isStreaming) {
+      const fetchPublicTrip = async () => {
+        try {
+          const res = await api.get(`/trips/${loadId}`);
+          const fetchedTrip = res.data;
+          
+          setFormData({
+            city: fetchedTrip.destination,
+            days: String(fetchedTrip.duration),
+            budget: fetchedTrip.budget,
+            startTime: "09:00"
+          });
+          setSavedTripId(fetchedTrip._id);
+          
+          // Reconstruct the processed itinerary format from DB format
+          const reconstructed: ItineraryType = {};
+          
+          if (Array.isArray(fetchedTrip.days)) {
+            fetchedTrip.days.forEach((dayObj: any) => {
+              reconstructed[`Day ${dayObj.day}`] = dayObj.activities.map((act: any, idx: number) => ({
+                ...act,
+                id: act.name + idx,
+                index: idx,
+                category: act.type || 'Culture'
+              }));
+            });
+          } else if (fetchedTrip.days && typeof fetchedTrip.days === 'object') {
+            // Support legacy object-based itinerary tracking
+            Object.entries(fetchedTrip.days).forEach(([dayKey, activities]: [string, any]) => {
+              reconstructed[dayKey] = activities.map((act: any, idx: number) => ({
+                ...act,
+                id: act.name + idx,
+                index: idx,
+                category: act.type || act.category || 'Culture'
+              }));
+            });
           }
-        ]
-      }
-      setItinerary(dynamicMock)
-    } finally {
-      setLoading(false)
+          
+          setItinerary(reconstructed);
+        } catch (err) {
+          console.error("Failed to load requested trip:", err);
+        }
+      };
+      fetchPublicTrip();
     }
+  }, [loadId]);
+  // Fetch budget summary if trip is saved
+  useEffect(() => {
+    if (!savedTripId) {
+      setBudgetSummary(null);
+      return;
+    }
+    const fetchBudget = async () => {
+      try {
+        const { data } = await api.get(`/budget/trip/${savedTripId}`);
+        setBudgetSummary(data);
+      } catch (err) {
+        console.error("Failed to fetch budget summary:", err);
+      }
+    };
+    fetchBudget();
+  }, [savedTripId]);
+  // SSE streaming hook for AI generation
+  const { progress, result, isStreaming, error: streamError, startStream } = useItineraryStream()
+
+  // Process SSE result into itinerary state
+  useEffect(() => {
+    if (!result) return
+    const rawItinerary = (result.itinerary || result) as Record<string, any[]>
+    const processed: ItineraryType = {}
+    let globalIdx = 0
+    Object.keys(rawItinerary).forEach((dayKey) => {
+      processed[dayKey] = rawItinerary[dayKey].map((stop: any) => ({
+        ...stop,
+        id: stop.name + globalIdx,
+        index: globalIdx++,
+        category: stop.type || 'Culture'
+      }))
+    })
+    setItinerary(processed)
+  }, [result])
+
+  // New: Image Enrichment Loop
+  useEffect(() => {
+    if (!itinerary) return;
+
+    const enrich = async () => {
+      const dayKeys = Object.keys(itinerary);
+      let needsEnrichment = false;
+      
+      // Check if any stop is missing an image
+      for(const day of dayKeys) {
+        if (itinerary[day].some(stop => !stop.placeImage)) {
+          needsEnrichment = true;
+          break;
+        }
+      }
+
+      if (needsEnrichment) {
+        const newItinerary = { ...itinerary };
+        for(const day of dayKeys) {
+          newItinerary[day] = await Promise.all(itinerary[day].map(async (stop) => {
+            if (stop.placeImage) return stop;
+            const img = await imageService.getPlaceImage(stop.name, formData.city);
+            return { ...stop, placeImage: img };
+          }));
+        }
+        setItinerary(newItinerary);
+      }
+    };
+
+    const timer = setTimeout(enrich, 100); // Small debounce
+    return () => clearTimeout(timer);
+  }, [itinerary]);
+
+  const handleGenerate = (genData: any) => {
+    setFormData({ city: genData.city, days: genData.days, budget: genData.budget, startTime: genData.startTime || "09:00" })
+    setItinerary(null)
+
+    // Use SSE streaming for live progress UI
+    startStream({
+      city: genData.city,
+      days: parseInt(genData.days) || 3,
+      budget: (genData.budget || 'medium').toLowerCase(),
+      interests: genData.interests || 'general',
+    })
   }
 
+
+
+  // 1. Sync Leg Durations when itinerary changes (Debounced)
+  useEffect(() => {
+    if (!itinerary) return;
+    
+    const timeoutId = setTimeout(async () => {
+      setIsSyncingRoutes(true);
+      const newDurations: Record<number, number> = {};
+      const stops = Object.values(itinerary).flat();
+      
+      for (let i = 0; i < stops.length - 1; i++) {
+        const a = stops[i];
+        const b = stops[i+1];
+        if (a.lat && a.lng && b.lat && b.lng) {
+          const route = await fetchRoute({ lat: a.lat, lon: a.lng }, { lat: b.lat, lon: b.lng });
+          if (route) {
+            // Apply mode-specific speed multiplier and buffer
+            const modeId = modePreferences[i] || 'car';
+            const speedMult = modeId === 'car' ? 1.8 : modeId === 'bus' ? 2.5 : 8;
+            const buffer = modeId === 'car' ? 10 : modeId === 'bus' ? 15 : 2;
+            newDurations[i] = Math.round(route.durationMin * speedMult + buffer);
+          }
+        }
+      }
+      setLegDurations(newDurations);
+      setIsSyncingRoutes(false);
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [itinerary, modePreferences]);
+
+  // 2. Generate Scheduled Itinerary
+  const scheduledItinerary = useMemo(() => {
+    if (!itinerary) return null;
+    
+    const processed: Record<string, ScheduledStop[]> = {};
+    const dayKeys = Object.keys(itinerary);
+    let globalStopIdx = 0;
+
+    dayKeys.forEach((dayKey) => {
+      const dayStops = itinerary[dayKey];
+      const durations = dayStops.map((_, i) => legDurations[globalStopIdx + i] || 0);
+      
+      processed[dayKey] = generateItinerarySchedule(
+        dayStops, 
+        formData.startTime,
+        durations
+      );
+      
+      globalStopIdx += dayStops.length;
+    });
+
+    return processed;
+  }, [itinerary, legDurations, formData.startTime]);
+
   const allStops = useMemo(() => {
-    if (!itinerary) return []
-    return Object.values(itinerary).flat().filter(stop => !!stop && typeof stop.lat === 'number')
-  }, [itinerary])
+    if (!scheduledItinerary) return []
+    // Map ScheduledStop to match InteractiveMap's expected Location interface
+    return Object.values(scheduledItinerary).flat().filter(stop => !!stop && typeof stop.lat === 'number').map(stop => ({
+      ...stop,
+      description: stop.description || "",
+      time: stop.schedule.arrival,
+      duration: `${stop.schedule.stayDuration} min`
+    }))
+  }, [scheduledItinerary])
 
   const totalBudget = useMemo(() => {
     return allStops.reduce((sum, stop) => sum + (stop.cost || 0), 0) || (parseInt(formData.days) * 5000)
   }, [allStops, formData.days])
 
   const daysLabels = useMemo(() => {
-    return itinerary ? Object.keys(itinerary) : []
-  }, [itinerary])
+    return scheduledItinerary ? Object.keys(scheduledItinerary) : []
+  }, [scheduledItinerary])
 
   // Data shape needed by ItineraryRoutes
   const daysForRoutes = useMemo(() => {
-    if (!itinerary) return []
-    return Object.entries(itinerary).map(([dayLabel, stops]) => ({
+    if (!scheduledItinerary) return []
+    return Object.entries(scheduledItinerary).map(([dayLabel, stops]) => ({
       dayLabel,
-      stops: stops.map(s => ({ name: s.name, lat: s.lat, lng: s.lng, time: s.time }))
+      stops: stops.map(s => ({ name: s.name, lat: s.lat, lng: s.lng, time: s.schedule.arrival }))
     }))
-  }, [itinerary])
+  }, [scheduledItinerary])
 
   const flyToMarker = (lat: number, lng: number) => {
-    setFocusLeg({ from: [lng, lat], to: [lng, lat] })
+    setFocusLeg({ from: [lat, lng], to: [lat, lng] })
   }
 
   function getCategoryStyle(type: string) {
@@ -197,8 +366,8 @@ export default function TripPlanner() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] sm:h-[calc(100vh-5rem)] overflow-hidden bg-white text-[#1a1a1a]">
-      <div className="flex flex-col md:flex-row h-full relative">
+    <div className="flex flex-col h-[calc(100vh-4rem)] sm:h-[calc(100vh-5rem)] overflow-hidden print:h-auto print:overflow-visible bg-white text-[#1a1a1a]">
+      <div className="trip-planner-ui flex flex-col md:flex-row h-full relative print:block print:h-auto print:overflow-visible">
         {/* Sidebar Panel */}
         <div 
           className={cn(
@@ -211,7 +380,16 @@ export default function TripPlanner() {
             <div className="flex flex-col h-full w-full md:w-[380px]">
               {!itinerary ? (
                 <div className="flex flex-col p-8 space-y-8 h-full overflow-y-auto">
-                  <ItineraryForm onGenerate={handleGenerate} loading={loading} />
+                  <ItineraryForm onGenerate={handleGenerate} loading={isStreaming} />
+                  {/* Live generation progress */}
+                  {(isStreaming || streamError) && (
+                    <GenerationProgress
+                      progress={progress}
+                      isStreaming={isStreaming}
+                      error={streamError}
+                      city={formData.city}
+                    />
+                  )}
                 </div>
               ) : (
                 <>
@@ -248,7 +426,7 @@ export default function TripPlanner() {
                             boxShadow: '0 0 0 2px rgba(34,197,94,0.25)',
                             animation: 'pulse 2s infinite',
                           }}/>
-                          Trip Itinerary
+                          {t("tripItinerary")}
                           <span style={{
                             background: '#FEF2F2',
                             color: '#E8391A',
@@ -257,12 +435,62 @@ export default function TripPlanner() {
                             padding: '1px 7px',
                             borderRadius: 99,
                           }}>
-                            {allStops.length} stops
+                            {allStops.length} {t("stops")}
                           </span>
                         </div>
                       </div>
+                    
+                    {/* Budget Quick Glance Widget */}
+                    {budgetSummary && budgetSummary.budgetAllocation && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mx-5 mb-5 p-4 rounded-2xl bg-gradient-to-br from-[#F7F7F7] to-[#FFFFFF] border border-[#EBEBEB] shadow-sm relative overflow-hidden group"
+                      >
+                        <div className="absolute top-0 right-0 p-2 opacity-5">
+                          <Wallet className="w-12 h-12 rotate-12" />
+                        </div>
+                        <div className="flex items-center justify-between mb-3 relative z-10">
+                          <div className="flex items-center gap-2">
+                            <TrendingUp className="h-4 w-4 text-[#FF5A5F]" />
+                            <span className="text-[11px] font-black uppercase text-[#767676] tracking-widest">{t("budgetTracker")}</span>
+                          </div>
+                          <Link href={`/budget?tripId=${savedTripId}`} className="text-[10px] font-bold text-[#E8391A] hover:underline flex items-center gap-1">
+                            {t("details")} <ChevronRight className="h-3 w-3" />
+                          </Link>
+                        </div>
+                        
+                        <div className="flex items-end justify-between mb-2 relative z-10">
+                          <div>
+                            <p className="text-[10px] font-medium text-[#767676]">{t("actualSpent")}</p>
+                            <p className="text-lg font-black text-[#1a1a1a]">₹{budgetSummary.actualSpend.total.toLocaleString()}</p>
+                          </div>
+                          <div className="text-right">
+                             <p className="text-[10px] font-medium text-[#767676]">{t("target")}</p>
+                             <p className="text-xs font-bold text-[#A0A0A0]">₹{budgetSummary.budgetAllocation.total.toLocaleString()}</p>
+                          </div>
+                        </div>
 
-                      {/* Save Button */}
+                        <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden relative z-10">
+                           <motion.div 
+                             initial={{ width: 0 }}
+                             animate={{ width: `${Math.min((budgetSummary.actualSpend.total / budgetSummary.budgetAllocation.total) * 100, 100)}%` }}
+                             className={cn(
+                               "h-full rounded-full transition-all", 
+                               budgetSummary.actualSpend.total > budgetSummary.budgetAllocation.total ? "bg-[#FF5A5F]" : "bg-[#00A699]"
+                             )}
+                           />
+                        </div>
+                        
+                        {budgetSummary.actualSpend.total > budgetSummary.budgetAllocation.total && (
+                          <p className="mt-2 text-[10px] font-bold text-[#FF5A5F] flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" /> {t("budgetExceeded")}
+                          </p>
+                        )}
+                      </motion.div>
+                    )}
+
+                    {/* Save Button */}
                       <button
                         onClick={handleSave}
                         disabled={saveStatus === 'saving'}
@@ -287,18 +515,7 @@ export default function TripPlanner() {
                           letterSpacing: '0.1px',
                         }}
                       >
-                        {saveStatus === 'saving' ? (
-                          <div style={{
-                            width: 13, height: 13, border: '2px solid white',
-                            borderTopColor: 'transparent', borderRadius: '50%',
-                            animation: 'spin 0.6s linear infinite',
-                          }}/>
-                        ) : saveStatus === 'saved' ? (
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                        ) : (
-                          <Navigation className="h-3.5 w-3.5" />
-                        )}
-                        {saveStatus === 'saving' ? 'Saving' : saveStatus === 'saved' ? 'Saved!' : 'Save'}
+                        {saveStatus === 'saving' ? t('saving') : saveStatus === 'saved' ? t('saved') : t('saveTrip')}
                       </button>
                     </div>
 
@@ -328,191 +545,159 @@ export default function TripPlanner() {
                               : 'none',
                           }}
                         >
-                          {day.replace('Day ', 'Day ')}
+                          {day.replace('Day', t('day'))}
                         </button>
                       ))}
                     </div>
                   </div>
 
                   {/* ── Stop Cards (Timeline Layout) ── */}
-                  <div style={{ flex: 1, overflowY: 'auto', padding: '8px 0 20px' }}>
-                    {itinerary[daysLabels[activeDay]]?.map((stop: ItineraryStop, i: number) => {
-                      const dayStops = itinerary[daysLabels[activeDay]] || []
+                  <div className="flex-1 overflow-y-auto px-4 py-6 space-y-0">
+                    {scheduledItinerary && scheduledItinerary[daysLabels[activeDay]]?.map((stop, i) => {
+                      const dayStops = (scheduledItinerary && scheduledItinerary[daysLabels[activeDay]]) || []
                       const isLast = i === dayStops.length - 1
                       const isActive = activeStop === stop.id
                       const catStyle = getCategoryStyle(stop.category || stop.type || '')
-
+                      
                       return (
-                        <div
-                          key={stop.id}
-                          onClick={() => { setActiveStop(stop.id); flyToMarker(stop.lat, stop.lng) }}
-                          style={{
-                            display: 'flex',
-                            padding: '0 16px',
-                            gap: 0,
-                            cursor: 'pointer',
-                            position: 'relative',
-                          }}
-                        >
-                          {/* Timeline column */}
-                          <div style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            width: 36,
-                            flexShrink: 0,
-                          }}>
-                            {/* Connector line above dot */}
-                            <div style={{
-                              width: 2,
-                              height: 12,
-                              background: i === 0 ? 'transparent' : '#E5E7EB',
-                              flexShrink: 0,
-                            }}/>
-                            {/* Numbered dot */}
-                            <div style={{
-                              width: 30, height: 30,
-                              borderRadius: '50%',
-                              background: isActive
-                                ? 'linear-gradient(135deg,#E8391A,#FF6B47)'
-                                : 'white',
-                              border: isActive ? 'none' : '2px solid #E8391A',
-                              color: isActive ? 'white' : '#E8391A',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              fontSize: 12, fontWeight: 700,
-                              flexShrink: 0,
-                              boxShadow: isActive
-                                ? '0 4px 10px rgba(232,57,26,0.35)'
-                                : '0 1px 4px rgba(0,0,0,0.06)',
-                              transition: 'all 0.2s ease',
-                              zIndex: 1,
-                              position: 'relative',
-                            }}>
-                              {stop.index + 1}
-                            </div>
-                            {/* Connector line below dot */}
-                            {!isLast && (
-                              <div style={{
-                                width: 2,
-                                flex: 1,
-                                minHeight: 16,
-                                background: 'linear-gradient(to bottom, #E8391A22, #E5E7EB)',
-                                flexShrink: 0,
-                              }}/>
+                        <div key={stop.id} className="relative">
+                          {/* 1. Stop Card */}
+                          <div
+                            onClick={() => { setActiveStop(stop.id); flyToMarker(stop.lat, stop.lng) }}
+                            className={cn(
+                              "flex gap-3 sm:gap-4 p-3 sm:p-4 rounded-2xl cursor-pointer transition-all duration-300 border",
+                              isActive 
+                                ? "bg-[#FFF8F7] border-[#FFD5CC] shadow-lg shadow-red-500/5 scale-[1.01] sm:scale-[1.02] z-10 relative" 
+                                : "bg-white border-[#F3F4F6] hover:border-[#E8391A]/30 hover:shadow-sm"
                             )}
-                          </div>
-
-                          {/* Card body */}
-                          <div style={{
-                            flex: 1,
-                            marginLeft: 12,
-                            marginBottom: isLast ? 0 : 8,
-                            marginTop: 0,
-                            padding: '12px 14px',
-                            background: isActive ? '#FFF8F7' : 'white',
-                            borderRadius: 14,
-                            border: isActive ? '1.5px solid #FFD5CC' : '1.5px solid #F3F4F6',
-                            boxShadow: isActive
-                              ? '0 4px 16px rgba(232,57,26,0.10)'
-                              : '0 1px 4px rgba(0,0,0,0.04)',
-                            transition: 'all 0.2s ease',
-                          }}>
-                            {/* Time + Category row */}
-                            <div style={{
-                              display: 'flex', alignItems: 'center',
-                              justifyContent: 'space-between',
-                              marginBottom: 6,
-                            }}>
-                              <div style={{
-                                display: 'inline-flex', alignItems: 'center', gap: 4,
-                                background: '#FFF0EE',
-                                color: '#E8391A',
-                                fontSize: 11, fontWeight: 600,
-                                padding: '3px 9px', borderRadius: 99,
-                                letterSpacing: '0.2px',
-                              }}>
-                                <Clock className="h-3 w-3" />
-                                {stop.time || 'Any time'}
+                          >
+                            {/* Time/Status Column */}
+                            <div className="flex flex-col items-center gap-1.5 sm:gap-2 pt-1 min-w-[55px] sm:min-w-[65px]">
+                              <div className="text-[12px] sm:text-[13px] font-bold text-[#1a1a1a]">
+                                {stop.schedule.arrival}
                               </div>
-                              <span style={{
-                                fontSize: 10.5, fontWeight: 700,
-                                letterSpacing: '0.4px',
-                                textTransform: 'uppercase',
-                                color: catStyle.color,
-                                background: catStyle.bg,
-                                padding: '3px 9px',
-                                borderRadius: 99,
-                              }}>
-                                {stop.category || stop.type || 'Stop'}
-                              </span>
+                              <div className="h-full w-0.5 bg-[#F3F4F6] rounded-full" />
+                              <div className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                {stop.schedule.departure}
+                              </div>
                             </div>
 
-                            {/* Name */}
-                            <div style={{
-                              fontSize: 15, fontWeight: 700,
-                              color: '#111827',
-                              lineHeight: 1.3,
-                              marginBottom: 3,
-                              letterSpacing: '-0.2px',
-                            }}>
-                              {stop.name}
+                            {/* Image Thumbnail (New) */}
+                            <div className="w-16 sm:w-20 h-16 sm:h-20 rounded-xl overflow-hidden relative shrink-0 border border-[#F3F4F6]">
+                               {stop.placeImage ? (
+                                 <Image src={stop.placeImage} alt={stop.name} fill sizes="(max-width: 640px) 64px, 80px" className="object-cover" />
+                               ) : (
+                                 <div className="w-full h-full bg-gray-50 flex items-center justify-center">
+                                   <ImageIcon className="w-5 h-5 text-gray-200" />
+                                 </div>
+                               )}
                             </div>
 
-                            {/* Description */}
-                            {stop.description && (
-                              <div style={{
-                                fontSize: 12.5, color: '#9CA3AF',
-                                lineHeight: 1.45,
-                                overflow: 'hidden',
-                                display: '-webkit-box',
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: 'vertical' as any,
-                              }}>
-                                {stop.description}
-                              </div>
-                            )}
-
-                            {/* Cost row */}
-                            {stop.cost ? (
-                              <div style={{
-                                marginTop: 8,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                              }}>
-                                <span style={{
-                                  fontSize: 13, fontWeight: 700, color: '#111827',
-                                }}>
-                                  ₹{stop.cost.toLocaleString('en-IN')}
+                            {/* Main Content */}
+                            <div className="flex-1 space-y-1.5 sm:space-y-2">
+                              {/* Header: Cat + Duration */}
+                              <div className="flex items-center justify-between">
+                                <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest px-1.5 sm:px-2 py-0.5 rounded-md" style={{ color: catStyle.color, background: catStyle.bg }}>
+                                  {stop.category || stop.type || 'Stop'}
                                 </span>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                  stroke="#9CA3AF" strokeWidth="2.5" strokeLinecap="round">
-                                  <path d="M5 12h14M12 5l7 7-7 7"/>
-                                </svg>
+                                <div className="flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-gray-500">
+                                  <ClockIcon className="w-2.5 h-2.5 sm:w-3 h-3" />
+                                  {stop.schedule.stayDuration}m stay
+                                </div>
                               </div>
-                            ) : (
-                              <div style={{ marginTop: 6, display: 'flex', justifyContent: 'flex-end' }}>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                  stroke="#D1D5DB" strokeWidth="2.5" strokeLinecap="round">
-                                  <path d="M5 12h14M12 5l7 7-7 7"/>
-                                </svg>
+
+                              {/* Stop Name */}
+                              <h3 className="text-[14px] sm:text-[16px] font-bold text-[#111827] leading-tight tracking-tight">
+                                {stop.name}
+                              </h3>
+
+                              {/* Description */}
+                              {stop.description && (
+                                <p className="text-[11.5px] sm:text-[12.5px] text-gray-500 leading-relaxed line-clamp-2">
+                                  {stop.description}
+                                </p>
+                              )}
+
+                              {/* Details: Cost */}
+                              <div className="flex items-center justify-between pt-0.5">
+                                <div className="flex items-center gap-1.5 text-[12px] sm:text-[13px] font-bold text-[#111827]">
+                                  {stop.cost ? `₹${stop.cost.toLocaleString('en-IN')}` : 'Free Entry'}
+                                </div>
+                                <div className={cn(
+                                  "w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center transition-colors",
+                                  isActive ? "bg-[#E8391A] text-white" : "text-gray-300"
+                                )}>
+                                  <ChevronRight className="w-3.5 h-3.5 sm:w-4 h-4" />
+                                </div>
                               </div>
-                            )}
+                            </div>
                           </div>
+
+                          {/* 2. Travel Segment (if not last) */}
+                          {!isLast && (
+                            <div className="ml-[28px] sm:ml-[32px] my-1 sm:my-2 py-3 sm:py-4 pl-6 sm:pl-8 border-l-2 border-dashed border-[#F3F4F6] flex items-center gap-2 sm:gap-4 group/travel">
+                              <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-gray-50 border border-[#F3F4F6] group-hover/travel:border-[#E8391A]/20 transition-colors">
+                                <Navigation className="w-2.5 h-2.5 sm:w-3 h-3 text-[#E8391A]" />
+                                <span className="text-[10px] sm:text-[11px] font-bold text-gray-600">
+                                  {stop.schedule.travelTime}m travel
+                                </span>
+                                <div className="w-1 h-1 rounded-full bg-gray-300 mx-0.5 sm:mx-1" />
+                                <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                  {modePreferences[i] || 'Car'}
+                                </span>
+                              </div>
+                              
+                              {/* Simple Mode Switcher (Micro) */}
+                              <div className="flex items-center gap-1 opacity-0 group-hover/travel:opacity-100 transition-opacity">
+                                {['car', 'walk'].map(m => (
+                                  <button
+                                    key={m}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setModePreferences(prev => ({ ...prev, [i]: m }));
+                                    }}
+                                    className={cn(
+                                      "px-2 py-1 rounded-md text-[9px] font-black uppercase transition-all tracking-tighter",
+                                      (modePreferences[i] || 'car') === m 
+                                        ? "bg-[#E8391A] text-white" 
+                                        : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                                    )}
+                                  >
+                                    {m}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )
                     })}
 
-                    {/* ── Route Details (Transit) ── */}
-                    {daysForRoutes.length > 0 && (
-                      <div style={{ borderTop: '1px solid #F3F4F6', marginTop: 8 }}>
-                        <ItineraryRoutes
-                          days={daysForRoutes}
-                          onFocusLeg={(leg) => setFocusLeg(leg)}
-                        />
+                    {/* Final Finish Indicator */}
+                    {scheduledItinerary && scheduledItinerary[daysLabels[activeDay]] && (
+                      <div className="flex items-center gap-4 px-4 py-8">
+                        <div className="w-10 h-10 rounded-full bg-gray-900 border-4 border-white shadow-md flex items-center justify-center text-white">
+                          <CheckCircle2 className="w-5 h-5" />
+                        </div>
+                        <div className="flex flex-col">
+                           <span className="font-bold text-[15px] text-[#1a1a1a] tracking-tight">End of Day {activeDay + 1}</span>
+                           <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Relax and recharge</span>
+                        </div>
                       </div>
                     )}
                   </div>
+
+                  {/* ── Route Details (Transit) ── */}
+                  {daysForRoutes.length > 0 && (
+                    <div className="mt-4 border-t border-[#F3F4F6]">
+                      <ItineraryRoutes
+                        days={daysForRoutes}
+                        onFocusLeg={(leg) => setFocusLeg(leg)}
+                        modePreferences={modePreferences}
+                        onModeChange={(idx: number, mode: string) => setModePreferences(prev => ({ ...prev, [idx]: mode }))}
+                      />
+                    </div>
+                  )}
 
                   {/* ── Footer Export ── */}
                   <div style={{
@@ -543,7 +728,7 @@ export default function TripPlanner() {
                       onMouseLeave={e => { e.currentTarget.style.borderColor = '#E5E7EB'; e.currentTarget.style.color = '#374151' }}
                     >
                       <Download className="h-4 w-4" />
-                      {isExporting ? 'Exporting...' : 'Export as PDF'}
+                      {isExporting ? t('exporting') : t('exportAsPDF')}
                     </button>
                   </div>
                 </>
@@ -560,11 +745,11 @@ export default function TripPlanner() {
         >
           {panelOpen ? (
             <>
-              <MapIcon className="w-4 h-4" /> Map
+              <MapIcon className="w-4 h-4" /> {t('map')}
             </>
           ) : (
             <>
-              <List className="w-4 h-4" /> List
+              <List className="w-4 h-4" /> {t('list')}
             </>
           )}
         </button>
@@ -572,7 +757,12 @@ export default function TripPlanner() {
         {/* Map Area */}
         <div className="flex-1 relative w-full border-t md:border-t-0 border-[#E5E7EB]">
           <div className="absolute inset-0">
-            <InteractiveMap points={allStops as any} focusLeg={focusLeg} />
+            <InteractiveMap 
+              points={allStops} 
+              focusLeg={focusLeg}
+              routingLeg={null}
+              showMultiRoute={true}
+            />
           </div>
 
           {itinerary && (
@@ -587,9 +777,9 @@ export default function TripPlanner() {
                   <line x1="8" y1="2" x2="8" y2="6"/>
                   <line x1="3" y1="10" x2="21" y2="10"/>
                 </svg>
-                <span style={{ color: '#6B7280' }}>Duration</span>
+                <span style={{ color: '#6B7280' }}>{t('duration')}</span>
                 <span style={{ fontWeight: 600, color: '#111827' }}>
-                  {formData.days} days
+                  {formData.days} {t('days')}
                 </span>
               </div>
 
@@ -601,7 +791,7 @@ export default function TripPlanner() {
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
                   <circle cx="12" cy="10" r="3"/>
                 </svg>
-                <span style={{ color: '#6B7280' }}>Stops</span>
+                <span style={{ color: '#6B7280' }}>{t('stops')}</span>
                 <span style={{ fontWeight: 600, color: '#111827' }}>
                   {allStops.length}
                 </span>
@@ -615,7 +805,7 @@ export default function TripPlanner() {
                   <line x1="12" y1="1" x2="12" y2="23"/>
                   <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
                 </svg>
-                <span style={{ color: '#6B7280' }}>Budget</span>
+                <span style={{ color: '#6B7280' }}>{t('budget')}</span>
                 <span style={{ fontWeight: 600, color: '#111827' }}>
                   ₹{totalBudget.toLocaleString('en-IN')}
                 </span>
@@ -636,7 +826,7 @@ export default function TripPlanner() {
         </button>
       </div>
 
-      <PrintableItinerary city={formData.city} itinerary={itinerary} days={formData.days} />
+      <PrintableItinerary city={formData.city} itinerary={scheduledItinerary as any} days={formData.days} />
     </div>
   )
 }

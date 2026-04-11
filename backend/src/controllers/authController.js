@@ -68,20 +68,46 @@ const loginUser = async (req, res) => {
     try {
         const user = await User.findOne({ email });
 
-        if (user && (await user.matchPassword(password))) {
-            res.json({
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                token: generateToken(user._id),
-            });
-        } else {
-            res.status(401).json({ message: 'Invalid email or password' });
+        // Always same error for wrong email/password to prevent user enumeration
+        const INVALID_MSG = 'Invalid email or password';
+
+        if (!user) {
+            return res.status(401).json({ message: INVALID_MSG });
         }
+
+        // Check if account is locked
+        if (user.isLocked) {
+            const unlockTime = new Date(user.lockUntil).toLocaleTimeString('en-IN');
+            return res.status(423).json({
+                message: `Account temporarily locked due to too many failed attempts. Try again after ${unlockTime}.`
+            });
+        }
+
+        const isMatch = await user.matchPassword(password);
+
+        if (!isMatch) {
+            await user.incrementLoginAttempts();
+            const remaining = 5 - (user.loginAttempts + 1);
+            const warningMsg = remaining <= 2 && remaining > 0
+                ? `${INVALID_MSG}. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining before account lock.`
+                : INVALID_MSG;
+            return res.status(401).json({ message: warningMsg });
+        }
+
+        // Successful login — reset attempts
+        await user.resetLoginAttempts();
+
+        res.json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            token: generateToken(user._id),
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
+
 
 // @desc    Get user profile
 // @route   GET /api/auth/me

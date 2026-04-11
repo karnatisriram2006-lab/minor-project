@@ -101,6 +101,63 @@ const optimizeRoute = async (req, res) => {
     }
 };
 
+// @desc    Geocode a city name using Nominatim
+// @route   GET /api/route/geocode
+// @access  Public
+const geocodeCity = async (req, res) => {
+    const { q } = req.query;
+    if (!q) return res.status(400).json({ message: 'Query parameter "q" is required' });
+
+    try {
+        const response = await axios.get(
+            `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`,
+            {
+                headers: {
+                    'User-Agent': 'YatraMatrix-Node-Backend/1.0'
+                }
+            }
+        );
+
+        const data = response.data;
+        if (data && data.length > 0) {
+            return res.json({
+                lat: parseFloat(data[0].lat),
+                lng: parseFloat(data[0].lon),
+                displayName: data[0].display_name
+            });
+        }
+        res.status(404).json({ message: 'City not found' });
+    } catch (error) {
+        console.error('[Geocode Error]', error.message);
+        res.status(500).json({ message: 'Geocoding failed', error: error.message });
+    }
+};
+
+// @desc    Reverse geocode coordinates using Nominatim
+// @route   GET /api/route/reverse
+// @access  Public
+const reverseGeocode = async (req, res) => {
+    const { lat, lon } = req.query;
+    if (!lat || !lon) return res.status(400).json({ message: 'Parameters "lat" and "lon" are required' });
+
+    try {
+        const response = await axios.get(
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
+            {
+                headers: {
+                    'User-Agent': 'YatraMatrix-Node-Backend/1.0'
+                }
+            }
+        );
+        res.json(response.data);
+    } catch (error) {
+        console.error('[Reverse Geocode Error]', error.message);
+        res.status(500).json({ message: 'Reverse geocoding failed', error: error.message });
+    }
+};
+
 module.exports = {
-    optimizeRoute
+    optimizeRoute,
+    geocodeCity,
+    reverseGeocode
 };

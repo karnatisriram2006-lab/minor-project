@@ -1,5 +1,6 @@
 const SavedTrip = require('../models/SavedTrip');
 const Trip = require('../models/Trip');
+const User = require('../models/User');
 
 // @desc    Save an itinerary (legacy)
 // @route   POST /api/trips/save
@@ -119,7 +120,10 @@ const getUserTrips = async (req, res) => {
 
         if (process.env.MONGODB_URI) {
             const userId = req.user?._id;
-            const query = userId ? { userId } : {};
+            if (!userId) {
+                return res.status(401).json({ message: 'User not identified' });
+            }
+            const query = { userId };
             
             trips = await Trip.find(query)
                 .sort({ createdAt: -1 })
@@ -169,7 +173,25 @@ const getUserTrips = async (req, res) => {
 // @access  Public (if public) / Private (if owner)
 const getTrip = async (req, res) => {
     try {
-        const trip = await Trip.findById(req.params.id).lean();
+        let trip = await Trip.findById(req.params.id).lean();
+
+        if (!trip) {
+            const SavedTrip = require('../models/SavedTrip');
+            const legacy = await SavedTrip.findById(req.params.id).lean();
+            if (legacy) {
+                trip = {
+                    _id: legacy._id,
+                    title: legacy.city || 'Untitled Trip',
+                    destination: legacy.city,
+                    duration: legacy.itinerary?.length || 3,
+                    budget: legacy.budget || 'Medium',
+                    days: legacy.itinerary || [],
+                    createdAt: legacy.createdAt || new Date(),
+                    isPublic: false,
+                    userId: legacy.userId
+                };
+            }
+        }
 
         if (!trip) {
             return res.status(404).json({ message: 'Trip not found' });
@@ -211,13 +233,141 @@ const updateTrip = async (req, res) => {
 // @access  Private
 const deleteTrip = async (req, res) => {
     try {
-        const trip = await Trip.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
+        let trip = await Trip.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
 
         if (!trip) {
-            return res.status(404).json({ message: 'Trip not found' });
+            const SavedTrip = require('../models/SavedTrip');
+            trip = await SavedTrip.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
+        }
+
+        if (!trip) {
+            return res.status(404).json({ message: 'Trip not found or unauthorized' });
         }
 
         res.json({ message: 'Trip deleted' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get community trips (public)
+// @route   GET /api/trips/community
+// @access  Public
+const getCommunityTrips = async (req, res) => {
+    try {
+        const trips = await Trip.find({ isPublic: true })
+            .sort({ likesCount: -1, createdAt: -1 })
+            .limit(50)
+            .populate({ path: 'userId', select: 'name avatar' }) // Assuming userId ref is setup properly. Wait, Trip uses Mixed for userId. So this won't populate natively if it's Mixed. We'll handle it.
+            .lean();
+            
+        // If userId is string (firebaseUid), we need to manually fetch users
+        const uids = trips.map(t => t.userId).filter(id => typeof id === 'string');
+        const users = await User.find({ firebaseUid: { $in: uids } }).select('firebaseUid name avatar').lean();
+        const userMap = users.reduce((acc, u) => ({ ...acc, [u.firebaseUid]: u }), {});
+
+        const formattedTrips = trips.map(t => ({
+            ...t,
+            author: userMap[t.userId] ? { name: userMap[t.userId].name, avatar: userMap[t.userId].avatar } : { name: 'Anonymous Traveler', avatar: null }
+        }));
+
+        res.json({ trips: formattedTrips });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Toggle like on a trip
+// @route   POST /api/trips/:id/like
+// @access  Private
+const toggleLikeTrip = async (req, res) => {
+    try {
+        const trip = await Trip.findById(req.params.id);
+        if (!trip) return res.status(404).json({ message: 'Trip not found' });
+        
+        // Cannot like private trip unless owner
+        if (!trip.isPublic && trip.userId.toString() !== req.user.firebaseUid) {
+            return res.status(403).json({ message: 'Cannot like private trip' });
+        }
+
+        const isLiked = trip.likedBy.includes(req.user._id);
+
+        if (isLiked) {
+            trip.likedBy.pull(req.user._id);
+            trip.likesCount = Math.max(0, trip.likesCount - 1);
+        } else {
+            trip.likedBy.push(req.user._id);
+            trip.likesCount += 1;
+        }
+
+        await trip.save();
+        res.json({ success: true, likesCount: trip.likesCount, isLiked: !isLiked });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Toggle bookmark a trip
+// @route   POST /api/trips/:id/bookmark
+// @access  Private
+const toggleBookmarkTrip = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        const trip = await Trip.findById(req.params.id);
+        
+        if (!trip) return res.status(404).json({ message: 'Trip not found' });
+
+        const isBookmarked = user.bookmarkedTrips.includes(trip._id);
+
+        if (isBookmarked) {
+            user.bookmarkedTrips.pull(trip._id);
+        } else {
+            user.bookmarkedTrips.push(trip._id);
+        }
+
+        await user.save();
+        res.json({ success: true, isBookmarked: !isBookmarked });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Search public trips
+// @route   GET /api/trips/search?q=XYZ
+// @access  Public
+const searchTrips = async (req, res) => {
+    try {
+        const query = req.query.q || '';
+        
+        if (!query.trim()) {
+            return res.json({ trips: [] });
+        }
+
+        const regex = new RegExp(query, 'i');
+        
+        // Find public trips matching title or destination
+        const trips = await Trip.find({
+            isPublic: true,
+            $or: [
+                { title: { $regex: regex } },
+                { destination: { $regex: regex } }
+            ]
+        })
+        .sort({ likesCount: -1, createdAt: -1 })
+        .limit(20)
+        .lean();
+
+        // Populate users manually for Mixed userId via Firebase UID
+        const uids = trips.map(t => t.userId).filter(id => typeof id === 'string');
+        const users = await User.find({ firebaseUid: { $in: uids } }).select('firebaseUid name avatar').lean();
+        const userMap = users.reduce((acc, u) => ({ ...acc, [u.firebaseUid]: u }), {});
+
+        const formattedTrips = trips.map(t => ({
+            ...t,
+            author: userMap[t.userId] ? { name: userMap[t.userId].name, avatar: userMap[t.userId].avatar } : { name: 'Anonymous Traveler', avatar: null }
+        }));
+
+        res.json({ trips: formattedTrips });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -230,4 +380,8 @@ module.exports = {
     getTrip,
     updateTrip,
     deleteTrip,
+    getCommunityTrips,
+    toggleLikeTrip,
+    toggleBookmarkTrip,
+    searchTrips,
 };

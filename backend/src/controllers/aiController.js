@@ -21,7 +21,7 @@ const createItinerary = async (req, res) => {
 
     // ⬆ Bump this version whenever the itinerary format/geocoding changes.
     // Old cache entries are silently ignored and fresh geocoded results are stored.
-    const CACHE_VERSION = 'v3-linear-route';
+    const CACHE_VERSION = 'v4-strict-geocoding';
     const cacheKey = `itinerary-${CACHE_VERSION}-${city.toLowerCase()}-${days}-${budget}-${interests}`;
 
     try {
