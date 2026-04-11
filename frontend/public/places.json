@@ -1,0 +1,32 @@
+[
+  {
+    "id": "goa-1",
+    "name": "Baga Beach",
+    "city": "Goa",
+    "category": "beach",
+    "lat": 15.5527,
+    "lon": 73.7553,
+    "address": "Goa, India",
+    "distance": 0
+  },
+  {
+    "id": "jai-1",
+    "name": "Amber Fort",
+    "city": "Jaipur",
+    "category": "monument",
+    "lat": 26.9855,
+    "lon": 75.8513,
+    "address": "Jaipur, India",
+    "distance": 0
+  },
+  {
+    "id": "ker-1",
+    "name": "Alleppey Backwaters",
+    "city": "Kerala",
+    "category": "monument",
+    "lat": 9.4981,
+    "lon": 76.3388,
+    "address": "Alappuzha, Kerala, India",
+    "distance": 0
+  }
+]

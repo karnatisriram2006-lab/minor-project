@@ -142,6 +142,33 @@ function MapController({
 
 function ZoomControls() {
   const map = useMap();
+  const [isReady, setIsReady] = React.useState(false);
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    // Check if mobile
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  React.useEffect(() => {
+    // Ensure map is ready before showing controls
+    const onLoad = () => setIsReady(true);
+    if (map) {
+      map.on("load", onLoad);
+    }
+    return () => {
+      if (map) map.off("load", onLoad);
+    };
+  }, [map]);
+
+  // Hide on mobile or when not ready
+  if (isMobile || !isReady) {
+    return null;
+  }
+
   return (
     <div
       style={{
@@ -155,6 +182,9 @@ function ZoomControls() {
         overflow: "hidden",
         boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
         gap: 5,
+        opacity: isReady ? 1 : 0,
+        pointerEvents: isReady ? "auto" : "none",
+        transition: "opacity 0.3s ease",
       }}
     >
       <button
@@ -162,6 +192,8 @@ function ZoomControls() {
         style={{
           width: 40,
           height: 40,
+          background: "white",
+          border: "none",
           borderRadius: "50%",
           cursor: "pointer",
           fontSize: 22,

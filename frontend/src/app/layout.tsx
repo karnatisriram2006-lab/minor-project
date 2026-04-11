@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import Navbar from "@/components/Navbar";
+import OfflineBanner from "@/components/OfflineBanner";
 import Sidebar from "@/components/Sidebar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { cn } from "@/lib/utils";
@@ -12,6 +13,7 @@ import { PageTransition } from "@/components/PageTransition";
 import PwaRegistrar from "@/components/PwaRegistrar";
 import { GlobalErrorBoundary } from "@/components/GlobalErrorBoundary";
 import { LanguageProvider } from "@/context/LanguageContext";
+import { UpdateAvailableBanner } from "@/components/OfflineComponents";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-serif" });
@@ -65,6 +67,8 @@ export default function RootLayout({
       <body suppressHydrationWarning className={cn(
         "min-h-screen bg-[#F7F7F7] dark:bg-[#0F0F0F] text-[#484848] dark:text-[#E0E0E0] antialiased selection:bg-[#FF5A5F]/10 overflow-x-hidden"
       )}>
+        <OfflineBanner />
+        <UpdateAvailableBanner />
         <GlobalErrorBoundary>
           <AuthProvider>
             <ThemeProvider
