@@ -109,10 +109,10 @@ export default function SearchTypeahead({
       try {
         const [tripsRes, usersRes] = await Promise.all([
           fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/trips/search?q=${query}`,
+            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/trips/search?q=${query}`,
           ),
           fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/profile/search?q=${query}`,
+            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/profile/search?q=${query}`,
           ),
         ]);
 
