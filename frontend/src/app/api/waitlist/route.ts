@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Invalid email' }, { status: 400 })
     }
 
-    const backendUrl = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+    const backendUrl = (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000').replace(/\/api$/, '');
     const res = await fetch(`${backendUrl}/api/waitlist`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

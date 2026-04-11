@@ -26,8 +26,8 @@ const LOCAL_COORDS: Record<string, { lat: number; lng: number; displayName?: str
   Bangalore: { lat: 12.9716, lng: 77.5946, displayName: 'Bengaluru' },
 };
 
-const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-const apiUrl = rawApiUrl.endsWith('/') ? rawApiUrl.slice(0, -1) : rawApiUrl;
+const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const apiUrl = (rawApiUrl.endsWith('/') ? rawApiUrl.slice(0, -1) : rawApiUrl) + '/api';
 
 export const geocodeCity = async (city: string): Promise<GeocodeResult | null> => {
   if (!city) return null
