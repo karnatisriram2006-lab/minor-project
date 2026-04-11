@@ -2,11 +2,11 @@ const rateLimit = require('express-rate-limit');
 
 /**
  * Global limiter — applied to all routes as a baseline DDoS guard.
- * 200 requests per 15 minutes per IP.
+ * 1000 requests per 15 minutes per IP (aggressive, still prevents DDoS).
  */
 const globalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 200,
+    max: 1000,
     standardHeaders: true,
     legacyHeaders: false,
     message: {
