@@ -145,7 +145,7 @@ export default function TripPlanner() {
 
   // Load cached itinerary explicitly when opened from offline page.
   useEffect(() => {
-    if (!loadOffline || itinerary || isStreaming) return;
+    if (!loadOffline || itinerary) return;
     try {
       const cached = localStorage.getItem("offline-itinerary");
       if (!cached) return;
@@ -163,7 +163,7 @@ export default function TripPlanner() {
     } catch {
       // ignore invalid cache
     }
-  }, [loadOffline, itinerary, isStreaming]);
+  }, [loadOffline, itinerary]);
 
   // Load public trip on mount bypass auth if available
   useEffect(() => {
