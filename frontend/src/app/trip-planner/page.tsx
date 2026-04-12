@@ -118,6 +118,7 @@ export default function TripPlanner() {
   const searchParams = useSearchParams();
   const loadId = searchParams.get("load");
   const isNewTrip = searchParams.get("new") === "true";
+  const loadOffline = searchParams.get("offline") === "true";
 
   // Handle ?new=true — reset everything to show fresh form
   useEffect(() => {
@@ -141,6 +142,28 @@ export default function TripPlanner() {
       setPanelOpen(true);
     }
   }, [isNewTrip]);
+
+  // Load cached itinerary explicitly when opened from offline page.
+  useEffect(() => {
+    if (!loadOffline || itinerary || isStreaming) return;
+    try {
+      const cached = localStorage.getItem("offline-itinerary");
+      if (!cached) return;
+      const parsed = JSON.parse(cached);
+      if (!parsed || typeof parsed !== "object") return;
+      const dayCount = Object.keys(parsed).length;
+      if (dayCount === 0) return;
+
+      setItinerary(parsed);
+      setFormData((prev) => ({
+        ...prev,
+        days: String(dayCount),
+      }));
+      setPanelOpen(true);
+    } catch {
+      // ignore invalid cache
+    }
+  }, [loadOffline, itinerary, isStreaming]);
 
   // Load public trip on mount bypass auth if available
   useEffect(() => {

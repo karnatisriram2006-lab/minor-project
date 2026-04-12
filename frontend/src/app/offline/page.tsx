@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react"
 import { motion } from "framer-motion"
 import { WifiOff, Download, Map, BookOpen, FileText, CheckCircle2, Smartphone } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 const offlineFeatures = [
   {
@@ -36,23 +37,102 @@ type OfflineTrip = {
   source: "saved" | "cache" | "itinerary"
 }
 
+type OfflineStop = {
+  id: string
+  name: string
+  time?: string
+  lat?: number
+  lng?: number
+}
+
+type OfflineDay = {
+  day: string
+  stops: OfflineStop[]
+}
+
+type OfflineTripDetail = {
+  id: string
+  days: OfflineDay[]
+}
+
+const CITY_PACK_INDEX_KEY = "yatra_city_pack_index"
+
 export default function OfflinePage() {
   const [downloading, setDownloading] = useState<string | null>(null)
+  const [downloadedPacks, setDownloadedPacks] = useState<Record<string, { places: number; downloadedAt: string }>>({})
+  const [downloadMessage, setDownloadMessage] = useState("")
   const [offlineTrips, setOfflineTrips] = useState<OfflineTrip[]>([])
   const [offlineStopsCount, setOfflineStopsCount] = useState(0)
+  const [offlineDays, setOfflineDays] = useState<OfflineDay[]>([])
+  const [offlineTripDetails, setOfflineTripDetails] = useState<OfflineTripDetail[]>([])
 
-  const handleDownload = (city: string) => {
+  const handleDownload = async (city: string) => {
     setDownloading(city)
-    setTimeout(() => setDownloading(null), 2000)
+    setDownloadMessage("")
+    try {
+      const placesRes = await fetch("/places.json")
+      const places = placesRes.ok ? await placesRes.json() : []
+      const cityPlaces = Array.isArray(places)
+        ? places.filter((p: any) => String(p?.city || "").toLowerCase() === city.toLowerCase())
+        : []
+
+      const packPayload = {
+        city,
+        downloadedAt: new Date().toISOString(),
+        places: cityPlaces,
+      }
+      localStorage.setItem(`yatra_city_pack_${city.toLowerCase()}`, JSON.stringify(packPayload))
+
+      const currentIndex = JSON.parse(localStorage.getItem(CITY_PACK_INDEX_KEY) || "{}")
+      currentIndex[city] = {
+        places: cityPlaces.length,
+        downloadedAt: packPayload.downloadedAt,
+      }
+      localStorage.setItem(CITY_PACK_INDEX_KEY, JSON.stringify(currentIndex))
+      setDownloadedPacks(currentIndex)
+
+      if ("caches" in window) {
+        const cache = await caches.open("yatra-city-packs-v1")
+        const assetsToCache = [
+          "/offline",
+          "/trip-planner?offline=true",
+          "/near-me",
+          "/map",
+          "/places.json",
+          "/leaflet/marker-icon.png",
+          "/leaflet/marker-icon-2x.png",
+          "/leaflet/marker-shadow.png",
+        ]
+        await Promise.all(assetsToCache.map((url) => cache.add(url).catch(() => null)))
+      }
+
+      setDownloadMessage(`${city} pack downloaded (${cityPlaces.length} places cached).`)
+    } catch {
+      setDownloadMessage(`Could not download ${city} pack. Please try again.`)
+    } finally {
+      setDownloading(null)
+    }
   }
 
   const cities = ["Goa", "Jaipur", "Kerala", "Delhi", "Agra", "Varanasi"]
 
   useEffect(() => {
     try {
+      const existingIndex = JSON.parse(localStorage.getItem(CITY_PACK_INDEX_KEY) || "{}")
+      setDownloadedPacks(existingIndex)
       const queued = JSON.parse(localStorage.getItem("offline-trips") || "[]")
       const cached = JSON.parse(localStorage.getItem("last_trips_cache") || "[]")
       const itinerary = JSON.parse(localStorage.getItem("offline-itinerary") || "null")
+      const normalizeDays = (rawDays: any) => {
+        if (Array.isArray(rawDays)) return rawDays
+        if (rawDays && typeof rawDays === "object") {
+          return Object.entries(rawDays).map(([dayKey, activities]) => ({
+            day: Number(String(dayKey).replace(/\D/g, "")) || dayKey,
+            activities: Array.isArray(activities) ? activities : [],
+          }))
+        }
+        return []
+      }
 
       const normalizedQueued: OfflineTrip[] = (queued || []).map((trip: any, idx: number) => ({
         id: `queued-${idx}`,
@@ -61,6 +141,22 @@ export default function OfflinePage() {
         days: Number(trip?.duration || trip?.days?.length || 0) || 0,
         source: "saved",
       }))
+      const queuedDetails: OfflineTripDetail[] = (queued || []).map((trip: any, idx: number) => {
+        const rawDays = normalizeDays(trip?.days)
+        const days = rawDays.map((d: any, dayIdx: number) => ({
+          day: `Day ${d?.day ?? dayIdx + 1}`,
+          stops: Array.isArray(d?.activities)
+            ? d.activities.map((a: any, stopIdx: number) => ({
+                id: String(a?._id || a?.id || `queued-${idx}-d${dayIdx}-s${stopIdx}`),
+                name: a?.name || "Unnamed stop",
+                time: a?.time,
+                lat: Number.isFinite(Number(a?.lat)) ? Number(a?.lat) : undefined,
+                lng: Number.isFinite(Number(a?.lng)) ? Number(a?.lng) : undefined,
+              }))
+            : [],
+        }))
+        return { id: `queued-${idx}`, days }
+      })
 
       const normalizedCached: OfflineTrip[] = (cached || []).map((trip: any, idx: number) => ({
         id: String(trip?._id || `cache-${idx}`),
@@ -69,6 +165,23 @@ export default function OfflinePage() {
         days: Number(trip?.duration || trip?.days?.length || 0) || 0,
         source: "cache",
       }))
+      const cachedDetails: OfflineTripDetail[] = (cached || []).map((trip: any, idx: number) => {
+        const id = String(trip?._id || `cache-${idx}`)
+        const rawDays = normalizeDays(trip?.days)
+        const days = rawDays.map((d: any, dayIdx: number) => ({
+          day: `Day ${d?.day ?? dayIdx + 1}`,
+          stops: Array.isArray(d?.activities)
+            ? d.activities.map((a: any, stopIdx: number) => ({
+                id: String(a?._id || a?.id || `${id}-d${dayIdx}-s${stopIdx}`),
+                name: a?.name || "Unnamed stop",
+                time: a?.time,
+                lat: Number.isFinite(Number(a?.lat)) ? Number(a?.lat) : undefined,
+                lng: Number.isFinite(Number(a?.lng)) ? Number(a?.lng) : undefined,
+              }))
+            : [],
+        }))
+        return { id, days }
+      })
 
       const itineraryDays = itinerary && typeof itinerary === "object" ? Object.keys(itinerary).length : 0
       const normalizedItinerary: OfflineTrip[] =
@@ -79,6 +192,24 @@ export default function OfflinePage() {
               destination: "Last planned route",
               days: itineraryDays,
               source: "itinerary",
+            }]
+          : []
+      const itineraryDetail: OfflineTripDetail[] =
+        itinerary && typeof itinerary === "object"
+          ? [{
+              id: "offline-itinerary",
+              days: Object.entries(itinerary).map(([dayKey, stops]) => ({
+                day: dayKey,
+                stops: Array.isArray(stops)
+                  ? stops.map((s: any, idx: number) => ({
+                      id: String(s?.id ?? `${dayKey}-${idx}`),
+                      name: s?.name || "Unnamed stop",
+                      time: s?.time || s?.schedule?.departure || s?.schedule?.arrival,
+                      lat: Number.isFinite(Number(s?.lat)) ? Number(s?.lat) : undefined,
+                      lng: Number.isFinite(Number(s?.lng)) ? Number(s?.lng) : undefined,
+                    }))
+                  : [],
+              })),
             }]
           : []
 
@@ -93,9 +224,33 @@ export default function OfflinePage() {
         ? Object.values(itinerary).reduce((sum: number, day: any) => sum + (Array.isArray(day) ? day.length : 0), 0)
         : 0
       setOfflineStopsCount(totalStops)
+
+      const parsedDays: OfflineDay[] =
+        itinerary && typeof itinerary === "object"
+          ? Object.entries(itinerary).map(([dayKey, stops]) => ({
+              day: dayKey,
+              stops: Array.isArray(stops)
+                ? stops.map((s: any, idx: number) => ({
+                    id: String(s?.id ?? `${dayKey}-${idx}`),
+                    name: s?.name || "Unnamed stop",
+                    time: s?.time || s?.schedule?.departure || s?.schedule?.arrival,
+                    lat: Number.isFinite(Number(s?.lat)) ? Number(s?.lat) : undefined,
+                    lng: Number.isFinite(Number(s?.lng)) ? Number(s?.lng) : undefined,
+                  }))
+                : [],
+            }))
+          : []
+      setOfflineDays(parsedDays)
+      const mergedDetails = [...queuedDetails, ...cachedDetails, ...itineraryDetail].filter(
+        (d, idx, arr) => arr.findIndex((x) => x.id === d.id) === idx,
+      )
+      setOfflineTripDetails(mergedDetails)
     } catch {
+      setDownloadedPacks({})
       setOfflineTrips([])
       setOfflineStopsCount(0)
+      setOfflineDays([])
+      setOfflineTripDetails([])
     }
   }, [])
 
@@ -152,17 +307,79 @@ export default function OfflinePage() {
           </div>
           <div className="p-6">
             {offlineTrips.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {offlineTrips.map((trip) => (
-                  <div key={trip.id} className="rounded-xl border border-[#EBEBEB] bg-[#FAFAFA] p-4 space-y-2">
-                    <p className="text-sm font-bold text-[#484848]">{trip.title}</p>
-                    <p className="text-xs text-[#767676]">{trip.destination}</p>
-                    <div className="flex items-center gap-2 text-[11px] font-semibold text-[#00A699]">
-                      <span className="px-2 py-0.5 rounded-md bg-[#00A699]/10 border border-[#00A699]/20">{trip.days || 1} day plan</span>
-                      <span className="px-2 py-0.5 rounded-md bg-[#FF5A5F]/10 border border-[#FF5A5F]/20 uppercase">{trip.source}</span>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {offlineTrips.map((trip) => (
+                    <div key={trip.id} className="rounded-xl border border-[#EBEBEB] bg-[#FAFAFA] p-4 space-y-2">
+                      <p className="text-sm font-bold text-[#484848]">{trip.title}</p>
+                      <p className="text-xs text-[#767676]">{trip.destination}</p>
+                      <div className="flex items-center gap-2 text-[11px] font-semibold text-[#00A699]">
+                        <span className="px-2 py-0.5 rounded-md bg-[#00A699]/10 border border-[#00A699]/20">{trip.days || 1} day plan</span>
+                        <span className="px-2 py-0.5 rounded-md bg-[#FF5A5F]/10 border border-[#FF5A5F]/20 uppercase">{trip.source}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {offlineTripDetails.length > 0 && (
+                  <div className="rounded-xl border border-[#EBEBEB] bg-[#FAFAFA] p-4 space-y-3">
+                    <p className="text-sm font-bold text-[#484848]">Cached trip details</p>
+                    <div className="space-y-3 max-h-72 overflow-auto pr-1">
+                      {offlineTrips.map((trip) => {
+                        const detail = offlineTripDetails.find((d) => d.id === trip.id)
+                        if (!detail || detail.days.length === 0) return null
+                        return (
+                          <div key={`detail-${trip.id}`} className="rounded-lg border border-[#E9E9E9] bg-white p-3 space-y-2">
+                            <p className="text-xs font-bold text-[#484848]">{trip.title}</p>
+                            {detail.days.map((day) => (
+                              <div key={`${trip.id}-${day.day}`} className="space-y-1.5">
+                                <p className="text-[11px] font-bold uppercase tracking-wide text-[#767676]">{day.day}</p>
+                                {day.stops.slice(0, 5).map((stop) => (
+                                  <div key={stop.id} className="flex items-center justify-between gap-2 text-xs">
+                                    <span className="font-medium text-[#484848]">{stop.name}</span>
+                                    <span className="text-[#767676]">{stop.time || "--:--"}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            ))}
+                          </div>
+                        )
+                      })}
                     </div>
                   </div>
-                ))}
+                )}
+
+                {offlineDays.length > 0 && (
+                  <div className="rounded-xl border border-[#EBEBEB] bg-[#FAFAFA] p-4 space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-sm font-bold text-[#484848]">Offline itinerary details</p>
+                      <Link href="/trip-planner?offline=true">
+                        <Button size="sm" className="h-8 px-3 text-xs rounded-lg">
+                          Open in Planner
+                        </Button>
+                      </Link>
+                    </div>
+                    <div className="space-y-3 max-h-64 overflow-auto pr-1">
+                      {offlineDays.map((day) => (
+                        <div key={day.day} className="rounded-lg border border-[#E9E9E9] bg-white p-3">
+                          <p className="text-xs font-bold uppercase tracking-wide text-[#767676]">{day.day}</p>
+                          <div className="mt-2 space-y-1.5">
+                            {day.stops.length > 0 ? (
+                              day.stops.map((stop) => (
+                                <div key={stop.id} className="flex items-center justify-between gap-2 text-xs">
+                                  <span className="font-medium text-[#484848]">{stop.name}</span>
+                                  <span className="text-[#767676]">{stop.time || "--:--"}</span>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-xs text-[#999]">No stops cached for this day.</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="rounded-xl border border-dashed border-[#EBEBEB] bg-[#FAFAFA] p-5 text-xs text-[#767676]">
@@ -182,6 +399,7 @@ export default function OfflinePage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
               {cities.map((city) => {
                 const isDownloading = downloading === city
+                const isDownloaded = !!downloadedPacks[city]
                 return (
                   <Button
                     key={city}
@@ -197,7 +415,7 @@ export default function OfflinePage() {
                       </>
                     ) : (
                       <>
-                        <Download className="h-4 w-4" />
+                        {isDownloaded ? <CheckCircle2 className="h-4 w-4 text-[#00A699]" /> : <Download className="h-4 w-4" />}
                         <span>{city}</span>
                       </>
                     )}
@@ -205,6 +423,9 @@ export default function OfflinePage() {
                 )
               })}
             </div>
+            {downloadMessage && (
+              <p className="text-xs text-[#767676] mt-3">{downloadMessage}</p>
+            )}
           </div>
         </div>
 
