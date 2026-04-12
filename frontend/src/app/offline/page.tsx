@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { motion } from "framer-motion"
 import { WifiOff, Download, Map, BookOpen, FileText, CheckCircle2, Smartphone } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -28,8 +28,18 @@ const offlineFeatures = [
   }
 ]
 
+type OfflineTrip = {
+  id: string
+  title: string
+  destination: string
+  days: number
+  source: "saved" | "cache" | "itinerary"
+}
+
 export default function OfflinePage() {
   const [downloading, setDownloading] = useState<string | null>(null)
+  const [offlineTrips, setOfflineTrips] = useState<OfflineTrip[]>([])
+  const [offlineStopsCount, setOfflineStopsCount] = useState(0)
 
   const handleDownload = (city: string) => {
     setDownloading(city)
@@ -37,6 +47,59 @@ export default function OfflinePage() {
   }
 
   const cities = ["Goa", "Jaipur", "Kerala", "Delhi", "Agra", "Varanasi"]
+
+  useEffect(() => {
+    try {
+      const queued = JSON.parse(localStorage.getItem("offline-trips") || "[]")
+      const cached = JSON.parse(localStorage.getItem("last_trips_cache") || "[]")
+      const itinerary = JSON.parse(localStorage.getItem("offline-itinerary") || "null")
+
+      const normalizedQueued: OfflineTrip[] = (queued || []).map((trip: any, idx: number) => ({
+        id: `queued-${idx}`,
+        title: trip?.title || trip?.destination || "Saved trip",
+        destination: trip?.destination || trip?.title || "Unknown destination",
+        days: Number(trip?.duration || trip?.days?.length || 0) || 0,
+        source: "saved",
+      }))
+
+      const normalizedCached: OfflineTrip[] = (cached || []).map((trip: any, idx: number) => ({
+        id: String(trip?._id || `cache-${idx}`),
+        title: trip?.title || trip?.destination || "Saved trip",
+        destination: trip?.destination || trip?.city || "Unknown destination",
+        days: Number(trip?.duration || trip?.days?.length || 0) || 0,
+        source: "cache",
+      }))
+
+      const itineraryDays = itinerary && typeof itinerary === "object" ? Object.keys(itinerary).length : 0
+      const normalizedItinerary: OfflineTrip[] =
+        itineraryDays > 0
+          ? [{
+              id: "offline-itinerary",
+              title: "Offline itinerary",
+              destination: "Last planned route",
+              days: itineraryDays,
+              source: "itinerary",
+            }]
+          : []
+
+      const merged = [...normalizedQueued, ...normalizedCached, ...normalizedItinerary]
+      const deduped = merged.filter((trip, index, arr) => {
+        return arr.findIndex((t) => t.id === trip.id || (t.title === trip.title && t.destination === trip.destination)) === index
+      })
+
+      setOfflineTrips(deduped)
+
+      const totalStops = itinerary && typeof itinerary === "object"
+        ? Object.values(itinerary).reduce((sum: number, day: any) => sum + (Array.isArray(day) ? day.length : 0), 0)
+        : 0
+      setOfflineStopsCount(totalStops)
+    } catch {
+      setOfflineTrips([])
+      setOfflineStopsCount(0)
+    }
+  }, [])
+
+  const hasOfflineData = useMemo(() => offlineTrips.length > 0 || offlineStopsCount > 0, [offlineTrips, offlineStopsCount])
 
   return (
     <div className="min-h-screen bg-[#F7F7F7] text-[#484848] pt-6 pb-24 sm:pt-8 sm:pb-12 font-sans">
@@ -75,6 +138,38 @@ export default function OfflinePage() {
               <p className="text-xs text-[#767676] leading-relaxed">{f.desc}</p>
             </motion.div>
           ))}
+        </div>
+
+        {/* Saved Offline Data */}
+        <div className="bg-white rounded-2xl border border-[#EBEBEB] shadow-sm overflow-hidden">
+          <div className="px-6 py-5 border-b border-[#EBEBEB]">
+            <h2 className="text-base font-bold text-[#484848] tracking-tight">Saved trip plans on this device</h2>
+            <p className="text-xs text-[#767676] mt-0.5">
+              {hasOfflineData
+                ? `Found ${offlineTrips.length} saved trip entries${offlineStopsCount ? ` and ${offlineStopsCount} mapped stops` : ""}.`
+                : "No offline trip data found yet. Open planner while online to cache your routes and stops."}
+            </p>
+          </div>
+          <div className="p-6">
+            {offlineTrips.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {offlineTrips.map((trip) => (
+                  <div key={trip.id} className="rounded-xl border border-[#EBEBEB] bg-[#FAFAFA] p-4 space-y-2">
+                    <p className="text-sm font-bold text-[#484848]">{trip.title}</p>
+                    <p className="text-xs text-[#767676]">{trip.destination}</p>
+                    <div className="flex items-center gap-2 text-[11px] font-semibold text-[#00A699]">
+                      <span className="px-2 py-0.5 rounded-md bg-[#00A699]/10 border border-[#00A699]/20">{trip.days || 1} day plan</span>
+                      <span className="px-2 py-0.5 rounded-md bg-[#FF5A5F]/10 border border-[#FF5A5F]/20 uppercase">{trip.source}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-[#EBEBEB] bg-[#FAFAFA] p-5 text-xs text-[#767676]">
+                You can still browse previously opened pages and cached assets, but no user trip data has been cached yet.
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Download city packs */}

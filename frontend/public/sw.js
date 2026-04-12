@@ -2,7 +2,7 @@
 // Strategy: Cache-First for static assets, Network-First for API/pages
 // Bump CACHE_VERSION whenever assets change to force refresh.
 
-const CACHE_VERSION = 'yatra-v3';
+const CACHE_VERSION = 'yatra-v4';
 const STATIC_CACHE  = `${CACHE_VERSION}-static`;
 const API_CACHE     = `${CACHE_VERSION}-api`;
 
@@ -82,7 +82,12 @@ self.addEventListener('fetch', (event) => {
           caches.open(STATIC_CACHE).then((c) => c.put(request, clone));
           return response;
         })
-        .catch(() => caches.match('/offline') || caches.match('/'))
+        .catch(async () => {
+          const cachedPage =
+            (await caches.match(request)) ||
+            (await caches.match(url.pathname));
+          return cachedPage || (await caches.match('/offline')) || (await caches.match('/'));
+        })
     );
     return;
   }
