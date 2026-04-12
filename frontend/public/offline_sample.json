@@ -1,0 +1,11 @@
+{
+  "Day 1": [
+    { "id": "amberfort-1", "name": "Amber Fort", "lat": 26.9855, "lng": 75.8513, "category": "monument", "description": "Hilltop fort with scenic views" },
+    { "id": "hawamahal-1", "name": "Hawa Mahal", "lat": 26.9239, "lng": 75.8267, "category": "monument", "description": "Palace of Winds" },
+    { "id": "jalmahal-1", "name": "Jal Mahal", "lat": 26.9531, "lng": 75.8493, "category": "monument", "description": "Water palace" }
+  ],
+  "Day 2": [
+    { "id": "citypalace-1", "name": "City Palace Jaipur", "lat": 26.92, "lng": 75.83, "category": "monument", "description": "Royal residence" },
+    { "id": "jantar-1", "name": "Jantar Mihar Palace", "lat": 26.988, "lng": 75.857, "category": "monument", "description": "Observational astronomical site" }
+  ]
+}

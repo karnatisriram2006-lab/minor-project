@@ -31,6 +31,10 @@ import { generateItinerarySchedule, ScheduledStop } from "@/utils/scheduler";
 import { fetchRoute } from "@/services/routeService";
 import { ItineraryForm } from "@/components/ItineraryForm";
 import { ItineraryRoutes } from "@/components/ItineraryRoutes";
+const ItineraryRoutesDynamic = dynamic(() => import('@/components/ItineraryRoutes').then((mod) => {
+  const c = (mod as any).default ?? (mod as any).ItineraryRoutes;
+  return typeof c === 'function' ? c : (() => { if (typeof console !== 'undefined') console.warn('[ItineraryRoutes] Invalid export; rendering nothing.'); return null; });
+}), { ssr: false, loading: () => <div className="h-8 w-full bg-gray-100 animate-pulse" /> });
 import { GenerationProgress } from "@/components/AI/GenerationProgress";
 import { useItineraryStream } from "@/hooks/useItineraryStream";
 import { imageService } from "@/services/imageService";
@@ -81,6 +85,7 @@ export default function TripPlanner() {
   const [activeDay, setActiveDay] = useState(0);
   const [activeStop, setActiveStop] = useState<string | number | null>(null);
   const [panelOpen, setPanelOpen] = useState(true);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [saveStatus, setSaveStatus] = useState<
     "idle" | "saving" | "saved" | "error"
   >("idle");
@@ -88,12 +93,8 @@ export default function TripPlanner() {
     from: [number, number];
     to: [number, number];
   } | null>(null);
-  const [formData, setFormData] = useState({
-    city: "Jaipur",
-    days: "3",
-    budget: "Luxury",
-    startTime: "09:00",
-  });
+  const INITIAL_FORM = { city: "Jaipur", days: "3", budget: "Luxury", startTime: "09:00" } as const
+  const [formData, setFormData] = useState(INITIAL_FORM);
   const [modePreferences, setModePreferences] = useState<
     Record<number, string>
   >({});
@@ -101,9 +102,45 @@ export default function TripPlanner() {
   const [isSyncingRoutes, setIsSyncingRoutes] = useState(false);
   const [savedTripId, setSavedTripId] = useState<string | null>(null);
   const [budgetSummary, setBudgetSummary] = useState<any>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const updateViewport = () => setIsMobileViewport(window.innerWidth < 768);
+    updateViewport();
+    window.addEventListener("resize", updateViewport);
+    return () => window.removeEventListener("resize", updateViewport);
+  }, []);
 
   const searchParams = useSearchParams();
   const loadId = searchParams.get("load");
+  const isNewTrip = searchParams.get("new") === "true";
+
+  // Handle ?new=true — reset everything to show fresh form
+  useEffect(() => {
+    if (isNewTrip) {
+      console.log("[TRIP-PLANNER] Resetting for new trip");
+      setItinerary(null);
+      setFormData({
+        city: "Jaipur",
+        days: "3",
+        budget: "Luxury",
+        startTime: "09:00",
+      });
+      setActiveDay(0);
+      setActiveStop(null);
+      setSaveStatus("idle");
+      setModePreferences({});
+      setLegDurations({});
+      setSavedTripId(null);
+      setBudgetSummary(null);
+      localStorage.removeItem("offline-itinerary");
+      setPanelOpen(true);
+    }
+  }, [isNewTrip]);
 
   // Load public trip on mount bypass auth if available
   useEffect(() => {
@@ -159,17 +196,7 @@ export default function TripPlanner() {
       fetchPublicTrip();
     }
   }, [loadId]);
-  // Load offline itinerary if present
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem("offline-itinerary");
-      if (stored && !itinerary) {
-        setItinerary(JSON.parse(stored));
-      }
-    } catch {
-      // ignore parse errors
-    }
-  }, []);
+  // Do not auto-load offline itinerary on initial load to prioritize showing the form.
 
   // Persist itinerary to localStorage for offline use
   useEffect(() => {
@@ -278,6 +305,17 @@ export default function TripPlanner() {
       interests: genData.interests || "general",
     });
   };
+  const loadOfflineSampleItinerary = async () => {
+    try {
+      const r = await fetch('/offline_sample.json')
+      if (r.ok) {
+        const data = await r.json()
+        setItinerary(data)
+      }
+    } catch {
+      // ignore
+    }
+  }
 
   // 1. Sync Leg Durations when itinerary changes (Debounced)
   useEffect(() => {
@@ -543,6 +581,40 @@ export default function TripPlanner() {
     }
   };
 
+  const handleNewTrip = () => {
+    // Reset all state
+    setItinerary(null);
+    setFormData({
+      city: "Jaipur",
+      days: "3",
+      budget: "Luxury",
+      startTime: "09:00",
+    });
+    setActiveDay(0);
+    setActiveStop(null);
+    setSaveStatus("idle");
+    setModePreferences({});
+    setLegDurations({});
+    setSavedTripId(null);
+    setBudgetSummary(null);
+    // Clear localStorage
+    localStorage.removeItem("offline-itinerary");
+    setPanelOpen(true);
+  };
+
+  const shouldRenderMap = !isMobileViewport || !panelOpen;
+
+  if (!mounted) {
+    return (
+      <div className="flex flex-col h-[calc(100vh-4rem)] sm:h-[calc(100vh-5rem)] overflow-hidden bg-white text-[#1a1a1a]">
+        <div className="trip-planner-ui flex flex-col md:flex-row h-full relative">
+          <div className="w-full h-full md:w-[380px] bg-white" />
+          <div className="flex-1 bg-[#f5f3ef]" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] sm:h-[calc(100vh-5rem)] overflow-hidden print:h-auto print:overflow-visible bg-white text-[#1a1a1a]">
       <div className="trip-planner-ui flex flex-col md:flex-row h-full relative print:block print:h-auto print:overflow-visible">
@@ -564,14 +636,40 @@ export default function TripPlanner() {
                     onGenerate={handleGenerate}
                     loading={isStreaming}
                   />
+                  {streamError && (
+                    <button
+                      onClick={loadOfflineSampleItinerary}
+                      className="mt-2 w-full inline-flex items-center justify-center px-4 py-2 border border-[#E5E7EB] rounded-md bg-white hover:bg-[#F3F4F6]"
+                    >
+                      Load sample itinerary
+                    </button>
+                  )}
                   {/* Live generation progress */}
                   {(isStreaming || streamError) && (
-                    <GenerationProgress
-                      progress={progress}
-                      isStreaming={isStreaming}
-                      error={streamError}
-                      city={formData.city}
-                    />
+                    <>
+                      <GenerationProgress
+                        progress={progress}
+                        isStreaming={isStreaming}
+                        error={streamError}
+                        city={formData.city}
+                      />
+                      {streamError && (
+                        <button
+                          onClick={() => {
+                            // Retry generation with the same params
+                            startStream({
+                              city: formData.city,
+                              days: parseInt(formData.days) || 3,
+                              budget: (formData.budget || "medium").toLowerCase(),
+                              interests: "general",
+                            })
+                          }}
+                          className="mt-2 w-full inline-flex items-center justify-center px-4 py-2 border border-[#E5E7EB] rounded-md bg-white hover:bg-[#F3F4F6]"
+                        >
+                          Retry generation
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
               ) : (
@@ -717,6 +815,41 @@ export default function TripPlanner() {
                         </motion.div>
                       )}
 
+                      {/* New Trip Button */}
+                      <button
+                        onClick={handleNewTrip}
+                        style={{
+                          background: "transparent",
+                          color: "#6B7280",
+                          border: "1px solid #E5E7EB",
+                          borderRadius: 99,
+                          padding: "9px 16px",
+                          fontSize: 13,
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                          transition: "all 0.2s ease",
+                          letterSpacing: "0.1px",
+                        }}
+                        onMouseEnter={(e) => {
+                          (e.currentTarget as HTMLButtonElement).style.background =
+                            "#F9FAFB";
+                          (e.currentTarget as HTMLButtonElement).style.borderColor =
+                            "#D1D5DB";
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.currentTarget as HTMLButtonElement).style.background =
+                            "transparent";
+                          (e.currentTarget as HTMLButtonElement).style.borderColor =
+                            "#E5E7EB";
+                        }}
+                      >
+                        <Plus className="w-4 h-4" />
+                        New Trip
+                      </button>
+
                       {/* Save Button */}
                       <button
                         onClick={handleSave}
@@ -799,7 +932,8 @@ export default function TripPlanner() {
                   <div className="flex-1 overflow-y-auto px-4 py-6 space-y-1">
                     {scheduledItinerary &&
                       scheduledItinerary[daysLabels[activeDay]]?.map(
-                        (stop, i) => {
+                        (stop: any, i: number) => {
+                          if (!stop || typeof stop !== 'object') return null;
                           const dayStops =
                             (scheduledItinerary &&
                               scheduledItinerary[daysLabels[activeDay]]) ||
@@ -969,9 +1103,9 @@ export default function TripPlanner() {
                   </div>
 
                   {/* ── Route Details (Transit) ── */}
-                  {daysForRoutes.length > 0 && (
+          {daysForRoutes.length > 0 && typeof ItineraryRoutesDynamic === 'function' && (
                     <div className="mt-4 border-t border-[#F3F4F6]">
-                      <ItineraryRoutes
+                      <ItineraryRoutesDynamic
                         days={daysForRoutes}
                         onFocusLeg={(leg) => setFocusLeg(leg)}
                         modePreferences={modePreferences}
@@ -983,7 +1117,12 @@ export default function TripPlanner() {
                         }
                       />
                     </div>
-                  )}
+          )}
+          {daysForRoutes.length > 0 && typeof ItineraryRoutesDynamic !== 'function' && (
+                    <div className="mt-4 border-t border-[#F3F4F6] text-sm text-red-600">
+                      Could not load route panel. See console for export/import issues.
+                    </div>
+          )}
 
                   {/* ── Footer Export ── */}
                   <div
@@ -1056,15 +1195,22 @@ export default function TripPlanner() {
         </button>
 
         {/* Map Area */}
-        <div className="flex-1 relative w-full border-t md:border-t-0 border-[#E5E7EB]">
-          <div className="absolute inset-0">
-            <InteractiveMap
-              points={allStops}
-              focusLeg={focusLeg}
-              routingLeg={null}
-              showMultiRoute={true}
-            />
-          </div>
+        <div
+          className={cn(
+            "flex-1 relative w-full border-t md:border-t-0 border-[#E5E7EB]",
+            panelOpen ? "hidden md:block" : "block",
+          )}
+        >
+          {shouldRenderMap && (
+            <div className="absolute inset-0">
+              <InteractiveMap
+                points={allStops}
+                focusLeg={focusLeg}
+                routingLeg={null}
+                showMultiRoute={true}
+              />
+            </div>
+          )}
 
           {itinerary && (
             <div className="hidden md:flex absolute bottom-6 left-1/2 -translate-x-1/2 z-[1000] bg-white rounded-full px-6 py-2.5 shadow-[0_4px_16px_rgba(0,0,0,0.14)] items-center gap-4 text-[13px] whitespace-nowrap select-none">

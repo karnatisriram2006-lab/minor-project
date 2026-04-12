@@ -67,6 +67,7 @@ interface InteractiveMapProps {
   points?: Location[];
   center?: [number, number];
   zoom?: number;
+  followCenter?: boolean;
   focusLeg?: { from: [number, number]; to: [number, number] } | null;
   routingLeg?: { from: [number, number]; to: [number, number] } | null;
   showMultiRoute?: boolean;
@@ -77,10 +78,16 @@ interface InteractiveMapProps {
 // Controller to auto-fit bounds on point updates
 function MapController({
   points,
+  center,
+  zoom,
+  followCenter,
   focusLeg,
   routingLeg,
 }: {
   points: Location[];
+  center: [number, number];
+  zoom: number;
+  followCenter: boolean;
   focusLeg?: { from: [number, number]; to: [number, number] } | null;
   routingLeg?: { from: [number, number]; to: [number, number] } | null;
 }) {
@@ -136,6 +143,27 @@ function MapController({
       }
     }
   }, [points, focusLeg, routingLeg, map]);
+
+  useEffect(() => {
+    if (!followCenter) return;
+    if (!Array.isArray(center) || center.length !== 2) return;
+
+    const lat = Number(center[0]);
+    const lng = Number(center[1]);
+    const safeZoom = Number(zoom);
+
+    if (
+      Number.isFinite(lat) &&
+      Number.isFinite(lng) &&
+      Number.isFinite(safeZoom)
+    ) {
+      try {
+        map.flyTo([lat, lng], safeZoom, { animate: true, duration: 0.9 });
+      } catch {
+        // Ignore invalid center updates from upstream callers.
+      }
+    }
+  }, [followCenter, center, zoom, map]);
 
   return null;
 }
@@ -357,6 +385,7 @@ export default React.memo(function InteractiveMap({
   points = [],
   center = [20.5937, 78.9629],
   zoom = 5,
+  followCenter = false,
   focusLeg = null,
   routingLeg = null,
   showMultiRoute = true,
@@ -623,6 +652,9 @@ export default React.memo(function InteractiveMap({
 
         <MapController
           points={points}
+          center={center}
+          zoom={zoom}
+          followCenter={followCenter}
           focusLeg={focusLeg}
           routingLeg={routingLeg}
         />

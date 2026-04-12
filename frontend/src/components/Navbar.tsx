@@ -29,7 +29,7 @@ import {
   Search
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useTheme } from "next-themes"
+import { useDarkMode } from "@/hooks/useDarkMode"
 import SearchTypeahead from "./SearchTypeahead"
 import { useTranslations } from "next-intl"
 import { LanguageSwitcher } from "@/components/LanguageSwitcher"
@@ -37,7 +37,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher"
 export default function Navbar() {
   const pathname = usePathname()
   const { user } = useAuth()
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme } = useDarkMode()
   const t = useTranslations("Navbar")
   const [mounted, setMounted] = React.useState(false)
   const [isScrolled, setIsScrolled] = React.useState(false)

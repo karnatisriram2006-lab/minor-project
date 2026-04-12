@@ -2,17 +2,11 @@
 // Strategy: Cache-First for static assets, Network-First for API/pages
 // Bump CACHE_VERSION whenever assets change to force refresh.
 
-const CACHE_VERSION = 'yatra-v2';
+const CACHE_VERSION = 'yatra-v3';
 const STATIC_CACHE  = `${CACHE_VERSION}-static`;
 const API_CACHE     = `${CACHE_VERSION}-api`;
 
 const STATIC_ASSETS = [
-  '/',
-  '/dashboard',
-  '/trip-planner',
-  '/near-me',
-  '/trips',
-  '/emergency',
   '/offline',
   '/manifest.json',
   '/icon-192.svg',
@@ -24,7 +18,14 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(STATIC_CACHE).then((cache) => {
       console.log('[SW] Pre-caching static assets');
-      return cache.addAll(STATIC_ASSETS);
+      // Cache each asset individually to avoid one failure breaking the whole install
+      return Promise.all(
+        STATIC_ASSETS.map((asset) =>
+          cache.add(asset).catch((err) => {
+            console.warn(`[SW] Failed to cache ${asset}:`, err.message);
+          })
+        )
+      );
     }).then(() => self.skipWaiting())
   );
 });

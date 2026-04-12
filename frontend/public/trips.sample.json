@@ -1,0 +1,50 @@
+[
+  {
+    "_id": "sample-jaipur-1",
+    "title": "Jaipur Heritage Escape",
+    "destination": "Jaipur",
+    "city": "Jaipur",
+    "duration": 3,
+    "budget": "Classic",
+    "createdAt": "2026-04-01T08:30:00.000Z",
+    "placeImage": "https://images.unsplash.com/photo-1477587458883-47145ed94245?w=1200&q=80",
+    "days": [
+      {
+        "day": 1,
+        "activities": [
+          { "name": "Hawa Mahal", "time": "09:00" },
+          { "name": "City Palace", "time": "11:30" },
+          { "name": "Jantar Mantar", "time": "14:30" }
+        ]
+      },
+      {
+        "day": 2,
+        "activities": [
+          { "name": "Amber Fort", "time": "09:30" },
+          { "name": "Panna Meena Ka Kund", "time": "13:00" },
+          { "name": "Jal Mahal Sunset", "time": "17:30" }
+        ]
+      }
+    ]
+  },
+  {
+    "_id": "sample-goa-2",
+    "title": "Goa Coastal Weekend",
+    "destination": "Goa",
+    "city": "Goa",
+    "duration": 2,
+    "budget": "Luxury",
+    "createdAt": "2026-03-24T10:15:00.000Z",
+    "placeImage": "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=1200&q=80",
+    "days": [
+      {
+        "day": 1,
+        "activities": [
+          { "name": "Calangute Beach", "time": "08:30" },
+          { "name": "Fort Aguada", "time": "12:00" },
+          { "name": "Baga Night Market", "time": "19:30" }
+        ]
+      }
+    ]
+  }
+]

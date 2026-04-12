@@ -5,7 +5,7 @@ import { motion } from "framer-motion"
 import { MapPin, Heart, Bookmark, Calendar, Clock, Loader2 } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
 import Link from 'next/link'
-import axios from 'axios'
+import api from '@/lib/api'
 import { imageService } from "@/services/imageService"
 import Image from "next/image"
 
@@ -43,9 +43,7 @@ export default function CommunityPage() {
   useEffect(() => {
     const fetchCommunityTrips = async () => {
       try {
-        // Fallback to local API if NEXT_PUBLIC_API_URL isn't set
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-        const res = await axios.get(`${apiUrl}/trips/community`);
+        const res = await api.get("/trips/community");
         
         // Map to include local state
         const formatted = res.data.trips.map((t: any) => ({

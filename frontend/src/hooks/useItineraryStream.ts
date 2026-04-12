@@ -29,7 +29,15 @@ export interface StreamState {
   abort: () => void;
 }
 
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000').replace(/\/api$/, '');
+// Resolve API base with a dev-friendly fallback to HTTP to avoid SSL issues
+let API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+if (typeof window !== 'undefined') {
+  const host = window.location.hostname;
+  if (host === 'localhost' || host === '127.0.0.1') {
+    API_BASE = 'http://localhost:5000';
+  }
+}
+API_BASE = API_BASE.replace(/\/api$/, '');
 
 /**
  * useItineraryStream

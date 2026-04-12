@@ -4,7 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import Navbar from "@/components/Navbar";
 import OfflineBanner from "@/components/OfflineBanner";
-import Sidebar from "@/components/Sidebar";
+import SidebarClient from "@/components/SidebarClient";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { cn } from "@/lib/utils";
 import { AuthProvider } from "@/context/AuthContext";
@@ -100,7 +100,7 @@ export default function RootLayout({
                 {/* Page body: sidebar + main content */}
                 <div className="flex min-h-screen pt-16 sm:pt-20">
                   {/* Sidebar — desktop only (hidden lg:flex inside component) */}
-                  <Sidebar />
+                  <SidebarClient />
 
                   {/* Main content area */}
                   <main className="flex-1 min-w-0 relative pb-20 sm:pb-0">

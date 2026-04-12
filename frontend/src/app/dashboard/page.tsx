@@ -24,6 +24,7 @@ import { PlacesExplorer } from "@/components/PlacesExplorer"
 import { useWeather } from "@/hooks/useWeather"
 import { geocodeCity } from "@/lib/geocodingService"
 import { imageService } from "@/services/imageService"
+import OfflineBanner from "@/components/OfflineBanner"
 
 import { auth } from "@/lib/firebase"
 import { User as FirebaseUser } from "firebase/auth"
@@ -41,6 +42,7 @@ interface Message {
 }
 
 export default function Dashboard() {
+  const [backendOffline, setBackendOffline] = useState(false)
   const [user, setUser] = useState<FirebaseUser | null>(null)
   const [trips, setTrips] = useState<any[]>([])
   const [loadingTrips, setLoadingTrips] = useState(true)
@@ -60,6 +62,8 @@ export default function Dashboard() {
         }));
 
         setTrips(enriched)
+        try { localStorage.setItem("last_trips_cache", JSON.stringify(enriched)) } catch {}
+        setBackendOffline(false)
         
         if (enriched.length > 0) {
           const first = enriched[0]
@@ -72,7 +76,60 @@ export default function Dashboard() {
           }
         }
       } catch (err) {
-        console.error("Error fetching trips:", err)
+        const status = (err as any)?.response?.status
+        if (status === 503) {
+          setBackendOffline(true)
+          // Try to restore from cache if available
+          try {
+            const cached = localStorage.getItem("last_trips_cache")
+            if (cached) {
+              setTrips(JSON.parse(cached))
+              setBackendOffline(false)
+              return
+            }
+          } catch {
+            // ignore
+          }
+          // Fallback to a sample dataset if no cache
+          try {
+            const res = await fetch('/trips.sample.json')
+            if (res.ok) {
+              const sample = await res.json()
+              const enriched = (sample || []).map((t: any) => ({
+                ...t,
+                placeImage: t.placeImage ?? (t.image ?? '/images/sample-trip.png')
+              }))
+              setTrips(enriched)
+            }
+          } catch {
+            // ignore
+          }
+        } else {
+          // Non-503: try offline cache first, then sample
+          try {
+            const cached = localStorage.getItem("last_trips_cache")
+            if (cached) {
+              setTrips(JSON.parse(cached))
+              setBackendOffline(false)
+              return
+            }
+          } catch {
+            // ignore
+          }
+          try {
+            const res = await fetch('/trips.sample.json')
+            if (res.ok) {
+              const sample = await res.json()
+              const enriched = (sample || []).map((t: any) => ({
+                ...t,
+                placeImage: t.placeImage ?? (t.image ?? '/images/sample-trip.png')
+              }))
+              setTrips(enriched)
+            }
+          } catch {
+            // ignore
+          }
+        }
       } finally {
         setLoadingTrips(false)
       }
@@ -227,6 +284,11 @@ export default function Dashboard() {
   ]
 
   return (
+    <>
+      {backendOffline && (
+        <OfflineBanner title="Backend Offline" message="Using cached trip data." />
+      )}
+      {/* existing content wrapper would continue here */}
     <div className="min-h-screen bg-[#F7F7F7] text-[#484848] pt-6 pb-24 sm:pt-8 sm:pb-12 font-sans">
       <div className="container mx-auto px-6 max-w-7xl space-y-8">
 
@@ -707,7 +769,8 @@ export default function Dashboard() {
           </div>
         )}
 
+        </div>
       </div>
-    </div>
-  )
+    </>
+  );
 }

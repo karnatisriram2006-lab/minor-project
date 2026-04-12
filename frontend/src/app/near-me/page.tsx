@@ -99,11 +99,15 @@ export default function NearMe() {
         `/api/nearby?lat=${userLoc.lat}&lng=${userLoc.lng}&category=${category}&radius=${radius}`
       )
       const data = await res.json()
-      const processed = (data.places || []).map((p: any, idx: number) => ({
-        ...p,
-        id: p.id || `place-${idx}`,
-        description: p.address
-      }))
+      const processed = (data.places || [])
+        .map((p: any, idx: number) => ({
+          ...p,
+          id: p.id || `place-${idx}`,
+          lat: Number(p.lat),
+          lng: Number(p.lng),
+          description: p.address
+        }))
+        .filter((p: any) => Number.isFinite(p.lat) && Number.isFinite(p.lng))
       setPlaces(processed)
       setShowSearchArea(false)
     } catch (err) {
@@ -117,7 +121,7 @@ export default function NearMe() {
   const Icon = selectedCat?.icon || MapPin
 
   const mapPoints = useMemo(() => {
-    return places.filter(p => !!p && typeof p.lat === 'number' && typeof p.lng === 'number').map(p => ({
+    return places.filter(p => !!p && Number.isFinite(p.lat) && Number.isFinite(p.lng)).map(p => ({
       ...p,
       category: selectedCat?.label || 'Place'
     }))
@@ -138,7 +142,7 @@ export default function NearMe() {
   const scrollToItem = async (id: string | number) => {
     setActivePlaceId(id)
     const place = places.find(p => p.id === id)
-    if (place) {
+    if (place && Number.isFinite(place.lat) && Number.isFinite(place.lng)) {
       setMapCenter([place.lat, place.lng])
       setMapZoom(16)
       
@@ -354,9 +358,11 @@ export default function NearMe() {
         )}>
           <div className="absolute inset-0 pt-[80px] lg:pt-0">
             <InteractiveMap 
+              key={`near-map-${showMobileMap ? "map" : "list"}`}
               points={mapPoints as any} 
               center={mapCenter}
               zoom={mapZoom}
+              followCenter={true}
               routingLeg={null}
               multiModeRoute={activeRoute}
               onGetLocation={getLocation}

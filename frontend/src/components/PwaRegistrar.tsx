@@ -9,6 +9,29 @@ export default function PwaRegistrar() {
       return;
     }
 
+    // Never run PWA caching in development; stale SW/cache causes hydration drift.
+    if (process.env.NODE_ENV !== "production") {
+      navigator.serviceWorker
+        .getRegistrations()
+        .then((registrations) =>
+          Promise.all(registrations.map((registration) => registration.unregister())),
+        )
+        .catch(() => {});
+      if ("caches" in window) {
+        caches
+          .keys()
+          .then((keys) =>
+            Promise.all(
+              keys
+                .filter((key) => key.startsWith("yatra-"))
+                .map((key) => caches.delete(key)),
+            ),
+          )
+          .catch(() => {});
+      }
+      return;
+    }
+
     const registerServiceWorker = async () => {
       try {
         const registration = await navigator.serviceWorker.register("/sw.js", {
