@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { UserCheck, UserX, Clock, Users, ShieldAlert } from "lucide-react"
 import api from "@/lib/api"
+import { auth } from "@/lib/firebase"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Navbar from "@/components/Navbar"
@@ -27,12 +28,24 @@ export default function ConnectionRequestsPage() {
   const [processingId, setProcessingId] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchRequests()
+    // Wait for auth to be ready before fetching
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        await fetchRequests(user)
+      } else {
+        setLoading(false)
+      }
+    })
+    return () => unsubscribe()
   }, [])
 
-  const fetchRequests = async () => {
+  const fetchRequests = async (user?: any) => {
     try {
-      const { data } = await api.get("/connections/pending")
+      const currentUser = user || auth.currentUser
+      const freshToken = currentUser ? await currentUser.getIdToken() : null
+      const { data } = await api.get("/connections/pending", {
+        headers: freshToken ? { Authorization: `Bearer ${freshToken}` } : {}
+      })
       setRequests(data)
     } catch (err) {
       console.error("Failed to fetch requests:", err)

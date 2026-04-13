@@ -37,7 +37,7 @@ import apiClient from "../lib/api"
 
 export default function Navbar() {
   const pathname = usePathname()
-  const { user } = useAuth()
+  const { user, token } = useAuth()
   const { theme, setTheme } = useDarkMode()
   const t = useTranslations("Navbar")
   const [mounted, setMounted] = React.useState(false)
@@ -80,21 +80,23 @@ export default function Navbar() {
   const [pendingCount, setPendingCount] = React.useState(0)
 
   React.useEffect(() => {
-    if (user && mounted) {
+    // Wait for BOTH user and token to be ready from AuthContext
+    if (user && token && mounted) {
       const fetchPending = async () => {
         try {
           const { data } = await apiClient.get("/connections/pending")
           setPendingCount(data.length)
         } catch (err) {
-          console.error("Failed to fetch pending requests in Navbar", err)
+          // Silently fail — background polling, not critical
+          console.warn("Could not fetch pending connection requests", err)
         }
       }
       fetchPending()
-      // Optional: Poll every 2 minutes
+      // Poll every 2 minutes
       const interval = setInterval(fetchPending, 120000)
       return () => clearInterval(interval)
     }
-  }, [user, mounted])
+  }, [user, token, mounted])
 
   const navItems = [
     { name: t("dashboard"),  href: "/dashboard",    icon: <LayoutDashboard className="h-5 w-5" /> },

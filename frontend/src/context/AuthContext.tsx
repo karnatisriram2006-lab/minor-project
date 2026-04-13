@@ -22,12 +22,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user)
-      if (user) {
-        const idToken = await user.getIdToken()
+    let refreshTimer: ReturnType<typeof setTimeout> | null = null
+
+    const refreshToken = async (currentUser: User) => {
+      try {
+        // forceRefresh=false uses cache unless < 5 min left, fast call
+        const idToken = await currentUser.getIdToken(false)
         setToken(idToken)
         localStorage.setItem("token", idToken)
+        // Schedule next refresh in 50 minutes (tokens expire in 60 min)
+        refreshTimer = setTimeout(() => refreshToken(currentUser), 50 * 60 * 1000)
+      } catch (err) {
+        console.error("Token refresh failed:", err)
+      }
+    }
+
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (refreshTimer) clearTimeout(refreshTimer)
+      setUser(currentUser)
+      if (currentUser) {
+        await refreshToken(currentUser)
       } else {
         setToken(null)
         localStorage.removeItem("token")
@@ -35,7 +49,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false)
     })
 
-    return () => unsubscribe()
+    return () => {
+      unsubscribe()
+      if (refreshTimer) clearTimeout(refreshTimer)
+    }
   }, [])
 
   return (

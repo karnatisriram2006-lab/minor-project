@@ -1,6 +1,13 @@
 import axios, { InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import { auth } from "@/lib/firebase"
 
+// Extend axios config to support suppressing the global 401 redirect
+declare module 'axios' {
+  interface InternalAxiosRequestConfig {
+    _suppressRedirect?: boolean;
+  }
+}
+
 let rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 // Dev-safe fallback: avoid HTTPS localhost certificate issues causing Axios "Network Error".
@@ -21,13 +28,26 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// Add a request interceptor to include the Bearer token from localStorage
+// Request interceptor: always attach a fresh Firebase token.
+// Firebase caches the token and only refreshes when near expiry (~1hr),
+// so this is fast and eliminates all 401 race conditions on page mount.
 api.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('token');
-      if (token && config.headers) {
-        config.headers.Authorization = `Bearer ${token}`;
+  async (config: InternalAxiosRequestConfig) => {
+    try {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        const freshToken = await currentUser.getIdToken();
+        if (config.headers) {
+          config.headers.Authorization = `Bearer ${freshToken}`;
+        }
+        // Keep localStorage in sync for any code that reads it directly
+        localStorage.setItem('token', freshToken);
+      }
+    } catch (e) {
+      // If token fetch fails (e.g. user logged out), fall back to localStorage
+      const cached = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (cached && config.headers) {
+        config.headers.Authorization = `Bearer ${cached}`;
       }
     }
     return config;
@@ -40,19 +60,14 @@ api.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      if (typeof window !== 'undefined') {
-        console.warn("Unauthorized! Clearing session and redirecting to login.");
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        
-        // Only redirect if we are not already on the login page
-        if (!window.location.pathname.includes('/login')) {
-          window.location.href = '/login?expired=true';
-        }
-      }
+      // Log the unauthorized error but do NOT auto-redirect.
+      // Individual pages should handle auth state — the global redirect
+      // was causing login loops when tokens weren't ready yet on mount.
+      console.warn("API 401 Unauthorized:", error.config?.url);
     }
     return Promise.reject(error);
   }
 );
+
 
 export default api;

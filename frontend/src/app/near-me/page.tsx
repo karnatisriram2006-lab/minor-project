@@ -47,6 +47,10 @@ interface NearbyPlace {
 }
 
 export default function NearMe() {
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const isOfflineMode = searchParams?.get("offline") === "true";
+  const offlineCity = searchParams?.get("city");
+
   const [category, setCategory] = useState("restaurant")
   const [radius, setRadius] = useState("5000")
   const [places, setPlaces] = useState<NearbyPlace[]>([])
@@ -58,7 +62,8 @@ export default function NearMe() {
   const [activeRoute, setActiveRoute] = useState<MultiModeRoute | null>(null)
   const [showSearchArea, setShowSearchArea] = useState(false)
   const [mapCenter, setMapCenter] = useState<[number, number]>([20.5937, 78.9629])
-  const [showMobileMap, setShowMobileMap] = useState(false)
+  // Auto-show map on mobile when arriving from offline dashboard
+  const [showMobileMap, setShowMobileMap] = useState(isOfflineMode)
   const [mapZoom, setMapZoom] = useState(12)
 
   const listRef = useRef<HTMLDivElement>(null)
@@ -82,17 +87,19 @@ export default function NearMe() {
   }
 
   useEffect(() => {
-    getLocation()
+    // In offline mode, load city pack data immediately — no geolocation needed
+    if (isOfflineMode && offlineCity) {
+      searchNearby()
+    } else {
+      getLocation()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
-    if (userLoc) searchNearby()
+    if (!isOfflineMode && userLoc) searchNearby()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userLoc, category, radius])
-
-  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-  const isOfflineMode = searchParams?.get("offline") === "true";
-  const offlineCity = searchParams?.get("city");
 
   const searchNearby = async () => {
     if (isOfflineMode && offlineCity) {

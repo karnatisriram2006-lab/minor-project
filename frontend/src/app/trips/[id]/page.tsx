@@ -8,6 +8,7 @@ import { MapPin, Calendar, Wallet, Clock, Share2, Copy, Check, ArrowLeft, Naviga
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import api from "@/lib/api"
+import { auth } from "@/lib/firebase"
 
 interface TripActivity {
   name: string
@@ -59,17 +60,23 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    const fetchTrip = async () => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
       try {
-        const { data } = await api.get(`/trips/${id}`)
+        const headers: Record<string, string> = {}
+        if (user) {
+          const freshToken = await user.getIdToken()
+          headers.Authorization = `Bearer ${freshToken}`
+        }
+        const { data } = await api.get(`/trips/${id}`, { headers })
         setTrip(data)
       } catch {
         setError("This trip is private or doesn't exist.")
       } finally {
         setLoading(false)
       }
-    }
-    fetchTrip()
+      unsubscribe() // Only need auth once
+    })
+    return () => unsubscribe()
   }, [id])
 
   const handleCopyLink = () => {

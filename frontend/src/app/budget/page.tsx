@@ -48,11 +48,14 @@ export default function BudgetOptimizer() {
 
   // Load Trips
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         const fetchTrips = async () => {
           try {
-            const { data } = await api.get("/trips")
+            const freshToken = await user.getIdToken()
+            const { data } = await api.get("/trips", {
+              headers: { Authorization: `Bearer ${freshToken}` }
+            })
             setTrips(data.trips || [])
           } catch (err) {
             console.error("Failed to fetch trips:", err)
