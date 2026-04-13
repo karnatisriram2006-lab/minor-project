@@ -47,10 +47,10 @@ interface NearbyPlace {
 }
 
 export default function NearMe() {
-  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-  const isOfflineMode = searchParams?.get("offline") === "true";
-  const offlineCity = searchParams?.get("city");
-
+  // SSR safe client-state
+  const [isOfflineMode, setIsOfflineMode] = useState(false)
+  const [offlineCity, setOfflineCity] = useState<string | null>(null)
+  
   const [category, setCategory] = useState("restaurant")
   const [radius, setRadius] = useState("5000")
   const [places, setPlaces] = useState<NearbyPlace[]>([])
@@ -62,9 +62,29 @@ export default function NearMe() {
   const [activeRoute, setActiveRoute] = useState<MultiModeRoute | null>(null)
   const [showSearchArea, setShowSearchArea] = useState(false)
   const [mapCenter, setMapCenter] = useState<[number, number]>([20.5937, 78.9629])
-  // Auto-show map on mobile when arriving from offline dashboard
-  const [showMobileMap, setShowMobileMap] = useState(isOfflineMode)
+  const [showMobileMap, setShowMobileMap] = useState(false)
   const [mapZoom, setMapZoom] = useState(12)
+
+  useEffect(() => {
+    // Read search params safely on mount
+    const search = new URLSearchParams(window.location.search)
+    const isOffline = search.get("offline") === "true"
+    const city = search.get("city")
+    
+    setIsOfflineMode(isOffline)
+    setOfflineCity(city)
+    
+    // Auto-show map on mobile for offline mode
+    if (isOffline) {
+      setShowMobileMap(true)
+      searchNearby(isOffline, city)
+    }
+    
+    // Always attempt to get user location (hardware GPS works offline)
+    // This allows routing to function to offline landmarks
+    getLocation()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const listRef = useRef<HTMLDivElement>(null)
   const itemRefs = useRef<Record<string | number, HTMLDivElement | null>>({})
@@ -89,23 +109,21 @@ export default function NearMe() {
   useEffect(() => {
     // In offline mode, load city pack data immediately — no geolocation needed
     if (isOfflineMode && offlineCity) {
+      searchNearby(isOfflineMode, offlineCity)
+    } else if (!isOfflineMode && userLoc) {
       searchNearby()
-    } else {
-      getLocation()
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [userLoc, category, radius, isOfflineMode, offlineCity])
 
-  useEffect(() => {
-    if (!isOfflineMode && userLoc) searchNearby()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userLoc, category, radius])
-
-  const searchNearby = async () => {
-    if (isOfflineMode && offlineCity) {
+  const searchNearby = async (forceOffline?: boolean, forceCity?: string | null) => {
+    const offline = forceOffline ?? isOfflineMode
+    const city = forceCity ?? offlineCity
+    
+    if (offline && city) {
       setLoading(true);
       try {
-        const packData = localStorage.getItem(`yatra_city_pack_${offlineCity.toLowerCase()}`);
+        const packData = localStorage.getItem(`yatra_city_pack_${city.toLowerCase()}`);
         if (packData) {
           const pack = JSON.parse(packData);
           const processed = (pack.places || []).map((p: any) => ({
@@ -427,6 +445,7 @@ export default function NearMe() {
               multiModeRoute={activeRoute}
               onGetLocation={getLocation}
               showMultiRoute={false}
+              isOffline={isOfflineMode}
             />
           </div>
 

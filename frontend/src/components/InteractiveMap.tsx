@@ -73,6 +73,7 @@ interface InteractiveMapProps {
   showMultiRoute?: boolean;
   multiModeRoute?: MultiModeRoute | null;
   onGetLocation?: () => void;
+  isOffline?: boolean;
 }
 
 // Controller to auto-fit bounds on point updates
@@ -103,16 +104,24 @@ function MapController({
 
       // Logic handle both [lng, lat] (old focusLeg) and [lat, lng] (standard)
       // Actually, let's normalize to [lat, lng] for routingLeg
-      const bounds = L.latLngBounds([
-        [from[0], from[1]],
-        [to[0], to[1]],
-      ]);
-      if (bounds.isValid()) {
-        map.fitBounds(bounds, {
-          padding: [100, 100],
-          animate: true,
-          duration: 1,
-        });
+      if (
+        Number.isFinite(from[0]) && Number.isFinite(from[1]) &&
+        Number.isFinite(to[0]) && Number.isFinite(to[1])
+      ) {
+        const bounds = L.latLngBounds([
+          [from[0], from[1]],
+          [to[0], to[1]],
+        ]);
+        const mapSize = map.getSize();
+        if (mapSize.x <= 0 || mapSize.y <= 0) return;
+
+        if (bounds.isValid()) {
+          map.fitBounds(bounds, {
+            padding: [100, 100],
+            animate: true,
+            duration: 1,
+          });
+        }
       }
     } else if (points && points.length > 0) {
       const validPoints = points.filter(
@@ -123,6 +132,11 @@ function MapController({
           typeof p.lng === "number" &&
           isFinite(p.lng),
       );
+      // Abort bounds calculations if the map container is hidden (display: none)
+      // Leaflet crashes with division-by-zero NaN bounds if we calculate padding in a 0x0 container.
+      const mapSize = map.getSize();
+      if (mapSize.x <= 0 || mapSize.y <= 0) return;
+
       if (validPoints.length > 0) {
         if (validPoints.length === 1) {
           map.flyTo([validPoints[0].lat, validPoints[0].lng], 12, {
@@ -158,7 +172,10 @@ function MapController({
       Number.isFinite(safeZoom)
     ) {
       try {
-        map.flyTo([lat, lng], safeZoom, { animate: true, duration: 0.9 });
+        const mapSize = map.getSize();
+        if (mapSize.x > 0 && mapSize.y > 0) {
+          map.flyTo([lat, lng], safeZoom, { animate: true, duration: 0.9 });
+        }
       } catch {
         // Ignore invalid center updates from upstream callers.
       }
@@ -391,6 +408,7 @@ export default React.memo(function InteractiveMap({
   showMultiRoute = true,
   multiModeRoute = null,
   onGetLocation,
+  isOffline = false,
 }: InteractiveMapProps) {
   const [hasMounted, setHasMounted] = useState(false);
   const [driveCoords, setDriveCoords] = useState<[number, number][]>([]);
@@ -426,8 +444,14 @@ export default React.memo(function InteractiveMap({
   useEffect(() => {
     // Priority 1: Multi-mode route (Driving + Walking)
     if (multiModeRoute) {
-      setDriveCoords(multiModeRoute.driving?.coordinates || []);
-      setWalkCoords(multiModeRoute.walkingLastMile?.coordinates || []);
+      setDriveCoords((multiModeRoute.driving?.coordinates || [])
+        .map(c => [Number(c[0]), Number(c[1])] as [number, number])
+        .filter(c => Number.isFinite(c[0]) && Number.isFinite(c[1]))
+      );
+      setWalkCoords((multiModeRoute.walkingLastMile?.coordinates || [])
+        .map(c => [Number(c[0]), Number(c[1])] as [number, number])
+        .filter(c => Number.isFinite(c[0]) && Number.isFinite(c[1]))
+      );
       setRouteCoordinates([]); // Clear old single-mode route
       return;
     }
@@ -444,18 +468,19 @@ export default React.memo(function InteractiveMap({
             const data = await res.json();
             if (data.routes?.[0]) {
               const pathCoords: [number, number][] =
-                data.routes[0].geometry.coordinates.map((c: number[]) => [
-                  c[1],
-                  c[0],
-                ]);
+                data.routes[0].geometry.coordinates
+                  .map((c: number[]) => [Number(c[1]), Number(c[0])] as [number, number])
+                  .filter((c: [number, number]) => Number.isFinite(c[0]) && Number.isFinite(c[1]));
               setRouteCoordinates(pathCoords);
               return;
             }
           }
-          setRouteCoordinates([
-            [from[0], from[1]],
-            [to[0], to[1]],
-          ]);
+          if (Number.isFinite(from[0]) && Number.isFinite(from[1]) && Number.isFinite(to[0]) && Number.isFinite(to[1])) {
+            setRouteCoordinates([
+              [from[0], from[1]],
+              [to[0], to[1]],
+            ]);
+          }
         } catch (err) {
           console.error("Direct route fetch error:", err);
         } finally {
@@ -497,17 +522,24 @@ export default React.memo(function InteractiveMap({
         const data = await res.json();
         if (data.routes?.[0]) {
           const pathCoords: [number, number][] =
-            data.routes[0].geometry.coordinates.map((c: number[]) => [
-              c[1],
-              c[0],
-            ]);
+            data.routes[0].geometry.coordinates
+              .map((c: number[]) => [Number(c[1]), Number(c[0])] as [number, number])
+              .filter((c: [number, number]) => Number.isFinite(c[0]) && Number.isFinite(c[1]));
           setRouteCoordinates(pathCoords);
         } else {
-          setRouteCoordinates(validPoints.map((p) => [p.lat, p.lng]));
+          setRouteCoordinates(
+            validPoints
+              .map((p) => [Number(p.lat), Number(p.lng)] as [number, number])
+              .filter((c) => Number.isFinite(c[0]) && Number.isFinite(c[1]))
+          );
         }
       } catch (err) {
         console.error("Multi-route fetch error:", err);
-        setRouteCoordinates(validPoints.map((p) => [p.lat, p.lng]));
+        setRouteCoordinates(
+          validPoints
+            .map((p) => [Number(p.lat), Number(p.lng)] as [number, number])
+            .filter((c) => Number.isFinite(c[0]) && Number.isFinite(c[1]))
+        );
       } finally {
         setLoadingRoute(false);
       }
@@ -618,13 +650,18 @@ export default React.memo(function InteractiveMap({
     );
   }
 
+  const safeCenter: [number, number] = 
+    Array.isArray(center) && center.length === 2 && Number.isFinite(center[0]) && Number.isFinite(center[1])
+      ? [Number(center[0]), Number(center[1])]
+      : [20.5937, 78.9629];
+
   return (
     <div className="h-full w-full relative bg-[#f5f3ef]">
       <MapContainer
-        key="yatra-main-map" // Stable key for HMR
+        key={`yatra-main-map-${safeCenter[0]}-${safeCenter[1]}`} // Stable key but also re-mount if center completely borks
         id="yatra-main-map" // Custom ID for internal Leaflet registry
-        center={center}
-        zoom={zoom}
+        center={safeCenter}
+        zoom={Number.isFinite(zoom) ? zoom : 5}
         maxZoom={18}
         minZoom={4}
         maxBounds={[
@@ -634,7 +671,15 @@ export default React.memo(function InteractiveMap({
         maxBoundsViscosity={0.85}
         zoomControl={false}
         scrollWheelZoom={true}
-        style={{ width: "100%", height: "100%" }}
+        style={{
+          width: "100%",
+          height: "100%",
+          backgroundColor: isOffline ? "#FAFAFA" : undefined,
+          backgroundImage: isOffline 
+            ? "radial-gradient(#EBEBEB 1px, transparent 1px)" 
+            : undefined,
+          backgroundSize: isOffline ? "20px 20px" : undefined
+        }}
       >
         <TileLayer
           key={showDark ? "dark" : "light"}
@@ -765,11 +810,11 @@ export default React.memo(function InteractiveMap({
           }}
         >
           {points
-            .filter((p) => !!p)
+            .filter((p) => !!p && Number.isFinite(Number(p.lat)) && Number.isFinite(Number(p.lng)))
             .map((stop, index) => (
               <Marker
                 key={`${stop.id}-${index}`}
-                position={[stop.lat, stop.lng]}
+                position={[Number(stop.lat), Number(stop.lng)]}
                 icon={createNumberedMarker(index + 1, activeStop === stop.id)}
                 eventHandlers={{
                   click: () => setActiveStop(stop.id),
