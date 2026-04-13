@@ -28,7 +28,18 @@ export default function Login() {
     setError(null)
     try {
       const provider = new GoogleAuthProvider()
-      await signInWithPopup(auth, provider)
+      const result = await signInWithPopup(auth, provider)
+      const token = await result.user.getIdToken()
+      
+      // Store token for Axios interceptor
+      localStorage.setItem("token", token)
+      localStorage.setItem("user", JSON.stringify({
+        uid: result.user.uid,
+        email: result.user.email,
+        name: result.user.displayName
+      }))
+      
+      console.log("Login successful, token stored in localStorage");
       window.location.href = "/dashboard"
     } catch (err: unknown) {
       console.error("Login error:", err)

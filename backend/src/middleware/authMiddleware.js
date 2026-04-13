@@ -46,20 +46,20 @@ const protect = async (req, res, next) => {
                     console.log(`[Auth] Auto-created user for UID: ${decoded.id}`);
                 }
 
-                req.user = user || { _id: decoded.id, name: decoded.name, email: decoded.email };
+                req.user = user || { _id: decoded.id, firebaseUid: decoded.id, name: decoded.name, email: decoded.email };
             } else {
-                req.user = { _id: decoded.id, name: decoded.name, email: decoded.email };
+                req.user = { _id: decoded.id, firebaseUid: decoded.id, name: decoded.name, email: decoded.email };
             }
 
-            next();
+            return next();
         } catch (error) {
             console.error('[Auth Middleware] Verification Error:', error.message);
-            if (error.stack) console.error(error.stack);
             return res.status(401).json({ message: `Not authorized, token verification failed: ${error.message}` });
         }
     }
 
     if (!token) {
+        console.warn(`[Auth Middleware] No token provided for protected route: ${req.originalUrl}`);
         return res.status(401).json({ message: 'Not authorized, no token' });
     }
 };
@@ -89,9 +89,9 @@ const optionalAuth = async (req, res, next) => {
                 let user = await User.findOne({ 
                     $or: [ { firebaseUid: decoded.id }, { email: decoded.email } ]
                 });
-                req.user = user || { _id: decoded.id, name: decoded.name, email: decoded.email };
+                req.user = user || { _id: decoded.id, firebaseUid: decoded.id, name: decoded.name, email: decoded.email };
             } else {
-                req.user = { _id: decoded.id, name: decoded.name, email: decoded.email };
+                req.user = { _id: decoded.id, firebaseUid: decoded.id, name: decoded.name, email: decoded.email };
             }
         } catch (error) {
             console.error('[Optional Auth Middleware] Verification Error:', error.message);

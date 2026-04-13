@@ -21,6 +21,7 @@ const poiRoutes = require('./routes/poiRoutes');
 const waitlistRoutes = require('./routes/waitlistRoutes');
 const messagesRoutes = require('./routes/messages');
 const profileRoutes = require('./routes/profileRoutes');
+const connectionRoutes = require('./routes/connectionRoutes');
 
 // Connect to database
 connectDB();
@@ -76,6 +77,7 @@ app.use('/api/nearby', poiRoutes);
 app.use('/api/waitlist', waitlistRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/api/profile', profileRoutes);
+app.use('/api/connections', connectionRoutes);
 
 // 404 handler
 app.use((req, res, next) => {

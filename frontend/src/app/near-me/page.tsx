@@ -2,7 +2,7 @@
 /* Forced update marker: v2.0.0 - Leaflet Redesign */
 
 import React, { useState, useEffect, useRef, useMemo } from "react"
-import { MapPin, Phone, Clock, Star, Navigation, Shield, Hospital, Utensils, Building2, Landmark, Flame, Pill, Wallet, Search, Map as MapIcon, LayoutList } from "lucide-react"
+import { MapPin, Phone, Clock, Star, Navigation, Shield, Hospital, Utensils, Building2, Landmark, Flame, Pill, Wallet, Search, Map as MapIcon, LayoutList, WifiOff } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
@@ -90,7 +90,34 @@ export default function NearMe() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userLoc, category, radius])
 
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const isOfflineMode = searchParams?.get("offline") === "true";
+  const offlineCity = searchParams?.get("city");
+
   const searchNearby = async () => {
+    if (isOfflineMode && offlineCity) {
+      setLoading(true);
+      try {
+        const packData = localStorage.getItem(`yatra_city_pack_${offlineCity.toLowerCase()}`);
+        if (packData) {
+          const pack = JSON.parse(packData);
+          const processed = (pack.places || []).map((p: any) => ({
+            ...p,
+            lng: p.lng || p.lon, // Handle both lon and lng
+          }));
+          setPlaces(processed);
+          if (processed.length > 0) {
+            setMapCenter([processed[0].lat, processed[0].lng]);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load offline pack:", err);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     if (!userLoc) return
     setLoading(true)
     setError("")
@@ -178,54 +205,80 @@ export default function NearMe() {
           <div className="pt-6 pb-5 px-6 border-b border-[#f0ede8] bg-white sticky top-0 z-20 space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-[22px] font-bold tracking-tight text-[#1a1a1a]">Explore <span className="text-[#E8391A]">Nearby</span></h1>
-                <p className="text-[11px] text-[#767676] font-medium mt-0.5">Find essentials and local favorites</p>
+                <h1 className="text-[22px] font-bold tracking-tight text-[#1a1a1a]">
+                  {isOfflineMode ? (
+                    <span className="flex items-center gap-2">
+                      <WifiOff className="h-5 w-5 text-[#00A699]" />
+                      Offline Discovery: <span className="text-[#00A699] capitalize">{offlineCity}</span>
+                    </span>
+                  ) : (
+                    <>Explore <span className="text-[#E8391A]">Nearby</span></>
+                  )}
+                </h1>
+                <p className="text-[11px] text-[#767676] font-medium mt-0.5">
+                  {isOfflineMode ? "Browsing downloaded city landmarks" : "Find essentials and local favorites"}
+                </p>
               </div>
             </div>
 
             {/* Category Chips - Scrolling */}
-            <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar -mx-1 px-1">
-              {CATEGORIES.map(cat => {
-                const isSelected = category === cat.value
-                return (
-                  <button
-                    key={cat.value}
-                    onClick={() => setCategory(cat.value)}
-                    className={cn(
-                      "flex items-center gap-2 px-4 py-2 rounded-full text-[12px] font-bold whitespace-nowrap transition-all border shrink-0",
-                      isSelected 
-                        ? "bg-[#E8391A] text-white border-[#E8391A] shadow-md shadow-[#E8391A]/20 scale-[1.02]"
-                        : "bg-white text-[#484848] border-[#EBEBEB] hover:border-[#E8391A] hover:text-[#E8391A] shadow-sm"
-                    )}
-                  >
-                    <span>{cat.emoji}</span>
-                    <span>{cat.label}</span>
-                  </button>
-                )
-              })}
-            </div>
+            {!isOfflineMode && (
+              <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar -mx-1 px-1">
+                {CATEGORIES.map(cat => {
+                  const isSelected = category === cat.value
+                  return (
+                    <button
+                      key={cat.value}
+                      onClick={() => setCategory(cat.value)}
+                      className={cn(
+                        "flex items-center gap-2 px-4 py-2 rounded-full text-[12px] font-bold whitespace-nowrap transition-all border shrink-0",
+                        isSelected 
+                          ? "bg-[#E8391A] text-white border-[#E8391A] shadow-md shadow-[#E8391A]/20 scale-[1.02]"
+                          : "bg-white text-[#484848] border-[#EBEBEB] hover:border-[#E8391A] hover:text-[#E8391A] shadow-sm"
+                      )}
+                    >
+                      <span>{cat.emoji}</span>
+                      <span>{cat.label}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
 
-            <div className="flex items-center gap-3">
-              <div className="flex-1 bg-white rounded-full px-4 py-2 border border-[#EBEBEB] flex items-center gap-3 shadow-sm hover:border-[#E8391A]/30 transition-colors">
-                <span className="text-[11px] font-extrabold text-[#767676] uppercase tracking-wider">Radius:</span>
-                <Select value={radius} onValueChange={setRadius}>
-                  <SelectTrigger className="h-5 border-none bg-transparent text-[11px] font-extrabold p-0 focus:ring-0 focus:ring-offset-0 w-20 text-[#1a1a1a]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-2xl border-[#f0ede8] z-[3000] shadow-xl">
-                    <SelectItem value="2000" className="text-[11px] font-semibold">2 KM</SelectItem>
-                    <SelectItem value="5000" className="text-[11px] font-semibold">5 KM</SelectItem>
-                    <SelectItem value="10000" className="text-[11px] font-semibold">10 KM</SelectItem>
-                    <SelectItem value="20000" className="text-[11px] font-semibold">20 KM</SelectItem>
-                  </SelectContent>
-                </Select>
+            {!isOfflineMode && (
+              <div className="flex items-center gap-3">
+                <div className="flex-1 bg-white rounded-full px-4 py-2 border border-[#EBEBEB] flex items-center gap-3 shadow-sm hover:border-[#E8391A]/30 transition-colors">
+                  <span className="text-[11px] font-extrabold text-[#767676] uppercase tracking-wider">Radius:</span>
+                  <Select value={radius} onValueChange={setRadius}>
+                    <SelectTrigger className="h-5 border-none bg-transparent text-[11px] font-extrabold p-0 focus:ring-0 focus:ring-offset-0 w-20 text-[#1a1a1a]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-2xl border-[#f0ede8] z-[3000] shadow-xl">
+                      <SelectItem value="2000" className="text-[11px] font-semibold">2 KM</SelectItem>
+                      <SelectItem value="5000" className="text-[11px] font-semibold">5 KM</SelectItem>
+                      <SelectItem value="10000" className="text-[11px] font-semibold">10 KM</SelectItem>
+                      <SelectItem value="20000" className="text-[11px] font-semibold">20 KM</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="px-4 py-2 bg-[#FEE2E2] rounded-full border border-[#FECACA] shadow-sm">
+                  <span className="text-[11px] font-extrabold text-[#E8391A] whitespace-nowrap uppercase tracking-tighter">
+                    {places.length} results
+                  </span>
+                </div>
               </div>
-              <div className="px-4 py-2 bg-[#FEE2E2] rounded-full border border-[#FECACA] shadow-sm">
-                <span className="text-[11px] font-extrabold text-[#E8391A] whitespace-nowrap uppercase tracking-tighter">
-                  {places.length} results
-                </span>
-              </div>
-            </div>
+            )}
+
+            {isOfflineMode && typeof window !== 'undefined' && navigator.onLine && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => window.location.href = '/near-me'}
+                className="w-full text-[11px] font-bold border-[#EBEBEB] rounded-xl h-10"
+              >
+                Switch to Live Interactive Map
+              </Button>
+            )}
 
             {error && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="px-3 py-2 bg-red-50 border border-red-100 rounded-lg text-[10px] font-bold text-[#EF4444] flex items-center gap-2">

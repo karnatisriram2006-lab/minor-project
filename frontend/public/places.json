@@ -6,8 +6,18 @@
     "category": "beach",
     "lat": 15.5527,
     "lon": 73.7553,
-    "address": "Goa, India",
-    "distance": 0
+    "address": "North Goa, India",
+    "description": "One of the most popular beaches in Goa, famous for its nightlife, water sports, and seafood shacks."
+  },
+  {
+    "id": "goa-2",
+    "name": "Fort Aguada",
+    "city": "Goa",
+    "category": "monument",
+    "lat": 15.4920,
+    "lon": 73.7731,
+    "address": "Candolim, Goa",
+    "description": "A well-preserved seventeenth-century Portuguese fort standing on Sinquerim Beach, overlooking the Arabian Sea."
   },
   {
     "id": "jai-1",
@@ -16,17 +26,97 @@
     "category": "monument",
     "lat": 26.9855,
     "lon": 75.8513,
-    "address": "Jaipur, India",
-    "distance": 0
+    "address": "Amer, Jaipur, Rajasthan",
+    "description": "A majestic fort known for its artistic Hindu style elements and breathtaking views of Maota Lake."
+  },
+  {
+    "id": "jai-2",
+    "name": "Hawa Mahal",
+    "city": "Jaipur",
+    "category": "monument",
+    "lat": 26.9239,
+    "lon": 75.8267,
+    "address": "Badi Choupad, Jaipur",
+    "description": "The 'Palace of Winds' features 953 small windows designed to keep the palace cool for the royal ladies."
   },
   {
     "id": "ker-1",
     "name": "Alleppey Backwaters",
     "city": "Kerala",
-    "category": "monument",
+    "category": "nature",
     "lat": 9.4981,
     "lon": 76.3388,
-    "address": "Alappuzha, Kerala, India",
-    "distance": 0
+    "address": "Alappuzha, Kerala",
+    "description": "Experience the serene beauty of the Venice of the East on a traditional houseboat."
+  },
+  {
+    "id": "ker-2",
+    "name": "Munnar Tea Gardens",
+    "city": "Kerala",
+    "category": "nature",
+    "lat": 10.0889,
+    "lon": 77.0595,
+    "address": "Idukki District, Kerala",
+    "description": "Lush green tea plantations spread across hills, offering a tranquil and refreshing experience."
+  },
+  {
+    "id": "del-1",
+    "name": "Red Fort",
+    "city": "Delhi",
+    "category": "monument",
+    "lat": 28.6562,
+    "lon": 77.2410,
+    "address": "Netaji Subhash Marg, New Delhi",
+    "description": "A historic fort in the city of Delhi that served as the main residence of the Mughal Emperors."
+  },
+  {
+    "id": "del-2",
+    "name": "Qutub Minar",
+    "city": "Delhi",
+    "category": "monument",
+    "lat": 28.5244,
+    "lon": 77.1855,
+    "address": "Mehrauli, New Delhi",
+    "description": "A 73-metre tall tapering tower of five storeys, and a UNESCO World Heritage Site."
+  },
+  {
+    "id": "agr-1",
+    "name": "Taj Mahal",
+    "city": "Agra",
+    "category": "monument",
+    "lat": 27.1751,
+    "lon": 78.0421,
+    "address": "Agra, Uttar Pradesh",
+    "description": "An ivory-white marble mausoleum on the southern bank of the river Yamuna, one of the Seven Wonders of the World."
+  },
+  {
+    "id": "agr-2",
+    "name": "Agra Fort",
+    "city": "Agra",
+    "category": "monument",
+    "lat": 27.1795,
+    "lon": 78.0211,
+    "address": "Agra, Uttar Pradesh",
+    "description": "A historical fort which was the main residence of the emperors of the Mughal Dynasty until 1638."
+  },
+  {
+    "id": "var-1",
+    "name": "Dashashwamedh Ghat",
+    "city": "Varanasi",
+    "category": "spiritual",
+    "lat": 25.3065,
+    "lon": 83.0101,
+    "address": "Varanasi, Uttar Pradesh",
+    "description": "The main ghat in Varanasi on the Ganga River, famous for its daily evening Ganga Aarti ceremony."
+  },
+  {
+    "id": "var-2",
+    "name": "Kashi Vishwanath Temple",
+    "city": "Varanasi",
+    "category": "spiritual",
+    "lat": 25.3108,
+    "lon": 83.0107,
+    "address": "Lahori Tola, Varanasi",
+    "description": "One of the most famous Hindu temples dedicated to Lord Shiva, located in the heart of the holy city."
   }
 ]

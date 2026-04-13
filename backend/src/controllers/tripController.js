@@ -337,10 +337,58 @@ const toggleBookmarkTrip = async (req, res) => {
 // @access  Public
 const searchTrips = async (req, res) => {
     try {
-        const query = req.query.q || '';
+        const query = (req.query.q || '').toLowerCase();
         
         if (!query.trim()) {
             return res.json({ trips: [] });
+        }
+
+        // Demo mode fallback — no MongoDB
+        if (!process.env.MONGODB_URI) {
+            const demoTrips = [
+                {
+                    _id: 'demo_trip_1',
+                    title: 'Jaipur Heritage & Forts',
+                    destination: 'Jaipur',
+                    duration: 3,
+                    budget: 'Medium',
+                    isPublic: true,
+                    userId: 'traveler_123',
+                    createdAt: new Date(),
+                },
+                {
+                    _id: 'demo_trip_2',
+                    title: 'Goa Beach Hopping',
+                    destination: 'Goa',
+                    duration: 5,
+                    budget: 'Economy',
+                    isPublic: true,
+                    userId: 'traveler_456',
+                    createdAt: new Date(),
+                },
+                {
+                    _id: 'demo_trip_3',
+                    title: 'Varanasi Spiritual Journey',
+                    destination: 'Varanasi',
+                    duration: 2,
+                    budget: 'Economy',
+                    isPublic: true,
+                    userId: 'traveler_789',
+                    createdAt: new Date(),
+                }
+            ];
+
+            const filtered = demoTrips.filter(t => 
+                t.title.toLowerCase().includes(query) || 
+                t.destination.toLowerCase().includes(query)
+            );
+
+            return res.json({ 
+                trips: filtered.map(t => ({
+                    ...t,
+                    author: { name: 'Demo Traveler', avatar: null }
+                })) 
+            });
         }
 
         const regex = new RegExp(query, 'i');

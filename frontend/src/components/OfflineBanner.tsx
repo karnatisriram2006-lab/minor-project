@@ -26,6 +26,11 @@ export default function OfflineBanner() {
     const handleOffline = () => {
       setIsOnline(false);
       setShowBanner(true);
+      
+      // Auto-redirect to offline page if not already there
+      if (window.location.pathname !== "/offline") {
+        window.location.href = "/offline";
+      }
     };
 
     window.addEventListener("online", handleOnline);

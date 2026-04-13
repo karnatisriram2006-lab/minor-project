@@ -75,15 +75,95 @@ exports.updateProfile = async (req, res, next) => {
     }
 };
 
+// @desc    Get public profile of another traveler
+// @route   GET /api/profile/:uid
+// @access  Public
+exports.getPublicProfile = async (req, res, next) => {
+    try {
+        const { uid } = req.params;
+
+        if (!process.env.MONGODB_URI) {
+            // Demo mode fallback
+            return res.json({
+                user: {
+                    name: 'Sriram Karnati',
+                    bio: 'Loves exploring hidden gems in India.',
+                    interests: ['Photography', 'Heritage', 'Food'],
+                    avatar: null,
+                },
+                stats: {
+                    trips: 12,
+                    destinations: 45,
+                    likes: 120
+                }
+            });
+        }
+
+        const user = await User.findOne({ firebaseUid: uid })
+            .select('name avatar bio interests nationality language');
+
+        if (!user) {
+            res.status(404);
+            throw new Error('User not found');
+        }
+
+        // Calculate statistics
+        const tripsCount = await Trip.countDocuments({ userId: uid });
+        const publicTrips = await Trip.find({ userId: uid, isPublic: true });
+        const totalLikesReceived = publicTrips.reduce((acc, trip) => acc + (trip.likesCount || 0), 0);
+
+        res.json({
+            user,
+            stats: {
+                trips: tripsCount,
+                destinations: publicTrips.length,
+                likes: totalLikesReceived
+            }
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
 // @desc    Search public users
 // @route   GET /api/profile/search?q=XYZ
 // @access  Public
 exports.searchUsers = async (req, res, next) => {
     try {
-        const query = req.query.q || '';
+        const query = (req.query.q || '').toLowerCase();
         
         if (!query.trim()) {
             return res.json({ users: [] });
+        }
+
+        // Demo mode fallback — no MongoDB
+        if (!process.env.MONGODB_URI) {
+            const demoUsers = [
+                {
+                    firebaseUid: 'traveler_123',
+                    name: 'Sriram Karnati',
+                    avatar: null,
+                    bio: 'Loves exploring hidden gems in India.'
+                },
+                {
+                    firebaseUid: 'traveler_456',
+                    name: 'Aishwarya Singh',
+                    avatar: null,
+                    bio: 'Mountain lover and photographer.'
+                },
+                {
+                    firebaseUid: 'traveler_789',
+                    name: 'Rahul Sharma',
+                    avatar: null,
+                    bio: 'Budget traveler and foodie.'
+                }
+            ];
+
+            const filtered = demoUsers.filter(u => 
+                u.name.toLowerCase().includes(query)
+            );
+
+            return res.json({ users: filtered });
         }
 
         const regex = new RegExp(query, 'i');

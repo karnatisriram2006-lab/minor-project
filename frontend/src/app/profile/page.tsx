@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  User,
+  User as UserIcon,
   MapPin,
   Languages,
   Compass,
@@ -24,7 +24,7 @@ import {
   CheckCircle2,
   Loader2,
 } from "lucide-react";
-import axios from "axios";
+import api from "@/lib/api";
 
 const TRAVEL_STYLES = [
   {
@@ -73,18 +73,11 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const apiUrl = (
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
-        ).replace(/\/$/, "");
-        const token = await auth.currentUser?.getIdToken();
-        const res = await axios.get(`${apiUrl}/api/profile`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await api.get("/profile");
         setStats({
           trips: res.data.stats.tripsCount || 0,
           destinations: res.data.stats.publicTripsCount || 0,
         });
-        // Assume interests/languages are part of profile
       } catch (err) {
         console.error("Failed to load profile from backend:", err);
       }
@@ -110,25 +103,16 @@ export default function ProfilePage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const apiUrl =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-      const token = await user?.getIdToken();
-      await axios.put(
-        `${apiUrl}/profile`,
-        {
-          name: displayName,
-          nationality: homeCity,
-          language: languages[0],
-          interests: JSON.stringify(interests),
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      await api.put("/profile", {
+        name: displayName,
+        nationality: homeCity,
+        language: languages[0],
+        interests: JSON.stringify(interests),
+      });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
-    } catch {
-      /* ignore */
+    } catch (err) {
+      console.error("Failed to save profile:", err);
     } finally {
       setSaving(false);
     }
@@ -147,7 +131,7 @@ export default function ProfilePage() {
       <div className="min-h-screen bg-[#F7F7F7] dark:bg-[#0F0F0F] flex items-center justify-center p-6">
         <div className="text-center space-y-4">
           <div className="w-14 h-14 rounded-2xl bg-[#F7F7F7] dark:bg-[#1A1A1A] flex items-center justify-center mx-auto border border-[#EBEBEB] dark:border-[#2A2A2A]">
-            <User className="h-7 w-7 text-[#BBBBBB]" />
+            <UserIcon className="h-7 w-7 text-[#BBBBBB]" />
           </div>
           <p className="text-sm font-semibold text-[#484848] dark:text-[#E0E0E0]">
             Sign in to view your profile

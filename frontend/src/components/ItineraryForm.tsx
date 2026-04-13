@@ -46,6 +46,16 @@ export function ItineraryForm({
   >("idle");
   const recognitionRef = useRef<any>(null);
 
+  // Sync with initialData (important for search pre-filling)
+  React.useEffect(() => {
+    if (initialData) {
+      setFormData(prev => ({
+        ...prev,
+        ...initialData
+      }));
+    }
+  }, [initialData]);
+
   const INTEREST_CHIPS = [
     "History",
     "Food",

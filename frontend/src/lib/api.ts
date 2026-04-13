@@ -21,13 +21,12 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// Add a request interceptor to include the Firebase JWT token
+// Add a request interceptor to include the Bearer token from localStorage
 api.interceptors.request.use(
-  async (config: InternalAxiosRequestConfig) => {
-    const user = auth.currentUser;
-    if (user) {
-      const token = await user.getIdToken();
-      if (config.headers) {
+  (config: InternalAxiosRequestConfig) => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token');
+      if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
@@ -36,14 +35,20 @@ api.interceptors.request.use(
   (error: AxiosError) => Promise.reject(error)
 );
 
-// Add a response interceptor to handle 401 errors
+// Add a response interceptor to handle 401 errors (Unauthorized)
 api.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
       if (typeof window !== 'undefined') {
+        console.warn("Unauthorized! Clearing session and redirecting to login.");
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        
+        // Only redirect if we are not already on the login page
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login?expired=true';
+        }
       }
     }
     return Promise.reject(error);

@@ -33,6 +33,7 @@ import { useDarkMode } from "@/hooks/useDarkMode"
 import SearchTypeahead from "./SearchTypeahead"
 import { useTranslations } from "next-intl"
 import { LanguageSwitcher } from "@/components/LanguageSwitcher"
+import apiClient from "../lib/api"
 
 export default function Navbar() {
   const pathname = usePathname()
@@ -64,17 +65,47 @@ export default function Navbar() {
   const handleLogout = async () => {
     try {
       await signOut(auth)
+      // Clear manual token storage
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+      }
       setMobileOpen(false)
+      window.location.href = "/" // Redirect to home after logout
     } catch (error) {
       console.error("Logout error:", error)
     }
   }
 
+  const [pendingCount, setPendingCount] = React.useState(0)
+
+  React.useEffect(() => {
+    if (user && mounted) {
+      const fetchPending = async () => {
+        try {
+          const { data } = await apiClient.get("/connections/pending")
+          setPendingCount(data.length)
+        } catch (err) {
+          console.error("Failed to fetch pending requests in Navbar", err)
+        }
+      }
+      fetchPending()
+      // Optional: Poll every 2 minutes
+      const interval = setInterval(fetchPending, 120000)
+      return () => clearInterval(interval)
+    }
+  }, [user, mounted])
+
   const navItems = [
     { name: t("dashboard"),  href: "/dashboard",    icon: <LayoutDashboard className="h-5 w-5" /> },
     { name: t("explore"),    href: "/companions",    icon: <Globe className="h-5 w-5" /> },
     { name: t("planner"),    href: "/trip-planner",  icon: <Sparkles className="h-5 w-5" /> },
-    { name: t("community"),  href: "/community",     icon: <Users className="h-5 w-5" /> },
+    { 
+      name: t("community"),  
+      href: "/community",     
+      icon: <Users className="h-5 w-5" />,
+      badge: pendingCount > 0 ? pendingCount : null
+    },
   ]
 
   const allMobileLinks = [
@@ -117,10 +148,15 @@ export default function Navbar() {
               return (
                 <Link key={item.name} href={item.href} className="relative group px-4 py-2 rounded-xl">
                   <span className={cn(
-                    "text-[13px] font-semibold transition-colors duration-150",
+                    "relative text-[13px] font-semibold transition-colors duration-150",
                     isActive ? "text-[#484848]" : "text-[#767676] hover:text-[#484848]"
                   )}>
                     {item.name}
+                    {"badge" in item && item.badge && (
+                       <span className="absolute -top-2 -right-4 flex h-4 w-4 items-center justify-center rounded-full bg-[#FF5A5F] text-[9px] font-bold text-white ring-2 ring-white">
+                         {item.badge}
+                       </span>
+                    )}
                   </span>
                   {isActive && (
                     <motion.div

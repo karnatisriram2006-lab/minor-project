@@ -2,13 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { motion } from "framer-motion"
-import { WifiOff, Download, Map, BookOpen, FileText, CheckCircle2, Smartphone } from "lucide-react"
+import { WifiOff, Download, Map as MapIcon, BookOpen, FileText, CheckCircle2, Smartphone, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
 const offlineFeatures = [
   {
-    icon: Map,
+    icon: MapIcon,
     title: "Offline Maps",
     desc: "Download city maps with key landmarks, hospitals, and transit stations."
   },
@@ -66,11 +66,32 @@ export default function OfflinePage() {
   const [offlineDays, setOfflineDays] = useState<OfflineDay[]>([])
   const [offlineTripDetails, setOfflineTripDetails] = useState<OfflineTripDetail[]>([])
 
+  const handleClearStorage = () => {
+    try {
+      const keys = Object.keys(localStorage)
+      keys.forEach(key => {
+        if (key.startsWith("yatra_city_pack_") || key === CITY_PACK_INDEX_KEY) {
+          localStorage.removeItem(key)
+        }
+      })
+      if ("caches" in window) {
+        caches.delete("yatra-city-packs-v1")
+      }
+      setDownloadedPacks({})
+      setDownloadMessage("Storage cleared. You can now download fresh city packs.")
+    } catch (err) {
+      console.error("Failed to clear storage:", err)
+    }
+  }
+
   const handleDownload = async (city: string) => {
     setDownloading(city)
     setDownloadMessage("")
     try {
-      const placesRes = await fetch("/places.json")
+      // Add a small delay for premium feel
+      await new Promise(resolve => setTimeout(resolve, 800))
+
+      const placesRes = await fetch(`/places.json?t=${Date.now()}`)
       const places = placesRes.ok ? await placesRes.json() : []
       const cityPlaces = Array.isArray(places)
         ? places.filter((p: any) => String(p?.city || "").toLowerCase() === city.toLowerCase())
@@ -81,34 +102,52 @@ export default function OfflinePage() {
         downloadedAt: new Date().toISOString(),
         places: cityPlaces,
       }
-      localStorage.setItem(`yatra_city_pack_${city.toLowerCase()}`, JSON.stringify(packPayload))
+      
+      // Try to save, catch quota error
+      try {
+        localStorage.setItem(`yatra_city_pack_${city.toLowerCase()}`, JSON.stringify(packPayload))
 
-      const currentIndex = JSON.parse(localStorage.getItem(CITY_PACK_INDEX_KEY) || "{}")
-      currentIndex[city] = {
-        places: cityPlaces.length,
-        downloadedAt: packPayload.downloadedAt,
+        const currentIndex = JSON.parse(localStorage.getItem(CITY_PACK_INDEX_KEY) || "{}")
+        currentIndex[city] = {
+          places: cityPlaces.length,
+          downloadedAt: packPayload.downloadedAt,
+        }
+        localStorage.setItem(CITY_PACK_INDEX_KEY, JSON.stringify(currentIndex))
+        setDownloadedPacks(currentIndex)
+      } catch (storageErr: any) {
+        if (storageErr.name === 'QuotaExceededError' || storageErr.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+          throw new Error("STORAGE_FULL")
+        }
+        throw storageErr
       }
-      localStorage.setItem(CITY_PACK_INDEX_KEY, JSON.stringify(currentIndex))
-      setDownloadedPacks(currentIndex)
 
       if ("caches" in window) {
-        const cache = await caches.open("yatra-city-packs-v1")
-        const assetsToCache = [
-          "/offline",
-          "/trip-planner?offline=true",
-          "/near-me",
-          "/map",
-          "/places.json",
-          "/leaflet/marker-icon.png",
-          "/leaflet/marker-icon-2x.png",
-          "/leaflet/marker-shadow.png",
-        ]
-        await Promise.all(assetsToCache.map((url) => cache.add(url).catch(() => null)))
+        try {
+          const cache = await caches.open("yatra-city-packs-v1")
+          const assetsToCache = [
+            "/offline",
+            "/trip-planner?offline=true",
+            "/near-me",
+            "/map",
+            "/places.json",
+            "/leaflet/marker-icon.png",
+            "/leaflet/marker-icon-2x.png",
+            "/leaflet/marker-shadow.png",
+          ]
+          await Promise.all(assetsToCache.map((url) => cache.add(url).catch(() => null)))
+        } catch (cacheErr) {
+          console.warn("Cache API failed, but manifest remains in localStorage", cacheErr)
+        }
       }
 
-      setDownloadMessage(`${city} pack downloaded (${cityPlaces.length} places cached).`)
-    } catch {
-      setDownloadMessage(`Could not download ${city} pack. Please try again.`)
+      setDownloadMessage(`Success! ${city} pack is now available offline.`)
+    } catch (err: any) {
+      console.error("Download failed:", err)
+      if (err.message === "STORAGE_FULL") {
+        setDownloadMessage("Storage is full! Please clear old city packs using the Manage Storage button.")
+      } else {
+        setDownloadMessage(`Could not download ${city} pack. Please check your connection.`)
+      }
     } finally {
       setDownloading(null)
     }
@@ -391,9 +430,20 @@ export default function OfflinePage() {
 
         {/* Download city packs */}
         <div className="bg-white rounded-2xl border border-[#EBEBEB] shadow-sm overflow-hidden">
-          <div className="px-6 py-5 border-b border-[#EBEBEB]">
-            <h2 className="text-base font-bold text-[#484848] tracking-tight">Download city packs</h2>
-            <p className="text-xs text-[#767676] mt-0.5">Each pack includes maps, guides, and saved itineraries</p>
+          <div className="px-6 py-5 border-b border-[#EBEBEB] flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-bold text-[#484848] tracking-tight">Download city packs</h2>
+              <p className="text-xs text-[#767676] mt-0.5">Each pack includes maps, guides, and saved itineraries</p>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleClearStorage}
+              className="h-9 px-3 text-[11px] font-bold text-[#FF5A5F] border-[#FF5A5F]/20 hover:bg-[#FF5A5F]/5 hover:border-[#FF5A5F]/30 rounded-xl flex items-center gap-2"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Clear Storage
+            </Button>
           </div>
           <div className="p-6">
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -401,25 +451,39 @@ export default function OfflinePage() {
                 const isDownloading = downloading === city
                 const isDownloaded = !!downloadedPacks[city]
                 return (
-                  <Button
-                    key={city}
-                    variant="outline"
-                    onClick={() => handleDownload(city)}
-                    disabled={isDownloading}
-                    className="h-14 rounded-xl text-xs font-semibold transition-all active:scale-[0.97] flex flex-col items-center gap-1"
-                  >
-                    {isDownloading ? (
-                      <>
-                        <div className="w-3.5 h-3.5 border-2 border-[#FF5A5F]/30 border-t-[#FF5A5F] rounded-full animate-spin" />
-                        <span>Downloading...</span>
-                      </>
-                    ) : (
-                      <>
-                        {isDownloaded ? <CheckCircle2 className="h-4 w-4 text-[#00A699]" /> : <Download className="h-4 w-4" />}
-                        <span>{city}</span>
-                      </>
+                  <div key={city} className="flex flex-col gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => handleDownload(city)}
+                      disabled={isDownloading}
+                      className="h-14 rounded-xl text-xs font-semibold w-full transition-all active:scale-[0.97] flex flex-col items-center gap-1"
+                    >
+                      {isDownloading ? (
+                        <>
+                          <div className="w-3.5 h-3.5 border-2 border-[#FF5A5F]/30 border-t-[#FF5A5F] rounded-full animate-spin" />
+                          <span>Downloading...</span>
+                        </>
+                      ) : (
+                        <>
+                          {isDownloaded ? <CheckCircle2 className="h-4 w-4 text-[#00A699]" /> : <Download className="h-4 w-4" />}
+                          <span>{city}</span>
+                        </>
+                      )}
+                    </Button>
+                    
+                    {isDownloaded && (
+                      <Link href={`/near-me?city=${city}&offline=true`} className="w-full">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="w-full h-8 text-[10px] font-bold text-[#00A699] hover:bg-[#00A699]/5 rounded-lg flex items-center justify-center gap-1.5"
+                        >
+                          <MapIcon className="h-3 w-3" />
+                          View Map
+                        </Button>
+                      </Link>
                     )}
-                  </Button>
+                  </div>
                 )
               })}
             </div>

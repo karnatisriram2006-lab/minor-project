@@ -13,11 +13,14 @@ import {
   Loader2,
   X,
   Image as ImageIcon,
+  Compass,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { imageService } from "@/services/imageService";
 import Image from "next/image";
+import api from "@/lib/api";
+import { Button } from "@/components/ui/button";
 
 interface SearchResult {
   trips: any[];
@@ -108,16 +111,12 @@ export default function SearchTypeahead({
       setLoading(true);
       try {
         const [tripsRes, usersRes] = await Promise.all([
-          fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/trips/search?q=${query}`,
-          ),
-          fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/profile/search?q=${query}`,
-          ),
+          api.get(`/trips/search?q=${query}`),
+          api.get(`/profile/search?q=${query}`),
         ]);
 
-        const tripsData = await tripsRes.json();
-        const usersData = await usersRes.json();
+        const tripsData = tripsRes.data;
+        const usersData = usersRes.data;
 
         // Enrich trips with images
         const enrichedTrips = await Promise.all(
@@ -134,8 +133,10 @@ export default function SearchTypeahead({
           trips: enrichedTrips,
           users: usersData.users || [],
         });
-      } catch (error) {
+      } catch (error: any) {
         console.error("Search error:", error);
+        // Fallback or empty state
+        setResults({ trips: [], users: [] });
       } finally {
         setLoading(false);
       }
@@ -289,7 +290,12 @@ export default function SearchTypeahead({
                     {INDIA_POPULAR.map((item) => (
                       <div
                         key={item.name}
-                        onClick={() => setQuery(item.name)}
+                        onClick={() => {
+                          setQuery(item.name);
+                          router.push(`/trip-planner?destination=${encodeURIComponent(item.name)}`);
+                          setIsOpen(false);
+                          if (isMobile) onClose?.();
+                        }}
                         className="flex items-center gap-3 p-3 rounded-2xl hover:bg-[#F7F7F7] dark:hover:bg-[#2A2A2A] cursor-pointer transition-colors"
                       >
                         <div className="w-10 h-10 rounded-xl bg-[#F7F7F7] dark:bg-[#2A2A2A] flex items-center justify-center text-[#FF5A5F] overflow-hidden relative shrink-0 border border-[#EBEBEB] dark:border-[#333]">
@@ -405,7 +411,7 @@ export default function SearchTypeahead({
                         {results.users.map((member) => (
                           <Link
                             key={member.firebaseUid}
-                            href={`/profile?id=${member.firebaseUid}`}
+                            href={`/profile/${member.firebaseUid}`}
                             onClick={() => {
                               setIsOpen(false);
                               if (isMobile) onClose?.();
@@ -428,11 +434,49 @@ export default function SearchTypeahead({
                                 {member.bio || "Avid traveler exploring India"}
                               </p>
                             </div>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="opacity-0 group-hover:opacity-100 h-8 rounded-lg text-[10px] font-bold uppercase tracking-widest text-[#FF5A5F] hover:text-[#FF5A5F] hover:bg-[#FF5A5F]/5"
+                            >
+                              View Profile
+                            </Button>
                           </Link>
                         ))}
                       </div>
                     </div>
                   )}
+
+                {/* Intelligent Suggestion: Plan for Query */}
+                {query.trim().length > 2 && (
+                  <div className="mt-4 pt-4 border-t border-[#F7F7F7] dark:border-[#2A2A2A]">
+                    <div 
+                      onClick={() => {
+                        router.push(`/trip-planner?destination=${encodeURIComponent(query)}`);
+                        setIsOpen(false);
+                        if (isMobile) onClose?.();
+                      }}
+                      className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-[#FF5A5F]/5 to-transparent border border-[#FF5A5F]/10 hover:border-[#FF5A5F]/30 cursor-pointer transition-all group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#1A1A1A] flex items-center justify-center text-[#FF5A5F] shadow-sm group-hover:scale-110 transition-transform">
+                          <Compass className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-[#484848] dark:text-[#E0E0E0]">
+                            Plan a new trip to <span className="text-[#FF5A5F]">{query}</span>
+                          </p>
+                          <p className="text-[10px] font-medium text-[#767676]">
+                            AI will generate a custom itinerary for you
+                          </p>
+                        </div>
+                      </div>
+                      <div className="bg-[#FF5A5F] text-white p-2 rounded-xl group-hover:translate-x-1 transition-transform">
+                        <Compass className="h-4 w-4" />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </motion.div>
 
