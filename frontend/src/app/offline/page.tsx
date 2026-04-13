@@ -124,6 +124,27 @@ export default function OfflinePage() {
       if ("caches" in window) {
         try {
           const cache = await caches.open("yatra-city-packs-v1")
+          const lng2tile = (lon: number, zoom: number) => Math.floor((lon + 180) / 360 * Math.pow(2, zoom));
+          const lat2tile = (lat: number, zoom: number) => Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom));
+
+          const tileUrls: string[] = [];
+          if (cityPlaces.length > 0) {
+            const centerLat = Number(cityPlaces[0].lat);
+            const centerLng = Number(cityPlaces[0].lng || cityPlaces[0].lon);
+            
+            // Build a 5x5 grid of map tiles for Zoom 12 and 13 to create a rich local offline map
+            [12, 13].forEach(z => {
+              const cx = lng2tile(centerLng, z);
+              const cy = lat2tile(centerLat, z);
+              for (let dx = -2; dx <= 2; dx++) {
+                for (let dy = -2; dy <= 2; dy++) {
+                  tileUrls.push(`https://a.basemaps.cartocdn.com/rastertiles/voyager/${z}/${cx + dx}/${cy + dy}.png`);
+                  tileUrls.push(`https://a.basemaps.cartocdn.com/dark_all/${z}/${cx + dx}/${cy + dy}.png`);
+                }
+              }
+            });
+          }
+
           const assetsToCache = [
             "/offline",
             "/trip-planner?offline=true",
@@ -133,6 +154,7 @@ export default function OfflinePage() {
             "/leaflet/marker-icon.png",
             "/leaflet/marker-icon-2x.png",
             "/leaflet/marker-shadow.png",
+            ...tileUrls
           ]
           await Promise.all(assetsToCache.map((url) => cache.add(url).catch(() => null)))
         } catch (cacheErr) {

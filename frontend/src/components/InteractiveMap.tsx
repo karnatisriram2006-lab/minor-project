@@ -410,6 +410,43 @@ export default React.memo(function InteractiveMap({
   onGetLocation,
   isOffline = false,
 }: InteractiveMapProps) {
+  // Inject true offline Map Tile caching override
+  useEffect(() => {
+    if (typeof window !== "undefined" && typeof L !== "undefined" && isOffline) {
+      const TilePrototype = L.TileLayer.prototype as any;
+      if (!TilePrototype._yatraCached) {
+        TilePrototype._yatraCached = true;
+        TilePrototype.createTile = function (coords: any, done: any) {
+          const tile = document.createElement("img");
+          const url = this.getTileUrl(coords);
+
+          L.DomEvent.on(tile, "load", L.Util.bind(this._tileOnLoad, this, done, tile));
+          L.DomEvent.on(tile, "error", L.Util.bind(this._tileOnError, this, done, tile));
+
+          if (this.options.crossOrigin) tile.crossOrigin = "";
+          tile.alt = "";
+          tile.setAttribute("role", "presentation");
+
+          if ("caches" in window) {
+            caches.match(url).then((response) => {
+              if (response) return response.blob();
+              return fetch(url).then((r) => r.blob());
+            }).then((blob) => {
+              if (!this._map) return; // Prevent writing to destroyed layer
+              tile.src = URL.createObjectURL(blob);
+            }).catch(() => {
+              if (!this._map) return;
+              tile.src = url;
+            });
+          } else {
+            tile.src = url;
+          }
+          return tile;
+        };
+      }
+    }
+  }, [isOffline]);
+
   const [hasMounted, setHasMounted] = useState(false);
   const [driveCoords, setDriveCoords] = useState<[number, number][]>([]);
 
@@ -685,11 +722,10 @@ export default React.memo(function InteractiveMap({
           key={showDark ? "dark" : "light"}
           url={
             showDark
-              ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-              : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+              ? "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+              : "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
           }
           attribution='© <a href="https://carto.com/">CARTO</a>'
-          subdomains="abcd"
           maxZoom={19}
         />
         <ZoomControls />

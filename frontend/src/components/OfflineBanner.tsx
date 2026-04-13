@@ -8,12 +8,20 @@ export default function OfflineBanner() {
   const [showBanner, setShowBanner] = useState(false);
 
   useEffect(() => {
+    // Valid paths that are allowed to be viewed without an internet connection
+    const offlineValidPaths = ["/offline", "/near-me", "/map", "/trip-planner"];
+    const handleRedirect = () => {
+      if (!offlineValidPaths.includes(window.location.pathname)) {
+        window.location.href = "/offline";
+      }
+    };
+
     // Set initial state - check if already offline
     const isCurrentlyOnline = navigator.onLine;
     setIsOnline(isCurrentlyOnline);
-    // Show banner if already offline
     if (!isCurrentlyOnline) {
       setShowBanner(true);
+      handleRedirect();
     }
 
     const handleOnline = () => {
@@ -26,11 +34,7 @@ export default function OfflineBanner() {
     const handleOffline = () => {
       setIsOnline(false);
       setShowBanner(true);
-      
-      // Auto-redirect to offline page if not already there
-      if (window.location.pathname !== "/offline") {
-        window.location.href = "/offline";
-      }
+      handleRedirect();
     };
 
     window.addEventListener("online", handleOnline);
