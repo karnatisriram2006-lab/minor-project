@@ -14,6 +14,7 @@ import PwaRegistrar from "@/components/PwaRegistrar";
 import { GlobalErrorBoundary } from "@/components/GlobalErrorBoundary";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { UpdateAvailableBanner } from "@/components/OfflineComponents";
+import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const playfair = Playfair_Display({
@@ -26,23 +27,34 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://yatra-frontend.verc
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "YĀTRĀ — AI Travel Planner for India",
+    default: "AI Travel Planner — Smart Indian Itineraries | YĀTRĀ",
     template: "%s | YĀTRĀ",
   },
   description:
-    "AI-powered travel platform for India. Plan trips, discover destinations, manage budgets, and connect with travel companions.",
+    "YĀTRĀ is a smart multilingual AI-powered travel recommendation and route optimization platform for India. Plan trips, discover hidden gems, and manage budgets with AI.",
+  keywords: ["AI Travel Planner", "India Tourism", "Itinerary Generator", "Smart Travel", "Budget Travel India", "Yatra", "Travel Recommendations", "Route Optimization"],
+  authors: [{ name: "Yatra Team" }],
+  creator: "Yatra AI",
+  publisher: "Yatra AI",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
   openGraph: {
-    title: "YĀTRĀ — AI Travel Planner for India",
+    title: "AI Travel Planner — Smart Indian Itineraries | YĀTRĀ",
     description:
-      "AI-powered travel platform for India. Plan trips, discover destinations, manage budgets, and connect with travel companions.",
+      "Plan your perfect Indian journey with YĀTRĀ. AI-powered itineraries, real-time nearby discovery, and smart budget management.",
     type: "website",
     url: siteUrl,
+    siteName: "YĀTRĀ",
+    locale: "en_IN",
     images: [
       {
         url: "/images/og-image.svg",
         width: 1200,
         height: 630,
-        alt: "YĀTRĀ Travel Planning",
+        alt: "YĀTRĀ — AI Travel Planning for India",
       },
     ],
   },
@@ -50,16 +62,32 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "YĀTRĀ — AI Travel Planner for India",
     description:
-      "AI-powered travel platform for India. Plan trips, discover destinations, manage budgets, and connect with travel companions.",
+      "Plan your perfect Indian journey with AI. Smart itineraries and local discovery.",
     images: ["/images/og-image.svg"],
+    creator: "@yatra_ai",
   },
   manifest: "/manifest.json",
+  alternates: {
+    canonical: siteUrl,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export const viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  themeColor: "#FF5A5F",
 };
 
 export default function RootLayout({
@@ -122,6 +150,43 @@ export default function RootLayout({
             </ThemeProvider>
           </AuthProvider>
         </GlobalErrorBoundary>
+
+        {/* Structured Data (JSON-LD) */}
+        <Script
+          id="structured-data"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "YĀTRĀ AI",
+              "url": "https://yatra-frontend.vercel.app",
+              "logo": "https://yatra-frontend.vercel.app/icon-512.svg",
+              "sameAs": [
+                "https://twitter.com/yatra_ai",
+                "https://github.com/karnatisriram2006-lab/minor-project"
+              ],
+              "description": "AI-powered travel recommendation and route optimization platform for India."
+            }),
+          }}
+        />
+        <Script
+          id="website-data"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "YĀTRĀ",
+              "url": "https://yatra-frontend.vercel.app",
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://yatra-frontend.vercel.app/trip-planner?q={search_term_string}",
+                "query-input": "required name=search_term_string"
+              }
+            }),
+          }}
+        />
       </body>
     </html>
   );

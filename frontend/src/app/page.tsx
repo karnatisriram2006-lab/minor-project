@@ -62,16 +62,16 @@ export default function Home() {
   ]
 
   return (
-    <div className="flex flex-col min-h-screen bg-white text-[#484848] overflow-x-hidden font-sans">
+    <main className="flex flex-col min-h-screen bg-white text-[#484848] overflow-x-hidden font-sans">
 
-      {/* ── 1. Hero ──────────────────────────────────────────── */}
-      <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
+      {/* ── 1. Hero (Header) ────────────────────────────────── */}
+      <header className="relative h-screen w-full flex items-center justify-center overflow-hidden">
 
         {/* Parallax background image */}
         <motion.div style={{ y: y1 }} className="absolute inset-0 z-0 scale-110">
           <Image
             src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&q=80&w=2000"
-            alt="Taj Mahal, India"
+            alt="Taj Mahal, India - AI Travel Planning"
             fill
             priority
             sizes="100vw"
@@ -82,10 +82,7 @@ export default function Home() {
         </motion.div>
 
         {/* Hero content */}
-        <motion.div
-          style={{ opacity }}
-          className="relative z-10 text-center px-6 max-w-4xl mx-auto"
-        >
+        <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, y: -12 }}
@@ -97,7 +94,7 @@ export default function Home() {
             Experience the Soul of India
           </motion.div>
 
-          {/* Main headline */}
+          {/* Main headline (H1 for SEO) */}
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -115,7 +112,7 @@ export default function Home() {
             transition={{ delay: 0.55, duration: 0.8 }}
             className="text-base sm:text-lg text-white/80 font-medium max-w-xl mx-auto leading-relaxed mb-10"
           >
-            Intelligent planning meets timeless heritage. Your journey into the heart of India begins here.
+            Smart multilingual AI-powered travel recommendation and route optimization platform. Your journey into the heart of India begins here.
           </motion.p>
 
           {/* CTA buttons */}
@@ -132,7 +129,7 @@ export default function Home() {
                 </div>
               ) : user ? (
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <Link href="/dashboard">
+                  <Link href="/dashboard" aria-label="Go to Dashboard">
                     <Button
                       variant="premium"
                       className="h-12 px-8 rounded-xl text-sm font-semibold shadow-lg transition-all active:scale-[0.97]"
@@ -143,6 +140,7 @@ export default function Home() {
                   </Link>
                   <Button
                     onClick={handleLogout}
+                    aria-label="Sign Out"
                     className="h-12 px-8 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/30 text-sm font-semibold transition-all active:scale-[0.97]"
                   >
                     <LogOut className="h-4 w-4 mr-2" />
@@ -151,7 +149,7 @@ export default function Home() {
                 </div>
               ) : (
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <Link href="/register">
+                  <Link href="/register" aria-label="Register for Yatra">
                     <Button
                       variant="premium"
                       className="h-12 px-8 rounded-xl text-sm font-semibold shadow-lg group transition-all active:scale-[0.97]"
@@ -160,7 +158,7 @@ export default function Home() {
                       <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                     </Button>
                   </Link>
-                  <Link href="/login">
+                  <Link href="/login" aria-label="Login to Yatra">
                     <Button
                       className="h-12 px-8 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/30 text-sm font-semibold transition-all active:scale-[0.97]"
                     >
@@ -171,7 +169,7 @@ export default function Home() {
               )}
             </AnimatePresence>
           </motion.div>
-        </motion.div>
+        </div>
 
         {/* Scroll indicator */}
         <motion.div
@@ -182,16 +180,16 @@ export default function Home() {
           <span className="text-[10px] uppercase tracking-[0.3em] text-white/50 font-semibold">Scroll</span>
           <div className="w-px h-10 bg-gradient-to-b from-white/40 to-transparent" />
         </motion.div>
-      </section>
+      </header>
 
       {/* ── 2. Stats Strip ───────────────────────────────────── */}
-      <section className="py-10 bg-white border-b border-[#EBEBEB]">
+      <section className="py-10 bg-white border-b border-[#EBEBEB]" aria-label="Platform Statistics">
         <div className="container mx-auto px-6">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-16">
             {stats.map((stat, i) => (
               <FadeInView key={i} delay={i * 0.1}>
                 <div className="flex items-center gap-3 text-center sm:text-left">
-                  <div className="w-10 h-10 rounded-xl bg-[#FF5A5F]/8 flex items-center justify-center text-[#FF5A5F]">
+                  <div className="w-10 h-10 rounded-xl bg-[#FF5A5F]/8 flex items-center justify-center text-[#FF5A5F]" aria-hidden="true">
                     {stat.icon}
                   </div>
                   <div>
@@ -206,14 +204,14 @@ export default function Home() {
       </section>
 
       {/* ── 3. Feature Cards ─────────────────────────────────── */}
-      <section className="py-20 bg-[#F7F7F7]">
+      <section id="features" className="py-20 bg-[#F7F7F7]" aria-labelledby="features-title">
         <div className="container mx-auto px-6">
           <FadeInView>
             <div className="text-center mb-14">
-              <p className="text-xs font-semibold uppercase tracking-widest text-[#FF5A5F] mb-3">Features</p>
-              <h2 className="text-3xl sm:text-4xl font-bold text-[#484848] tracking-tight">Everything you need for your trip</h2>
+              <p className="text-xs font-semibold uppercase tracking-widest text-[#FF5A5F] mb-3">Capabilities</p>
+              <h2 id="features-title" className="text-3xl sm:text-4xl font-bold text-[#484848] tracking-tight">Everything you need for your trip</h2>
               <p className="text-[#767676] text-base mt-3 max-w-xl mx-auto leading-relaxed">
-                Plan, explore, and connect — all in one place built for India.
+                Plan, explore, and connect — all in one place built for the diverse landscape of India.
               </p>
             </div>
           </FadeInView>
@@ -225,6 +223,7 @@ export default function Home() {
                   <div
                     className="w-12 h-12 rounded-xl flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110"
                     style={{ background: feature.bg, color: feature.accent }}
+                    aria-hidden="true"
                   >
                     {feature.icon}
                   </div>
@@ -237,7 +236,44 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── 4. Statement / CTA ───────────────────────────────── */}
+      {/* ── 4. About Section ────────────────────────────────── */}
+      <section id="about" className="py-24 bg-white" aria-labelledby="about-title">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col lg:flex-row items-center gap-16">
+            <div className="lg:w-1/2">
+              <FadeInView>
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                  <Image
+                    src="https://images.unsplash.com/photo-1506461883276-594a12b11cf3?auto=format&fit=crop&q=80&w=1000"
+                    alt="Exploring Indian Culture"
+                    width={1000}
+                    height={600}
+                    loading="lazy"
+                    className="object-cover"
+                  />
+                </div>
+              </FadeInView>
+            </div>
+            <div className="lg:w-1/2 space-y-6">
+              <FadeInView delay={0.2}>
+                <p className="text-xs font-semibold uppercase tracking-widest text-[#FF5A5F]">Our Story</p>
+                <h2 id="about-title" className="text-3xl sm:text-4xl font-bold text-[#484848] tracking-tight">Smart Planning for Timeless Heritage</h2>
+                <p className="text-[#767676] text-lg leading-relaxed">
+                  YĀTRĀ was born from a simple vision: to make India's vast and diverse beauty accessible to everyone. We combine state-of-the-art AI with local expertise to ensure your journey is as smooth as it is magical.
+                </p>
+                <p className="text-[#767676] text-base leading-relaxed">
+                  Whether you're exploring the ghats of Varanasi or the tech hubs of Bangalore, our platform adapts to your preferences, budget, and language, providing real-time recommendations that matter.
+                </p>
+                <div className="pt-4">
+                  <Button variant="outline" className="rounded-xl px-8 border-[#EBEBEB]">Learn More</Button>
+                </div>
+              </FadeInView>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 5. Statement / CTA ───────────────────────────────── */}
       <section className="py-24 relative overflow-hidden" style={{ backgroundColor: '#222222' }}>
         {/* Subtle coral gradient glow */}
         <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at center, rgba(255,90,95,0.08) 0%, transparent 65%)' }} />
@@ -245,7 +281,7 @@ export default function Home() {
         <div className="container mx-auto px-6 text-center relative z-10">
           <FadeInView>
             <div className="max-w-2xl mx-auto space-y-6">
-              <p className="text-xs font-semibold uppercase tracking-widest text-[#FF5A5F]">Our Vision</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-[#FF5A5F]">Join the Journey</p>
               <h2 className="text-3xl sm:text-4xl font-bold leading-snug tracking-tight" style={{ color: '#FFFFFF' }}>
                 Empowering every journey through the{" "}
                 heart of <span style={{ color: '#FF5A5F' }} className="italic">India.</span>
@@ -259,7 +295,7 @@ export default function Home() {
                     variant="premium"
                     className="h-12 px-8 rounded-xl text-sm font-semibold group transition-all active:scale-[0.97]"
                   >
-                    Start exploring
+                    Start exploring for free
                     <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
@@ -269,26 +305,95 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── 5. Footer ────────────────────────────────────────── */}
-      <footer className="py-10 bg-white border-t border-[#EBEBEB]">
-        <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+      {/* ── 6. Contact Section ───────────────────────────────── */}
+      <section id="contact" className="py-24 bg-[#F7F7F7]" aria-labelledby="contact-title">
+        <div className="container mx-auto px-6 max-w-4xl">
+          <FadeInView>
+            <div className="text-center mb-12">
+              <h2 id="contact-title" className="text-3xl font-bold text-[#484848]">Get in Touch</h2>
+              <p className="text-[#767676] mt-2">Have questions about your next trip? Our team is here to help.</p>
+            </div>
+            <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-[#EBEBEB]">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                  <div className="space-y-6">
+                    <h3 className="text-xl font-bold">Contact Information</h3>
+                    <p className="text-sm text-[#767676] leading-relaxed">We're available 24/7 to assist with your travel planning needs. Reach out via email or through our social channels.</p>
+                    <div className="space-y-4 pt-4">
+                       <p className="text-sm font-bold flex items-center gap-3">
+                         <span className="text-[#FF5A5F]">Email:</span> support@yatra-ai.com
+                       </p>
+                       <p className="text-sm font-bold flex items-center gap-3">
+                         <span className="text-[#FF5A5F]">Office:</span> Tech Park, Bengaluru, India
+                       </p>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                     <div className="space-y-2">
+                        <label className="text-xs font-bold uppercase tracking-wider text-[#767676]">Your Email</label>
+                        <input type="email" placeholder="hello@example.com" className="w-full h-12 px-4 rounded-xl border border-[#EBEBEB] focus:outline-none focus:ring-2 focus:ring-[#FF5A5F]/20 transition-all" />
+                     </div>
+                     <div className="space-y-2">
+                        <label className="text-xs font-bold uppercase tracking-wider text-[#767676]">Message</label>
+                        <textarea placeholder="How can we help?" className="w-full h-32 p-4 rounded-xl border border-[#EBEBEB] focus:outline-none focus:ring-2 focus:ring-[#FF5A5F]/20 transition-all resize-none"></textarea>
+                     </div>
+                     <Button className="w-full h-12 rounded-xl bg-[#1a1a1a] text-white font-bold hover:bg-black transition-all">Send Message</Button>
+                  </div>
+               </div>
+            </div>
+          </FadeInView>
+        </div>
+      </section>
 
-          <div className="flex flex-col items-center md:items-start gap-1">
-            <span className="text-xl font-extrabold text-[#FF5A5F] tracking-tight">YĀTRĀ</span>
-            <span className="text-xs text-[#767676]">Modern Heritage Travel</span>
+      {/* ── 7. Footer ────────────────────────────────────────── */}
+      <footer className="py-16 bg-white border-t border-[#EBEBEB]" aria-label="Site Footer">
+        <div className="container mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <div className="col-span-1 md:col-span-2 space-y-4">
+              <span className="text-2xl font-extrabold text-[#FF5A5F] tracking-tighter">YĀTRĀ</span>
+              <p className="text-sm text-[#767676] max-w-sm leading-relaxed">
+                Smart multilingual AI-powered travel recommendation and route optimization platform built for the incredible diversity of India.
+              </p>
+              <div className="flex gap-4 pt-2">
+                 {/* Social Icons Placeholder */}
+                 <div className="w-8 h-8 rounded-full bg-[#F7F7F7] flex items-center justify-center hover:bg-[#FF5A5F]/10 hover:text-[#FF5A5F] transition-colors cursor-pointer"><Globe size={16} /></div>
+                 <div className="w-8 h-8 rounded-full bg-[#F7F7F7] flex items-center justify-center hover:bg-[#FF5A5F]/10 hover:text-[#FF5A5F] transition-colors cursor-pointer"><Users size={16} /></div>
+                 <div className="w-8 h-8 rounded-full bg-[#F7F7F7] flex items-center justify-center hover:bg-[#FF5A5F]/10 hover:text-[#FF5A5F] transition-colors cursor-pointer"><Star size={16} /></div>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <h4 className="text-sm font-bold uppercase tracking-wider">Product</h4>
+              <nav className="flex flex-col gap-2 text-sm text-[#767676]">
+                <Link href="/trip-planner" className="hover:text-[#FF5A5F] transition-colors">AI Planner</Link>
+                <Link href="/near-me" className="hover:text-[#FF5A5F] transition-colors">Nearby Guide</Link>
+                <Link href="/budget" className="hover:text-[#FF5A5F] transition-colors">Budget Estimator</Link>
+                <Link href="/dashboard" className="hover:text-[#FF5A5F] transition-colors">Dashboard</Link>
+              </nav>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="text-sm font-bold uppercase tracking-wider">Company</h4>
+              <nav className="flex flex-col gap-2 text-sm text-[#767676]">
+                <Link href="/about" className="hover:text-[#FF5A5F] transition-colors">About Us</Link>
+                <Link href="/contact" className="hover:text-[#FF5A5F] transition-colors">Contact</Link>
+                <Link href="/privacy" className="hover:text-[#FF5A5F] transition-colors">Privacy Policy</Link>
+                <Link href="/terms" className="hover:text-[#FF5A5F] transition-colors">Terms of Service</Link>
+              </nav>
+            </div>
           </div>
-
-          <div className="flex flex-wrap justify-center gap-8 text-xs font-medium text-[#767676]">
-            <Link href="/docs" className="hover:text-[#484848] transition-colors">Documentation</Link>
-            <Link href="/privacy" className="hover:text-[#484848] transition-colors">Privacy Policy</Link>
-            <Link href="/contact" className="hover:text-[#484848] transition-colors">Contact Us</Link>
-          </div>
-
-          <div className="text-xs text-[#767676]">
-            © 2026 YĀTRĀ
+          
+          <div className="pt-8 border-t border-[#EBEBEB] flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-[10px] text-[#767676] font-medium uppercase tracking-widest">
+              © 2026 YĀTRĀ AI • PROUDLY BUILT IN INDIA
+            </p>
+            <div className="flex gap-6 text-[10px] text-[#767676] font-medium uppercase tracking-widest">
+               <span>Next.js 15</span>
+               <span>OpenStreetMap</span>
+               <span>Lucide Icons</span>
+            </div>
           </div>
         </div>
       </footer>
-    </div>
+    </main>
   )
 }
