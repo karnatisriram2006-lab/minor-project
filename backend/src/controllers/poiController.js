@@ -25,28 +25,20 @@ const findNearby = async (req, res) => {
 
         const amenity = categoryMap[category] || 'hospital';
         
-        // Use Nominatim search with viewbox (bounding box around user location)
-        // Convert radius (meters) to approximate degrees (~0.009 per km)
-        const deg = (radius / 1000) * 0.009;
-        const viewbox = `${parseFloat(lng) - deg},${parseFloat(lat) + deg},${parseFloat(lng) + deg},${parseFloat(lat) - deg}`;
+        const url = `https://photon.komoot.io/api/?q=${amenity}&lat=${lat}&lon=${lng}&limit=40`;
 
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${amenity}&viewbox=${viewbox}&bounded=1&limit=10&addressdetails=1&accept-language=en`;
-
-        console.log(`[Nearby] Searching Nominatim for: ${amenity} near ${lat},${lng}`);
+        console.log(`[Nearby] Searching Photon for: ${amenity} near ${lat},${lng}`);
         
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 8000);
         
         const response = await fetch(url, { 
-            signal: controller.signal,
-            headers: {
-                'User-Agent': 'IncredibleIndiaTourismApp/1.0'
-            }
+            signal: controller.signal
         });
         clearTimeout(timeoutId);
 
         if (!response.ok) {
-            throw new Error(`Nominatim returned ${response.status}`);
+            throw new Error(`Photon returned ${response.status}`);
         }
 
         // Haversine formula to calculate distance in meters
@@ -64,16 +56,22 @@ const findNearby = async (req, res) => {
 
         const data = await response.json();
 
-        // Transform Nominatim results to frontend format
-        const places = data.map(el => {
-            const placeLat = parseFloat(el.lat);
-            const placeLng = parseFloat(el.lon);
+        // Transform Photon GeoJSON results to frontend format
+        let places = (data.features || []).map(f => {
+            const placeLat = f.geometry.coordinates[1];
+            const placeLng = f.geometry.coordinates[0];
+            const dist = calculateDistance(parseFloat(lat), parseFloat(lng), placeLat, placeLng);
+            
+            const p = f.properties;
+            const addressParts = [p.street, p.district, p.locality, p.city, p.state].filter(Boolean);
+            
             return {
-                name: el.display_name?.split(',')[0] || "Unnamed Place",
+                id: p.osm_id || Math.random().toString(),
+                name: p.name || `${categoryMap[category] || 'Place'}`,
                 category: amenity,
-                address: el.display_name || "Address unavailable",
+                address: addressParts.length > 0 ? addressParts.join(', ') : "Address unavailable",
                 phone: "N/A",
-                distance: calculateDistance(parseFloat(lat), parseFloat(lng), placeLat, placeLng),
+                distance: dist,
                 open24Hours: false,
                 verified: true,
                 rating: 4.0,
@@ -81,6 +79,15 @@ const findNearby = async (req, res) => {
                 lng: placeLng
             };
         });
+
+        // Enforce radius (since Photon just uses lat/lon as a proximity bias, not a hard filter)
+        places = places.filter(p => p.distance <= radius);
+        
+        // Sort by closest
+        places.sort((a, b) => a.distance - b.distance);
+        
+        // Return top 15 nearest
+        places = places.slice(0, 15);
 
         if (places.length === 0) {
             return res.json({ 
