@@ -21,7 +21,9 @@ if (typeof window !== "undefined") {
   }
 }
 
-const apiUrl = (rawApiUrl.endsWith('/') ? rawApiUrl.slice(0, -1) : rawApiUrl) + '/api';
+// Strip any trailing slashes or /api segments completely
+const cleanApiUrl = rawApiUrl.replace(/(?:\/api|\/)+$/, '');
+const apiUrl = cleanApiUrl + '/api';
 
 const api = axios.create({
   baseURL: apiUrl,

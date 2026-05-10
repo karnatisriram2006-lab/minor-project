@@ -33,6 +33,7 @@ export default function BudgetOptimizer() {
 
   // Tracker State
   const [trips, setTrips] = useState<any[]>([])
+  const [tripsLoading, setTripsLoading] = useState(true)
   const [selectedTripId, setSelectedTripId] = useState<string>("")
   const [trackerData, setTrackerData] = useState<{
     budgetAllocation: any;
@@ -51,6 +52,7 @@ export default function BudgetOptimizer() {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         const fetchTrips = async () => {
+          setTripsLoading(true)
           try {
             const freshToken = await user.getIdToken()
             const { data } = await api.get("/trips", {
@@ -59,11 +61,14 @@ export default function BudgetOptimizer() {
             setTrips(data.trips || [])
           } catch (err) {
             console.error("Failed to fetch trips:", err)
+          } finally {
+            setTripsLoading(false)
           }
         }
         fetchTrips()
       } else {
         setTrips([])
+        setTripsLoading(false)
       }
     })
     return () => unsubscribe()
@@ -236,11 +241,21 @@ export default function BudgetOptimizer() {
                       <SelectValue placeholder={t("placeholderTrip")} />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl border-[#EBEBEB] dark:border-[#2A2A2A] shadow-lg bg-white dark:bg-[#1A1A1A]">
-                      {trips.map(t => (
-                        <SelectItem key={t._id} value={t._id} className="text-sm font-medium">
-                          {t.title}
+                      {tripsLoading ? (
+                        <SelectItem value="__loading__" disabled className="text-sm text-[#767676] italic">
+                          Loading trips…
                         </SelectItem>
-                      ))}
+                      ) : trips.length === 0 ? (
+                        <SelectItem value="__empty__" disabled className="text-sm text-[#767676] italic">
+                          No trips found — create one first
+                        </SelectItem>
+                      ) : (
+                        trips.map(trip => (
+                          <SelectItem key={trip._id} value={trip._id} className="text-sm font-medium">
+                            {trip.title}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
