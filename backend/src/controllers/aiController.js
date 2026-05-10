@@ -25,10 +25,10 @@ const createItinerary = async (req, res) => {
     const cacheKey = `itinerary-${CACHE_VERSION}-${city.toLowerCase()}-${days}-${budget}-${interests}`;
 
     try {
-        console.log(`[AI Itinerary] Generating for ${city}, ${days} days...`);
+        if (isDev) console.log(`[AI Itinerary] Generating for ${city}, ${days} days...`);
         const cachedResult = await getFromCache(cacheKey);
         if (cachedResult) {
-            console.log(`[AI Itinerary] Cache hit for ${cacheKey}`);
+            if (isDev) console.log(`[AI Itinerary] Cache hit for ${cacheKey}`);
             return res.json(cachedResult);
         }
 
@@ -37,14 +37,14 @@ const createItinerary = async (req, res) => {
         const rawDays = rawItinerary.itinerary || rawItinerary;
 
         // Step 1: Geocode every stop via Nominatim for accurate coordinates
-        console.log(`[AI Itinerary] Geocoding coordinates for ${city}...`);
+        if (isDev) console.log(`[AI Itinerary] Geocoding coordinates for ${city}...`);
         const geocodedDays = await enrichItineraryCoords(rawDays, city);
 
         // Step 2: Validate and optimize route order now that real coords are available
         const { itinerary: optimizedItinerary, warnings } = validateItinerary(geocodedDays);
 
-        console.log(`[AI Itinerary] Successfully generated itinerary for ${city}`);
-        if (warnings.length > 0) console.log('[AI Itinerary] Warnings:', warnings);
+        if (isDev) console.log(`[AI Itinerary] Successfully generated itinerary for ${city}`);
+        if (warnings.length > 0 && isDev) console.log('[AI Itinerary] Warnings:', warnings);
 
         const result = { itinerary: optimizedItinerary, warnings, city, days };
 

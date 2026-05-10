@@ -1123,8 +1123,6 @@ export default function TripPlanner() {
                           </div>
                         </div>
                       )}
-                  </div>
-
                   {/* ── Route Details (Transit) ── */}
           {daysForRoutes.length > 0 && typeof ItineraryRoutesDynamic === 'function' && (
                     <div className="mt-4 border-t border-[#F3F4F6]">
@@ -1146,6 +1144,7 @@ export default function TripPlanner() {
                       Could not load route panel. See console for export/import issues.
                     </div>
           )}
+                  </div>
 
                   {/* ── Footer Export ── */}
                   <div

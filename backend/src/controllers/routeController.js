@@ -104,6 +104,22 @@ const optimizeRoute = async (req, res) => {
 // @desc    Geocode a city name using Nominatim
 // @route   GET /api/route/geocode
 // @access  Public
+const FALLBACK_CITIES = {
+    'hyderabad': { lat: 17.3850, lon: 78.4867, display_name: 'Hyderabad, Telangana, India' },
+    'mumbai': { lat: 19.0760, lon: 72.8777, display_name: 'Mumbai, Maharashtra, India' },
+    'delhi': { lat: 28.7041, lon: 77.1025, display_name: 'New Delhi, Delhi, India' },
+    'bangalore': { lat: 12.9716, lon: 77.5946, display_name: 'Bengaluru, Karnataka, India' },
+    'bengaluru': { lat: 12.9716, lon: 77.5946, display_name: 'Bengaluru, Karnataka, India' },
+    'goa': { lat: 15.2993, lon: 74.1240, display_name: 'Goa, India' },
+    'jaipur': { lat: 26.9124, lon: 75.7873, display_name: 'Jaipur, Rajasthan, India' },
+    'kerala': { lat: 10.8505, lon: 76.2711, display_name: 'Kerala, India' },
+    'agra': { lat: 27.1767, lon: 78.0081, display_name: 'Agra, Uttar Pradesh, India' },
+    'varanasi': { lat: 25.3176, lon: 82.9739, display_name: 'Varanasi, Uttar Pradesh, India' },
+    'ladakh': { lat: 34.1526, lon: 77.5771, display_name: 'Ladakh, India' },
+    'manali': { lat: 32.2396, lon: 77.1887, display_name: 'Manali, Himachal Pradesh, India' },
+    'udaipur': { lat: 24.5854, lon: 73.7125, display_name: 'Udaipur, Rajasthan, India' }
+};
+
 const geocodeCity = async (req, res) => {
     const { q } = req.query;
     if (!q) return res.status(400).json({ message: 'Query parameter "q" is required' });
@@ -113,7 +129,7 @@ const geocodeCity = async (req, res) => {
             `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`,
             {
                 headers: {
-                    'User-Agent': 'YatraMatrix-Node-Backend/1.0'
+                    'User-Agent': 'Yatra-Travel-App/2.0 (contact@yatra.com)'
                 }
             }
         );
@@ -129,7 +145,45 @@ const geocodeCity = async (req, res) => {
         res.status(404).json({ message: 'City not found' });
     } catch (error) {
         console.error('[Geocode Error]', error.message);
-        res.status(500).json({ message: 'Geocoding failed', error: error.message });
+        
+        // 1st Fallback: Try Photon API (OpenStreetMap alternative)
+        try {
+            console.log(`[Geocode Fallback] Attempting Photon API for ${q}`);
+            const photonResponse = await axios.get(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=1`);
+            const photonData = photonResponse.data;
+            if (photonData && photonData.features && photonData.features.length > 0) {
+                const feature = photonData.features[0];
+                const coords = feature.geometry.coordinates; // Photon returns [lon, lat]
+                const props = feature.properties;
+                
+                const displayName = [props.name, props.city, props.state, props.country]
+                    .filter(Boolean)
+                    .join(', ');
+                    
+                return res.json({
+                    lat: parseFloat(coords[1]),
+                    lng: parseFloat(coords[0]),
+                    displayName: displayName
+                });
+            }
+        } catch (photonError) {
+            console.error('[Geocode Fallback Error] Photon failed:', photonError.message);
+        }
+
+        // 2nd Fallback: Hardcoded major cities
+        const normalizedQuery = q.toLowerCase().trim();
+        if (FALLBACK_CITIES[normalizedQuery]) {
+            console.log(`[Geocode Fallback] Using hardcoded coordinates for ${q}`);
+            const fallback = FALLBACK_CITIES[normalizedQuery];
+            return res.json({
+                lat: fallback.lat,
+                lng: fallback.lon,
+                displayName: fallback.display_name
+            });
+        }
+
+        // If everything fails, return 404 instead of 500 to let frontend handle it gracefully
+        res.status(404).json({ message: 'Location could not be geocoded' });
     }
 };
 

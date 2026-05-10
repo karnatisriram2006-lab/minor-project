@@ -5,6 +5,7 @@
  */
 
 const https = require('https');
+const axios = require('axios');
 
 // Simple in-memory cache to avoid duplicate Nominatim round-trips per session
 const _cache = new Map();
@@ -37,31 +38,42 @@ async function geocodePlace(name, city = '') {
 async function _nominatimFetch(query) {
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&countrycodes=in`;
     try {
-        const result = await new Promise((resolve, reject) => {
-            const req = https.get(url, {
-                headers: {
-                    'User-Agent': 'YATRA-planner/1.0 (travel planning app)',
-                    'Accept': 'application/json'
-                },
-                timeout: 4000
-            }, (res) => {
-                let data = '';
-                res.on('data', chunk => data += chunk);
-                res.on('end', () => {
-                    try { resolve(JSON.parse(data)); }
-                    catch { resolve([]); }
-                });
-            });
-            req.on('error', reject);
-            req.on('timeout', () => { req.destroy(); reject(new Error('timeout')); });
+        const response = await axios.get(url, {
+            headers: {
+                'User-Agent': 'Yatra-Travel-App/2.0 (contact@yatra.com)',
+                'Accept': 'application/json'
+            },
+            timeout: 5000
         });
 
+        const result = response.data;
         if (result && result.length > 0) {
             return { lat: parseFloat(result[0].lat), lng: parseFloat(result[0].lon) };
         }
     } catch (err) {
         console.warn(`[Geocode] Nominatim error for "${query}": ${err.message}`);
     }
+
+    // Fallback to Photon API
+    // Photon struggles with strict comma formatting, so strip commas for better fuzzy matching
+    const photonQuery = query.replace(/,/g, '');
+    const photonUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(photonQuery)}&limit=1`;
+    try {
+        const response = await axios.get(photonUrl, {
+            headers: { 'Accept': 'application/json' },
+            timeout: 5000
+        });
+        
+        const result = response.data;
+        if (result && result.features && result.features.length > 0) {
+            const coords = result.features[0].geometry.coordinates;
+            console.log(`[Geocode] Fallback to Photon successful for "${query}"`);
+            return { lat: parseFloat(coords[1]), lng: parseFloat(coords[0]) };
+        }
+    } catch (err) {
+        console.warn(`[Geocode Fallback] Photon error for "${query}": ${err.message}`);
+    }
+
     return null;
 }
 

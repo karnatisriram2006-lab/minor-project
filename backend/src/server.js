@@ -38,18 +38,29 @@ app.use((req, res, next) => {
     next();
 });
 
-// Middleware
-const allowedOrigins = process.env.ALLOWED_ORIGINS 
-    ? process.env.ALLOWED_ORIGINS.split(',').map(base => base.trim()) 
-    : ['*'];
+// CORS — only allow origins listed in ALLOWED_ORIGINS env var.
+// In development, localhost origins are always permitted as a fallback.
+const allowedOriginsList = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim()).filter(Boolean)
+    : [];
 
-console.log('[Server] CORS Allowed Origins:', allowedOrigins.includes('*') ? 'ALL (*)' : allowedOrigins.join(', '));
+console.log('[Server] CORS Allowed Origins:', allowedOriginsList.length ? allowedOriginsList.join(', ') : 'localhost only (no ALLOWED_ORIGINS set)');
 
 app.use(cors({
-    origin: true, // Echo back the request origin for maximum compatibility with credentials
+    origin: (origin, callback) => {
+        // Allow requests with no origin (curl, Postman, same-origin server calls)
+        if (!origin) return callback(null, true);
+        // Always allow localhost in development
+        if (process.env.NODE_ENV !== 'production' && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+            return callback(null, true);
+        }
+        if (allowedOriginsList.includes(origin)) return callback(null, true);
+        console.warn(`[CORS] Blocked request from origin: ${origin}`);
+        return callback(new Error(`CORS: origin '${origin}' not allowed`));
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 app.use(helmet());

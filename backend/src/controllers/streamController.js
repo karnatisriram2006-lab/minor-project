@@ -13,7 +13,7 @@ const { generateItineraryAgent, validateItinerary } = require('../services/groqS
 const { getFromCache, saveToCache } = require('../services/itineraryStorageService');
 const { enrichItineraryCoords }     = require('../services/geocodeService');
 
-const CACHE_VERSION = 'v4-strict-geocoding';
+const CACHE_VERSION = 'v5-photon-fallback';
 
 /**
  * Helper: write an SSE event to the response stream.

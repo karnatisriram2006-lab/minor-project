@@ -2,18 +2,17 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    // If MONGODB_URI is not set, we'll just log and continue for demo purposes
+    // If MONGODB_URI is not set, we crash loudly in production.
     if (!process.env.MONGODB_URI) {
-      console.warn('⚠️ MONGODB_URI not found. Starting server without MongoDB connection (demo mode).');
-      return;
+      console.error('FATAL: MONGODB_URI is not set. Exiting.');
+      process.exit(1);
     }
 
     const conn = await mongoose.connect(process.env.MONGODB_URI);
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
-    console.error(`⚠️ Error connecting to MongoDB: ${error.message}`);
-    console.warn('Continuing to run server in demo mode without Database connection.');
-    // process.exit(1); // Removed to prevent crashing the entire backend if DB fails
+    console.error(`FATAL: Error connecting to MongoDB: ${error.message}`);
+    process.exit(1);
   }
 };
 

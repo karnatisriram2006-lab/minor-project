@@ -47,7 +47,10 @@ const verifyFirebaseToken = async (token) => {
         }
 
         // 2. Verify the RS256 signature
-        const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'minor-project-3bd3b';
+        const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+        if (!projectId) {
+             throw new Error('FIREBASE_PROJECT_ID environment variable is required');
+        }
         const options = {
             algorithms: ['RS256'],
             audience: projectId,

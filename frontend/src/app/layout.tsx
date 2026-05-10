@@ -21,10 +21,12 @@ const playfair = Playfair_Display({
   variable: "--font-serif",
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://yatra-frontend.vercel.app";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("http://localhost:3000"),
+  metadataBase: new URL(siteUrl),
   title: {
-    default: "%s | YĀTRĀ — AI Travel Planner for India",
+    default: "YĀTRĀ — AI Travel Planner for India",
     template: "%s | YĀTRĀ",
   },
   description:
@@ -34,7 +36,7 @@ export const metadata: Metadata = {
     description:
       "AI-powered travel platform for India. Plan trips, discover destinations, manage budgets, and connect with travel companions.",
     type: "website",
-    url: "http://localhost:3000",
+    url: siteUrl,
     images: [
       {
         url: "/images/og-image.svg",

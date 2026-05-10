@@ -62,8 +62,8 @@ export default function Dashboard() {
         }));
 
         setTrips(enriched)
-        try { localStorage.setItem("last_trips_cache", JSON.stringify(enriched)) } catch {}
         setBackendOffline(false)
+        try { localStorage.setItem("last_trips_cache", JSON.stringify(enriched)) } catch {}
         
         if (enriched.length > 0) {
           const first = enriched[0]
@@ -77,14 +77,13 @@ export default function Dashboard() {
         }
       } catch (err) {
         const status = (err as any)?.response?.status
-        if (status === 503) {
+        if (status === 503 || !status) {
           setBackendOffline(true)
           // Try to restore from cache if available
           try {
             const cached = localStorage.getItem("last_trips_cache")
             if (cached) {
               setTrips(JSON.parse(cached))
-              setBackendOffline(false)
               return
             }
           } catch {
@@ -110,7 +109,6 @@ export default function Dashboard() {
             const cached = localStorage.getItem("last_trips_cache")
             if (cached) {
               setTrips(JSON.parse(cached))
-              setBackendOffline(false)
               return
             }
           } catch {
@@ -277,11 +275,9 @@ export default function Dashboard() {
     ? new Date(latestTrip.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
     : "No upcoming trip"
 
-  const nearbyCompanions = [
-    { name: "Aditi Rao", status: "Heading to Jaipur tomorrow", match: "98%", avatar: "AR" },
-    { name: "Rohan Mehta", status: "Currently at Amer Fort", match: "85%", avatar: "RM" },
-    { name: "Sana Khan", status: "Exploring Yoga retreats", match: "72%", avatar: "SK" },
-  ]
+  // In a real app, this would be fetched from /api/companions
+  // For production, we start empty until real real-time data is implemented
+  const nearbyCompanions: any[] = []
 
   return (
     <>
@@ -476,14 +472,14 @@ export default function Dashboard() {
                   <div className="w-full h-2 bg-[#F7F7F7] rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
-                      whileInView={{ width: latestTrip ? "35%" : "0%" }}
+                      whileInView={{ width: latestTrip?.expenses?.length ? "35%" : "0%" }} // TODO: Calculate actual expense %
                       transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
                       className="h-full rounded-full"
                       style={{ backgroundColor: '#FF5A5F' }}
                     />
                   </div>
                   <p className="text-xs text-[#767676]">
-                    {latestTrip ? "35% of budget used" : "No active spending"}
+                    {latestTrip?.expenses?.length ? "Tracked expenses active" : "No active spending tracked"}
                   </p>
                 </div>
               </div>
@@ -708,7 +704,24 @@ export default function Dashboard() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {trips.length > 0 ? (
+            {loadingTrips ? (
+              // Skeleton Loaders
+              [1, 2, 3].map((skeleton) => (
+                <div key={skeleton} className="bg-white rounded-2xl border border-[#EBEBEB] shadow-sm overflow-hidden flex flex-col">
+                  <div className="h-32 bg-[#F7F7F7] w-full animate-pulse" />
+                  <div className="p-4 flex-1 flex flex-col justify-between space-y-4">
+                    <div className="flex justify-between items-center">
+                      <div className="h-3 bg-[#EBEBEB] w-1/3 rounded animate-pulse" />
+                      <div className="h-5 bg-[#EBEBEB] w-16 rounded-md animate-pulse" />
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="h-9 bg-[#EBEBEB] w-full rounded-xl animate-pulse" />
+                      <div className="h-9 w-9 bg-[#EBEBEB] rounded-xl shrink-0 animate-pulse" />
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : trips.length > 0 ? (
               trips.map((trip: any) => (
                 <div key={trip._id} className="bg-white rounded-2xl border border-[#EBEBEB] shadow-sm overflow-hidden flex flex-col group">
                   <div className="relative h-32 bg-[#F7F7F7] w-full">

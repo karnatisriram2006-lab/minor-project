@@ -126,7 +126,8 @@
     "time": {
       "mins": "mins",
       "h": "h",
-      "m": "m"
+      "m": "m",
+      "day": "Day"
     },
     "modes": {
       "car": "Car",

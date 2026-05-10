@@ -31,15 +31,7 @@ export default function Register() {
       const result = await signInWithPopup(auth, provider)
       const token = await result.user.getIdToken()
       
-      // Store token for Axios interceptor
-      localStorage.setItem("token", token)
-      localStorage.setItem("user", JSON.stringify({
-        uid: result.user.uid,
-        email: result.user.email,
-        name: result.user.displayName
-      }))
-      
-      console.log("Registration successful, token stored in localStorage");
+      console.log("Registration successful");
       window.location.href = "/dashboard"
     } catch (err: unknown) {
       console.error("Registration error:", err)

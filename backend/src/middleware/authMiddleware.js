@@ -21,8 +21,12 @@ const protect = async (req, res, next) => {
                 decoded = { id: firebaseUser.sub, email: firebaseUser.email, name: firebaseUser.name || 'Traveler' };
             } catch (firebaseErr) {
                 // Fallback to custom JWT if necessary
+                if (!process.env.JWT_SECRET) {
+                    console.error('[Auth Middleware] JWT_SECRET is not defined');
+                    return res.status(500).json({ message: 'Server configuration error' });
+                }
                 try {
-                    decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_for_demo');
+                    decoded = jwt.verify(token, process.env.JWT_SECRET);
                 } catch (jwtErr) {
                     throw new Error('Invalid authentication token');
                 }
@@ -77,8 +81,12 @@ const optionalAuth = async (req, res, next) => {
                 firebaseUser = await verifyFirebaseToken(token);
                 decoded = { id: firebaseUser.sub, email: firebaseUser.email, name: firebaseUser.name || 'Traveler' };
             } catch (firebaseErr) {
+                if (!process.env.JWT_SECRET) {
+                    console.error('[Auth Middleware] JWT_SECRET is not defined');
+                    return res.status(500).json({ message: 'Server configuration error' });
+                }
                 try {
-                    decoded = require('jsonwebtoken').verify(token, process.env.JWT_SECRET || 'fallback_secret_for_demo');
+                    decoded = require('jsonwebtoken').verify(token, process.env.JWT_SECRET);
                 } catch (jwtErr) {
                     throw new Error('Invalid authentication token');
                 }

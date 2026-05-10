@@ -182,12 +182,28 @@ function MapController({
     }
   }, [followCenter, center, zoom, map]);
 
+  // Fix grey missing tiles when map container resizes
+  useEffect(() => {
+    const mapContainer = map.getContainer();
+    if (!mapContainer) return;
+
+    // Use ResizeObserver to detect when the sidebar or container changes size
+    const resizeObserver = new ResizeObserver(() => {
+      map.invalidateSize();
+    });
+
+    resizeObserver.observe(mapContainer);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [map]);
+
   return null;
 }
 
 function ZoomControls() {
   const map = useMap();
-  const [isReady, setIsReady] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(false);
 
   React.useEffect(() => {
@@ -198,19 +214,8 @@ function ZoomControls() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  React.useEffect(() => {
-    // Ensure map is ready before showing controls
-    const onLoad = () => setIsReady(true);
-    if (map) {
-      map.on("load", onLoad);
-    }
-    return () => {
-      if (map) map.off("load", onLoad);
-    };
-  }, [map]);
-
-  // Hide on mobile or when not ready
-  if (isMobile || !isReady) {
+  // Hide on mobile
+  if (isMobile) {
     return null;
   }
 
@@ -227,8 +232,8 @@ function ZoomControls() {
         overflow: "hidden",
         boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
         gap: 5,
-        opacity: isReady ? 1 : 0,
-        pointerEvents: isReady ? "auto" : "none",
+        opacity: 1,
+        pointerEvents: "auto",
         transition: "opacity 0.3s ease",
       }}
     >
@@ -306,24 +311,43 @@ function MyLocationButton({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
   const handleClick = () => {
     if (!navigator.geolocation) return;
     setLoading(true);
     setError(false);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
+        if (!isMounted.current) return;
         const latlng: [number, number] = [
           pos.coords.latitude,
           pos.coords.longitude,
         ];
-        map.flyTo(latlng, 15, { animate: true, duration: 1.2 });
+        try {
+          const size = map.getSize();
+          if (size && size.x > 0 && size.y > 0) {
+             map.flyTo(latlng, 15, { animate: true, duration: 1.2 });
+          }
+        } catch (e) {
+           // Ignore if leaflet throws during resize or unmount
+        }
         onLocation(latlng);
         setLoading(false);
       },
       () => {
+        if (!isMounted.current) return;
         setLoading(false);
         setError(true);
-        setTimeout(() => setError(false), 2000);
+        setTimeout(() => {
+          if (isMounted.current) setError(false);
+        }, 2000);
       },
       { enableHighAccuracy: true, timeout: 8000 },
     );
