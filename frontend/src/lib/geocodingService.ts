@@ -27,7 +27,7 @@ const LOCAL_COORDS: Record<string, { lat: number; lng: number; displayName?: str
 };
 
 const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-const apiUrl = (rawApiUrl.endsWith('/') ? rawApiUrl.slice(0, -1) : rawApiUrl) + '/api';
+const apiUrl = rawApiUrl.replace(/\/+$/, '').replace(/\/api$/, '') + '/api';
 
 export const geocodeCity = async (city: string): Promise<GeocodeResult | null> => {
   if (!city) return null
