@@ -9,41 +9,60 @@ const findNearby = async (req, res) => {
     }
 
     try {
-        // Map categories to Nominatim amenity types
+        // Map categories to Overpass tags
         const categoryMap = {
-            hospital: 'hospital',
-            police: 'police',
-            pharmacy: 'pharmacy',
-            atm: 'atm',
-            restaurant: 'restaurant',
-            hostel: 'hostel',
-            'tourist-info': 'information',
-            'fire-station': 'fire_station',
-            embassy: 'embassy',
-            general: 'hospital' // Default fallback
+            hospital: '["amenity"="hospital"]',
+            police: '["amenity"="police"]',
+            pharmacy: '["amenity"="pharmacy"]',
+            atm: '["amenity"="atm"]',
+            restaurant: '["amenity"="restaurant"]',
+            hostel: '["tourism"="hostel"]',
+            'tourist-info': '["tourism"="information"]',
+            'fire-station': '["amenity"="fire_station"]',
+            general: '["amenity"="hospital"]'
         };
 
-        const amenity = categoryMap[category] || 'hospital';
+        const tagFilter = categoryMap[category] || '["amenity"="hospital"]';
         
-        const url = `https://photon.komoot.io/api/?q=${amenity}&lat=${lat}&lon=${lng}&limit=40`;
+        // Overpass QL Query
+        // (node(around:radius,lat,lng)[tag]; way(around:radius,lat,lng)[tag];); out center;
+        const query = `
+            [out:json][timeout:25];
+            (
+              node(around:${radius},${lat},${lng})${tagFilter};
+              way(around:${radius},${lat},${lng})${tagFilter};
+              relation(around:${radius},${lat},${lng})${tagFilter};
+            );
+            out center 20;
+        `;
 
-        console.log(`[Nearby] Searching Photon for: ${amenity} near ${lat},${lng}`);
+        const url = `https://overpass-api.de/api/interpreter`;
+
+        console.log(`[Nearby] Querying Overpass for: ${category} within ${radius}m of ${lat},${lng}`);
         
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
         
         const response = await fetch(url, { 
-            signal: controller.signal
+            method: 'POST',
+            body: 'data=' + encodeURIComponent(query),
+            signal: controller.signal,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'User-Agent': 'IncredibleIndiaApp/1.0'
+            }
         });
         clearTimeout(timeoutId);
 
         if (!response.ok) {
-            throw new Error(`Photon returned ${response.status}`);
+            throw new Error(`Overpass returned ${response.status}`);
         }
+
+        const data = await response.json();
 
         // Haversine formula to calculate distance in meters
         const calculateDistance = (lat1, lon1, lat2, lon2) => {
-            const R = 6371000; // Earth's radius in meters
+            const R = 6371000;
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = 
@@ -54,40 +73,48 @@ const findNearby = async (req, res) => {
             return R * c;
         };
 
-        const data = await response.json();
+        // Transform Overpass elements to frontend format
+        const places = (data.elements || []).map(el => {
+            // For ways/relations, center is provided by 'out center'
+            const plat = el.lat || (el.center && el.center.lat);
+            const plng = el.lon || (el.center && el.center.lon);
+            
+            if (!plat || !plng) return null;
 
-        // Transform Photon GeoJSON results to frontend format
-        let places = (data.features || []).map(f => {
-            const placeLat = f.geometry.coordinates[1];
-            const placeLng = f.geometry.coordinates[0];
-            const dist = calculateDistance(parseFloat(lat), parseFloat(lng), placeLat, placeLng);
-            
-            const p = f.properties;
-            const addressParts = [p.street, p.district, p.locality, p.city, p.state].filter(Boolean);
-            
+            const tags = el.tags || {};
+            const addressParts = [
+                tags['addr:street'],
+                tags['addr:suburb'],
+                tags['addr:city']
+            ].filter(Boolean);
+
             return {
-                id: p.osm_id || Math.random().toString(),
-                name: p.name || `${categoryMap[category] || 'Place'}`,
-                category: amenity,
-                address: addressParts.length > 0 ? addressParts.join(', ') : "Address unavailable",
-                phone: "N/A",
-                distance: dist,
-                open24Hours: false,
+                id: el.id,
+                name: tags.name || tags.operator || `${category.charAt(0).toUpperCase() + category.slice(1)}`,
+                category: category,
+                address: addressParts.length > 0 ? addressParts.join(', ') : (tags['addr:full'] || "Address available via map"),
+                phone: tags['phone'] || tags['contact:phone'] || "N/A",
+                distance: calculateDistance(parseFloat(lat), parseFloat(lng), plat, plng),
+                open24Hours: tags['opening_hours'] === '24/7',
                 verified: true,
                 rating: 4.0,
-                lat: placeLat,
-                lng: placeLng
+                lat: plat,
+                lng: plng
             };
-        });
+        }).filter(Boolean);
 
-        // Enforce radius (since Photon just uses lat/lon as a proximity bias, not a hard filter)
-        places = places.filter(p => p.distance <= radius);
-        
         // Sort by closest
         places.sort((a, b) => a.distance - b.distance);
         
-        // Return top 15 nearest
-        places = places.slice(0, 15);
+        if (places.length === 0) {
+            return res.json({ 
+                places: [], 
+                message: `No ${category} found within ${radius/1000}km. Try a larger search area.` 
+            });
+        }
+
+        console.log(`[Nearby] Found ${places.length} precise POIs from Overpass`);
+        res.json({ places });
 
         if (places.length === 0) {
             return res.json({ 
