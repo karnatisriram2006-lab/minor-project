@@ -120,18 +120,6 @@ export default function TripPlanner() {
   const isNewTrip = searchParams.get("new") === "true";
   const loadOffline = searchParams.get("offline") === "true";
 
-  // Handle ?destination=X — pre-fill the form with a specific city
-  useEffect(() => {
-    const destination = searchParams.get("destination");
-    if (destination) {
-      console.log("[TRIP-PLANNER] Pre-filling destination:", destination);
-      setFormData((prev) => ({
-        ...prev,
-        city: destination,
-      }));
-    }
-  }, [searchParams]);
-
   // Handle ?new=true — reset everything to show fresh form
   useEffect(() => {
     if (isNewTrip) {
@@ -670,7 +658,6 @@ export default function TripPlanner() {
                   <ItineraryForm
                     onGenerate={handleGenerate}
                     loading={isStreaming}
-                    initialData={formData}
                   />
                   {streamError && (
                     <button
