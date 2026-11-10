@@ -138,8 +138,8 @@ export default function OfflinePage() {
               const cy = lat2tile(centerLat, z);
               for (let dx = -2; dx <= 2; dx++) {
                 for (let dy = -2; dy <= 2; dy++) {
-                  tileUrls.push(`https://a.basemaps.cartocdn.com/rastertiles/voyager/${z}/${cx + dx}/${cy + dy}.png`);
-                  tileUrls.push(`https://a.basemaps.cartocdn.com/dark_all/${z}/${cx + dx}/${cy + dy}.png`);
+                  tileUrls.push(`https://tile.openstreetmap.org/${z}/${cx + dx}/${cy + dy}.png`);
+                  tileUrls.push(`https://tile.openstreetmap.org/${z}/${cx + dx}/${cy + dy}.png`);
                 }
               }
             });

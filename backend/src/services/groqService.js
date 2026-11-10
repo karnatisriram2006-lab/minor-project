@@ -1,31 +1,67 @@
 const Groq = require('groq-sdk');
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+const DEFAULT_GROQ_MODEL = 'openai/gpt-oss-120b';
+const FALLBACK_GROQ_MODELS = ['openai/gpt-oss-120b', 'qwen/qwen3.8-27b'];
+
+const getGroqModelCandidates = () => {
+    const configured = (process.env.GROQ_MODEL || DEFAULT_GROQ_MODEL).trim();
+    return [...new Set([configured, ...FALLBACK_GROQ_MODELS])].filter(Boolean);
+};
+
+const createGroqChatCompletion = async (messages, options = {}) => {
+    const candidates = getGroqModelCandidates();
+    let lastError;
+
+    for (let i = 0; i < candidates.length; i++) {
+        const modelName = candidates[i];
+        console.log(`[Groq] Sending request to ${modelName}...`);
+
+        try {
+            const completion = await groq.chat.completions.create({
+                model: modelName,
+                ...options,
+                messages,
+            });
+            process.env.GROQ_MODEL = modelName;
+            console.log(`[Groq] ${modelName} response received.`);
+            return completion;
+        } catch (error) {
+            lastError = error;
+            const isModelIssue = error.status === 400 || error.status === 404 || error.status === 422 ||
+                /model.*(not found|decommissioned|do not have access|unavailable)/i.test(error.message || '');
+
+            if (error.status === 401) throw new Error('Invalid Groq API key. Check your GROQ_API_KEY in .env');
+            if (error.status === 429) throw new Error('Groq rate limit reached. Please wait a moment and try again.');
+
+            if (!isModelIssue || i === candidates.length - 1) {
+                throw error;
+            }
+
+            console.warn(`[Groq] Model "${modelName}" is unavailable. Retrying with "${candidates[i + 1]}".`);
+        }
+    }
+
+    throw lastError;
+};
 
 /**
  * Helper to call Groq Chat Completions API
  */
 const callGroq = async (prompt, systemPrompt = "", temperature = 0.2) => {
-    console.log(`[Groq] Sending request to ${GROQ_MODEL}...`);
-    try {
-        const completion = await groq.chat.completions.create({
-            model: GROQ_MODEL,
-            messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: prompt }
-            ],
+    const completion = await createGroqChatCompletion(
+        [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: prompt }
+        ],
+        {
             temperature,
             max_tokens: 2048,
             response_format: { type: 'json_object' }
-        });
-        console.log(`[Groq] ${GROQ_MODEL} response received.`);
-        return completion.choices[0]?.message?.content ?? '';
-    } catch (error) {
-        if (error.status === 401) throw new Error('Invalid Groq API key. Check your GROQ_API_KEY in .env');
-        if (error.status === 429) throw new Error('Groq rate limit reached. Please wait a moment and try again.');
-        throw error;
-    }
+        }
+    );
+
+    return completion.choices[0]?.message?.content ?? '';
 };
 
 /**
@@ -175,16 +211,16 @@ Requirement: Provide ONLY the translated text. Do not include quotes or extra co
     const systemPrompt = `You are a professional ${targetLanguage} translator specializing in Indian tourism. Respond with only the translated string.`;
 
     try {
-        // Use temperature 0.1 for high precision in translation
-        const completion = await groq.chat.completions.create({
-            model: GROQ_MODEL,
-            messages: [
+        const completion = await createGroqChatCompletion(
+            [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: prompt }
             ],
-            temperature: 0.1,
-            max_tokens: 512
-        });
+            {
+                temperature: 0.1,
+                max_tokens: 512,
+            }
+        );
         return completion.choices[0]?.message?.content?.trim() ?? "Translation unavailable.";
     } catch (error) {
         console.error('[Translation Agent Error]', error.message);
@@ -198,15 +234,16 @@ const chatCompletion = async (message) => {
     console.log(`[Groq AI] Chat: ${message.substring(0, 30)}...`);
 
     try {
-        const completion = await groq.chat.completions.create({
-            model: GROQ_MODEL,
-            messages: [
+        const completion = await createGroqChatCompletion(
+            [
                 { role: 'system', content: 'You are a helpful tourism assistant for India. Keep answers concise and friendly.' },
                 { role: 'user', content: message }
             ],
-            temperature: 0.7,
-            max_tokens: 300
-        });
+            {
+                temperature: 0.7,
+                max_tokens: 300
+            }
+        );
         return completion.choices[0]?.message?.content ?? 'Sorry, I could not generate a response.';
     } catch (error) {
         console.error('[Groq Chat Error]', error.message);

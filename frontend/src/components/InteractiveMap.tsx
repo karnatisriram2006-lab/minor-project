@@ -746,10 +746,10 @@ export default React.memo(function InteractiveMap({
           key={showDark ? "dark" : "light"}
           url={
             showDark
-              ? "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-              : "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+              ? "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           }
-          attribution='© <a href="https://carto.com/">CARTO</a>'
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           maxZoom={19}
         />
         <ZoomControls />

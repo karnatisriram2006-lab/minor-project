@@ -93,37 +93,35 @@ export default function Companions() {
   }
 
   useEffect(() => {
-    // Subscribe to Firebase auth state to know if user is signed in
-    const unsubscribe = auth.onAuthStateChanged((u) => {
+    const unsubscribe = auth.onAuthStateChanged(async (u) => {
       setFirebaseUser(u)
-      setIsAuthorized(!!u)
-    })
 
-    const fetchInitial = async () => {
-      if (!firebaseUser) {
-        // Show guest view if not signed in
+      if (!u) {
+        setIsAuthorized(false)
         if (matches.length === 0) setMatches(featuredTravelers)
         return
       }
+
+      setIsAuthorized(true)
+
       try {
         const res = await api.get("/companion/matches")
         setMatches(res.data)
-        setIsAuthorized(true)
       } catch (err: unknown) {
         console.error("Initial fetch error:", err)
         const error = err as { response?: { status: number } }
-        if (error.response?.status === 401) setIsAuthorized(false)
-        else {
-          // Fallback: show featured travelers if API fails
+        if (error.response?.status === 401) {
+          setIsAuthorized(false)
+        } else {
           setMatches(featuredTravelers)
           setIsAuthorized(true)
         }
       }
-    }
-    fetchInitial()
+    })
+
     return unsubscribe
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [firebaseUser])
+  }, [])
 
   // Helper: convert a real match into a Companion-like object for the modal
   const handleConnectFromMatch = (match: any) => {

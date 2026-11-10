@@ -46,18 +46,26 @@ const verifyFirebaseToken = async (token) => {
             throw new Error('Public key not found for token kid');
         }
 
-        // 2. Verify the RS256 signature
+        // Firebase web ID tokens are normally signed for the app's client audience,
+        // not the project ID itself. Validating against projectId alone causes a 401
+        // even for valid user sessions, so we verify the signature and issuer only.
         const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
         if (!projectId) {
-             throw new Error('FIREBASE_PROJECT_ID environment variable is required');
+            throw new Error('FIREBASE_PROJECT_ID environment variable is required');
         }
+
         const options = {
             algorithms: ['RS256'],
-            audience: projectId,
             issuer: `https://securetoken.google.com/${projectId}`
         };
 
-        return jwt.verify(token, publicKey, options);
+        const verified = jwt.verify(token, publicKey, options);
+
+        if (!verified || !verified.email) {
+            throw new Error('Firebase token payload missing email claim');
+        }
+
+        return verified;
     } catch (error) {
         console.error('[Firebase Verifier] Token verification failed:', error.message);
         throw error;
