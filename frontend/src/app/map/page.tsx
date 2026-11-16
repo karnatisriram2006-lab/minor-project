@@ -1,110 +1,93 @@
 "use client"
 
 import dynamic from "next/dynamic"
-import { useState } from "react"
-import { Globe, LayoutGrid, Maximize2, Sparkles, Navigation } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import AIInsightsPanel from "@/components/AI/AIInsightsPanel"
+import { useCallback, useState } from "react"
+import { ArrowUpRight, Compass, MapPin, Search } from "lucide-react"
+import { motion } from "framer-motion"
 
-// Dynamic imports to avoid SSR issues
 const InteractiveMap = dynamic(() => import("@/components/InteractiveMap"), { ssr: false })
 
+const destinations = [
+  { name: "Jaipur", region: "Rajasthan", lat: 26.9124, lng: 75.7873 },
+  { name: "Delhi", region: "North India", lat: 28.6139, lng: 77.209 },
+  { name: "Varanasi", region: "Uttar Pradesh", lat: 25.3176, lng: 82.9739 },
+  { name: "Mumbai", region: "Maharashtra", lat: 19.076, lng: 72.8777 },
+  { name: "Kochi", region: "Kerala", lat: 9.9312, lng: 76.2673 },
+]
+
 export default function MapPage() {
-  const [activeLayer, setActiveLayer] = useState("heritage")
-  const [showInsights, setShowInsights] = useState(true)
+  const [selectedCity, setSelectedCity] = useState("India")
+  const [cityToFocus, setCityToFocus] = useState<(typeof destinations)[number] | null>(null)
+  const handleCitySelect = useCallback((city: { name: string }) => setSelectedCity(city.name), [])
+
+  const handleFocusCity = (city: (typeof destinations)[number]) => {
+    setSelectedCity(city.name)
+    setCityToFocus({ ...city })
+  }
 
   return (
-    <div className="h-[calc(100vh-80px)] relative overflow-hidden bg-heritage-bone font-sans">
-      
-      {/* 1. MAP CORE */}
-      <div className="absolute inset-0 z-0">
-         <InteractiveMap />
+    <div className="relative h-[calc(100dvh-80px)] min-h-[560px] overflow-hidden bg-[#eef1ef] font-sans">
+      <div className="absolute inset-0">
+        <InteractiveMap focusCity={cityToFocus} onCitySelect={handleCitySelect} />
       </div>
 
-      {/* 2. OVERLAY CONTROLS (Top Left) */}
-      <div className="absolute top-10 left-10 z-10 flex flex-col gap-6">
-         <motion.div 
-           initial={{ opacity: 0, x: -20 }}
-           animate={{ opacity: 1, x: 0 }}
-           className="bg-white rounded-[1.8rem] px-8 py-5 border border-heritage-gold/10 shadow-premium flex items-center gap-6"
-         >
-            <div className="w-14 h-14 rounded-2xl bg-heritage-onyx flex items-center justify-center text-white shadow-premium">
-               <Globe className="h-7 w-7" />
-            </div>
-            <div>
-               <p className="text-[10px] font-black uppercase tracking-[0.4em] text-heritage-gold mb-1">Planetary View</p>
-               <h3 className="text-2xl font-black text-heritage-onyx tracking-tighter italic">Explore Bharat.</h3>
-            </div>
-         </motion.div>
-
-         <motion.div 
-           initial={{ opacity: 0, y: 10 }}
-           animate={{ opacity: 1, y: 0 }}
-           transition={{ delay: 0.2 }}
-           className="flex gap-3 bg-heritage-bone/50 p-2 rounded-2xl backdrop-blur-md border border-heritage-gold/5 shadow-soft-inner"
-         >
-            {["Heritage", "Nature", "Luxury", "Routes"].map((layer, idx) => (
-              <button 
-                key={layer}
-                onClick={() => setActiveLayer(layer.toLowerCase())}
-                className={cn(
-                  "px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 flex items-center gap-2",
-                  activeLayer === layer.toLowerCase() 
-                    ? "bg-heritage-saffron text-white shadow-premium" 
-                    : "text-heritage-onyx/40 hover:text-heritage-saffron hover:bg-white"
-                )}
-              >
-                {idx === 0 && <Sparkles className="h-3 w-3" />}
-                {layer}
-              </button>
-            ))}
-         </motion.div>
-      </div>
-
-      {/* 3. SYNCED STATUS (Bottom Left) */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
+      <motion.header
+        initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="absolute bottom-10 left-10 z-10"
+        className="absolute left-4 top-4 z-[1001] flex items-center gap-3 rounded-2xl border border-white/80 bg-white/95 px-4 py-3 shadow-[0_8px_28px_rgba(29,45,38,0.12)] backdrop-blur-xl sm:left-6 sm:top-5"
       >
-         <div className="bg-white/90 backdrop-blur-2xl px-6 py-4 rounded-[1.2rem] border border-heritage-gold/10 shadow-premium flex items-center gap-4 border-l-8 border-l-heritage-saffron">
-            <div className="relative">
-               <div className="w-3 h-3 rounded-full bg-heritage-saffron animate-pulse" />
-               <div className="absolute inset-0 bg-heritage-saffron rounded-full animate-ping opacity-20" />
-            </div>
-            <div className="flex items-center gap-3">
-               <Navigation className="h-4 w-4 text-heritage-gold" />
-               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-heritage-onyx/60">
-                 Sync Active: {activeLayer} layer
-               </span>
-            </div>
-         </div>
-      </motion.div>
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#e9f2ed] text-[#27664f]">
+          <Compass className="h-5 w-5" />
+        </div>
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#668174]">Yātrā map</p>
+          <h1 className="text-base font-semibold leading-5 text-[#1f3028] sm:text-lg">Explore {selectedCity}</h1>
+        </div>
+      </motion.header>
 
-      {/* 4. MAP UTILITIES (Bottom Right) */}
-      <div className="absolute bottom-10 right-10 z-10 flex gap-4">
-         <Button 
-           variant="premium" 
-           size="icon" 
-           onClick={() => setShowInsights(!showInsights)}
-           className={cn("w-16 h-16 rounded-[1.5rem] shadow-premium transition-all", !showInsights && "bg-heritage-bone text-heritage-onyx/40 border border-heritage-gold/10")}
-         >
-            <LayoutGrid className="h-7 w-7" />
-         </Button>
-         <Button variant="premium" size="icon" className="w-16 h-16 rounded-[1.5rem] shadow-premium bg-heritage-onyx text-white border-0">
-            <Maximize2 className="h-7 w-7" />
-         </Button>
+      <motion.aside
+        initial={{ opacity: 0, x: 12 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.08 }}
+        className="absolute bottom-24 left-3 right-3 z-[1001] max-h-[38vh] overflow-y-auto rounded-2xl border border-white/80 bg-white/95 p-4 shadow-[0_12px_36px_rgba(29,45,38,0.14)] backdrop-blur-xl sm:bottom-auto sm:left-auto sm:right-5 sm:top-24 sm:max-h-[calc(100%-150px)] sm:w-[300px] sm:p-5"
+      >
+        <div className="mb-3 flex items-start justify-between gap-3 sm:mb-5">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#789084]">Start exploring</p>
+            <h2 className="mt-1 text-lg font-semibold text-[#1f3028]">Popular places</h2>
+          </div>
+          <span className="rounded-full bg-[#edf4ef] px-2.5 py-1 text-xs font-semibold text-[#37634f]">India</span>
+        </div>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-1 sm:gap-1.5">
+          {destinations.map((city, index) => (
+            <button
+              key={city.name}
+              type="button"
+              onClick={() => handleFocusCity(city)}
+              className="group flex min-h-12 items-center gap-3 rounded-xl border border-transparent px-2.5 py-2 text-left transition-colors hover:border-[#e5eee8] hover:bg-[#f4f8f5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3f7d60]"
+              aria-label={`Show ${city.name} on the map`}
+            >
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f1f5f2] text-[#537765] transition-colors group-hover:bg-white">
+                {index === 0 ? <MapPin className="h-4 w-4" /> : <span className="text-xs font-semibold">{String(index + 1).padStart(2, "0")}</span>}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold text-[#26372f]">{city.name}</span>
+                <span className="block text-xs text-[#718078]">{city.region}</span>
+              </span>
+              <ArrowUpRight className="hidden h-4 w-4 text-[#91a69a] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 sm:block" />
+            </button>
+          ))}
+        </div>
+        <div className="mt-3 hidden items-center gap-2 border-t border-[#edf0ee] pt-3 text-xs text-[#6f7e75] sm:flex">
+          <Search className="h-3.5 w-3.5" />
+          Search any destination above
+        </div>
+      </motion.aside>
+
+      <div className="pointer-events-none absolute bottom-24 left-4 z-[999] hidden items-center gap-2 rounded-full border border-white/80 bg-white/90 px-3.5 py-2 text-xs font-medium text-[#53645b] shadow-sm backdrop-blur-md sm:flex sm:bottom-5 sm:left-6">
+        <span className="h-2 w-2 rounded-full bg-[#4a8a68]" />
+        Drag to explore · Select a place to zoom in
       </div>
-
-      {/* 5. AI INSIGHTS PANEL */}
-      <AnimatePresence>
-        {showInsights && (
-          <AIInsightsPanel isVisible={true} location="Jaipur Matrix" />
-        )}
-      </AnimatePresence>
     </div>
   )
 }

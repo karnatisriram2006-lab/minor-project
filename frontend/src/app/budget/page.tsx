@@ -34,6 +34,7 @@ export default function BudgetOptimizer() {
   // Tracker State
   const [trips, setTrips] = useState<any[]>([])
   const [tripsLoading, setTripsLoading] = useState(true)
+  const [tripsError, setTripsError] = useState("")
   const [selectedTripId, setSelectedTripId] = useState<string>("")
   const [trackerData, setTrackerData] = useState<{
     budgetAllocation: any;
@@ -53,6 +54,7 @@ export default function BudgetOptimizer() {
       if (user) {
         const fetchTrips = async () => {
           setTripsLoading(true)
+        setTripsError("")
           try {
             const freshToken = await user.getIdToken()
             const { data } = await api.get("/trips", {
@@ -60,7 +62,12 @@ export default function BudgetOptimizer() {
             })
             setTrips(data.trips || [])
           } catch (err) {
-            console.error("Failed to fetch trips:", err)
+            if ((err as any)?.response?.status === 401) {
+              setTrips([])
+              setTripsError("The server did not accept your sign-in. Sign out and back in, then try again.")
+            } else {
+              console.error("Failed to fetch trips:", err)
+            }
           } finally {
             setTripsLoading(false)
           }
@@ -258,6 +265,11 @@ export default function BudgetOptimizer() {
                       )}
                     </SelectContent>
                   </Select>
+                  {tripsError && (
+                    <p role="alert" className="px-1 pt-1 text-xs leading-relaxed text-[#B54747] dark:text-[#FCA5A5]">
+                      {tripsError}
+                    </p>
+                  )}
                 </div>
 
                 <div className="relative">

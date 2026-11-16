@@ -22,8 +22,10 @@ const INDIA_CITIES = [
 
 export default function MapSearchBar({
   onCitySelect,
+  focusCity,
 }: {
   onCitySelect?: (city: { name: string; lat: number; lng: number }) => void;
+  focusCity?: { name: string; lat: number; lng: number } | null;
 }) {
   const map = useMap();
   const [query, setQuery] = useState("");
@@ -44,6 +46,14 @@ export default function MapSearchBar({
     onCitySelect?.(city);
   };
 
+  useEffect(() => {
+    if (!focusCity || !Number.isFinite(focusCity.lat) || !Number.isFinite(focusCity.lng)) return;
+    map.flyTo([focusCity.lat, focusCity.lng], 12, { animate: true, duration: 1.2 });
+    setQuery(focusCity.name);
+    setFocused(false);
+    onCitySelect?.(focusCity);
+  }, [focusCity, map, onCitySelect]);
+
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -56,7 +66,7 @@ export default function MapSearchBar({
     <div
       style={{
         position: "absolute",
-        top: isMobile ? 12 : 16,
+        top: isMobile ? 72 : 16,
         left: "50%",
         transform: "translateX(-50%)",
         width: isMobile ? "calc(100% - 24px)" : 340,

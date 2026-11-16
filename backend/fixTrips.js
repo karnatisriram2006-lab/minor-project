@@ -1,17 +1,27 @@
 const mongoose = require('mongoose');
+const connectDB = require('./src/config/db');
 
 async function fixTrips() {
-  await mongoose.connect('mongodb+srv://karnatisriram2006_db_user:Srirama2@cluster0.mcg78uv.mongodb.net/?appName=Cluster0');
-  const Trip = mongoose.model('Trip', new mongoose.Schema({ userId: mongoose.Schema.Types.Mixed }), 'trips');
-  
-  // Update all anonymous trips to belong to the user
-  const result = await Trip.updateMany(
-    { userId: { $in: ['anonymous', null, undefined] } },
-    { $set: { userId: new mongoose.Types.ObjectId('69ca6ebb6c48acc6603e9b9d') } }
-  );
-  
-  console.log(`Updated ${result.modifiedCount} trips to link to user 69ca6ebb6c48acc6603e9b9d.`);
-  process.exit(0);
+  try {
+    await connectDB({ required: true });
+    const Trip = mongoose.model(
+      'Trip',
+      new mongoose.Schema({ userId: mongoose.Schema.Types.Mixed }),
+      'trips'
+    );
+
+    const result = await Trip.updateMany(
+      { userId: { $in: ['anonymous', null, undefined] } },
+      { $set: { userId: new mongoose.Types.ObjectId('69ca6ebb6c48acc6603e9b9d') } }
+    );
+
+    console.log(`Updated ${result.modifiedCount} trips to link to user 69ca6ebb6c48acc6603e9b9d.`);
+  } finally {
+    await mongoose.disconnect();
+  }
 }
 
-fixTrips().catch(e => { console.error(e); process.exit(1); });
+fixTrips().catch((error) => {
+  console.error('[Trips] Could not update trips:', error.message);
+  process.exitCode = 1;
+});

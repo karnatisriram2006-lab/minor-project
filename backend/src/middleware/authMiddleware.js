@@ -39,15 +39,25 @@ const protect = async (req, res, next) => {
                 });
 
                 if (!user && firebaseUser) {
-                    user = await User.create({
-                        name: decoded.name,
-                        email: decoded.email,
-                        firebaseUid: decoded.id,
-                        password: require('crypto').randomBytes(16).toString('hex'),
-                        nationality: 'India',
-                        language: 'English'
-                    });
-                    console.log(`[Auth] Auto-created user for UID: ${decoded.id}`);
+                    try {
+                        user = await User.create({
+                            name: decoded.name,
+                            email: decoded.email,
+                            firebaseUid: decoded.id,
+                            password: require('crypto').randomBytes(16).toString('hex'),
+                            nationality: 'India',
+                            language: 'English'
+                        });
+                        console.log(`[Auth] Auto-created user for UID: ${decoded.id}`);
+                    } catch (createError) {
+                        // The first page load can hit several protected endpoints at once.
+                        // If another request created this user first, reuse that record.
+                        if (createError.code !== 11000) throw createError;
+                        user = await User.findOne({
+                            $or: [ { firebaseUid: decoded.id }, { email: decoded.email } ]
+                        });
+                        if (!user) throw createError;
+                    }
                 }
 
                 req.user = user || { _id: decoded.id, firebaseUid: decoded.id, name: decoded.name, email: decoded.email };

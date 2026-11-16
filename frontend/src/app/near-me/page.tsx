@@ -151,6 +151,12 @@ export default function NearMe() {
         `/api/nearby?lat=${userLoc.lat}&lng=${userLoc.lng}&category=${category}&radius=${radius}`
       )
       const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data?.message || `Nearby search failed (${res.status}).`)
+      }
+      if (!Array.isArray(data?.places)) {
+        throw new Error("Nearby search returned an unexpected response.")
+      }
       const processed = (data.places || [])
         .map((p: any, idx: number) => ({
           ...p,
@@ -163,7 +169,7 @@ export default function NearMe() {
       setPlaces(processed)
       setShowSearchArea(false)
     } catch (err) {
-      setError("Failed to fetch nearby places.")
+      setError(err instanceof Error ? err.message : "Failed to fetch nearby places.")
     } finally {
       setLoading(false)
     }
@@ -352,10 +358,12 @@ export default function NearMe() {
                     <div className="flex-1 min-w-0 space-y-2">
                       <div className="flex items-start justify-between gap-3">
                         <h3 className="text-[15px] font-extrabold text-[#1a1a1a] leading-tight group-hover:text-[#E8391A] transition-colors">{place.name}</h3>
-                        <div className="flex items-center gap-1 shrink-0 bg-[#FF6B47]/10 px-2 py-0.5 rounded-full border border-[#FF6B47]/20">
-                          <Star className="h-2.5 w-2.5 text-[#FF6B47] fill-[#FF6B47]" />
-                          <span className="text-[10px] font-extrabold text-[#FF6B47]">{place.rating || '4.0'}</span>
-                        </div>
+                        {place.rating > 0 && (
+                          <div className="flex items-center gap-1 shrink-0 bg-[#FF6B47]/10 px-2 py-0.5 rounded-full border border-[#FF6B47]/20">
+                            <Star className="h-2.5 w-2.5 text-[#FF6B47] fill-[#FF6B47]" />
+                            <span className="text-[10px] font-extrabold text-[#FF6B47]">{place.rating}</span>
+                          </div>
+                        )}
                       </div>
 
                       <div className="space-y-1">

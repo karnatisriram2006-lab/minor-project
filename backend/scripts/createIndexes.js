@@ -9,13 +9,12 @@
  * - Cache: key (unique), expiresAt (TTL)
  */
 
-const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const mongoose = require('mongoose');
+const connectDB = require('../src/config/db');
 
 async function createIndexes() {
     console.log('🔗 Connecting to MongoDB...');
-    await mongoose.connect(process.env.MONGODB_URI);
+    await connectDB({ required: true });
     console.log('✅ Connected\n');
 
     const db = mongoose.connection.db;
@@ -79,7 +78,12 @@ async function createIndexes() {
     await mongoose.disconnect();
 }
 
-createIndexes().catch((err) => {
-    console.error('❌ Index migration failed:', err);
-    process.exit(1);
+createIndexes().catch(async (err) => {
+    console.error('❌ Index migration failed:', err.message);
+    try {
+        await mongoose.disconnect();
+    } catch (disconnectError) {
+        console.error('❌ Failed to close the MongoDB connection:', disconnectError.message);
+    }
+    process.exitCode = 1;
 });

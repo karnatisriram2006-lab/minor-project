@@ -73,6 +73,8 @@ interface InteractiveMapProps {
   showMultiRoute?: boolean;
   multiModeRoute?: MultiModeRoute | null;
   onGetLocation?: () => void;
+  onCitySelect?: (city: { name: string; lat: number; lng: number }) => void;
+  focusCity?: { name: string; lat: number; lng: number } | null;
   isOffline?: boolean;
 }
 
@@ -432,6 +434,8 @@ export default React.memo(function InteractiveMap({
   showMultiRoute = true,
   multiModeRoute = null,
   onGetLocation,
+  onCitySelect,
+  focusCity,
   isOffline = false,
 }: InteractiveMapProps) {
   // Inject true offline Map Tile caching override
@@ -763,7 +767,7 @@ export default React.memo(function InteractiveMap({
           focusLeg={focusLeg}
           routingLeg={routingLeg}
         />
-        <MapSearchBar />
+        <MapSearchBar focusCity={focusCity} onCitySelect={onCitySelect} />
 
         {/* Multi-Mode Route Lines */}
         {driveCoords.length > 0 && (

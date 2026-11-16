@@ -1,11 +1,65 @@
-// @desc    Find nearby places using Nominatim (OpenStreetMap Search)
+const OVERPASS_ENDPOINTS = [
+    'https://overpass.private.coffee/api/interpreter',
+    'https://overpass-api.de/api/interpreter',
+];
+const OVERPASS_TIMEOUT_MS = 10000;
+const nearbyCache = new Map();
+const NEARBY_CACHE_TTL_MS = 60 * 1000;
+
+const fetchOverpassData = async (query) => {
+    let lastError;
+
+    for (const endpoint of OVERPASS_ENDPOINTS) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), OVERPASS_TIMEOUT_MS);
+
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                body: 'data=' + encodeURIComponent(query),
+                signal: controller.signal,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'User-Agent': 'IncredibleIndiaApp/1.0'
+                }
+            });
+
+            if (!response.ok) throw new Error(`Overpass returned ${response.status}`);
+            return await response.json();
+        } catch (error) {
+            lastError = error;
+            console.warn(`[Nearby] Overpass endpoint failed (${endpoint}): ${error.message}`);
+        } finally {
+            clearTimeout(timeoutId);
+        }
+    }
+
+    throw lastError || new Error('All nearby search providers are unavailable');
+};
+
+// @desc    Find nearby places using OpenStreetMap Overpass API
 // @route   GET /api/nearby?lat=...&lng=...&category=hospital&radius=5000
 // @access  Public
 const findNearby = async (req, res) => {
     const { lat, lng, category = 'general', radius = 5000 } = req.query;
 
-    if (!lat || !lng) {
-        return res.status(400).json({ message: 'Latitude and longitude are required' });
+    const latitude = Number(lat);
+    const longitude = Number(lng);
+    const radiusMeters = Number(radius);
+
+    if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
+        !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+        return res.status(400).json({ message: 'A valid latitude and longitude are required' });
+    }
+    if (!Number.isFinite(radiusMeters) || radiusMeters < 100 || radiusMeters > 50000) {
+        return res.status(400).json({ message: 'Radius must be between 100 and 50000 meters' });
+    }
+
+    const safeCategory = typeof category === 'string' ? category : 'general';
+    const cacheKey = `${latitude.toFixed(3)}:${longitude.toFixed(3)}:${safeCategory}:${radiusMeters}`;
+    const cached = nearbyCache.get(cacheKey);
+    if (cached && cached.expiresAt > Date.now()) {
+        return res.json(cached.payload);
     }
 
     try {
@@ -22,43 +76,23 @@ const findNearby = async (req, res) => {
             general: '["amenity"="hospital"]'
         };
 
-        const tagFilter = categoryMap[category] || '["amenity"="hospital"]';
+        const normalizedCategory = categoryMap[safeCategory] ? safeCategory : 'general';
+        const tagFilter = categoryMap[normalizedCategory];
         
         // Overpass QL Query
         // (node(around:radius,lat,lng)[tag]; way(around:radius,lat,lng)[tag];); out center;
         const query = `
-            [out:json][timeout:25];
+            [out:json][timeout:12];
             (
-              node(around:${radius},${lat},${lng})${tagFilter};
-              way(around:${radius},${lat},${lng})${tagFilter};
-              relation(around:${radius},${lat},${lng})${tagFilter};
+              node(around:${radiusMeters},${latitude},${longitude})${tagFilter};
+              way(around:${radiusMeters},${latitude},${longitude})${tagFilter};
+              relation(around:${radiusMeters},${latitude},${longitude})${tagFilter};
             );
             out center 20;
         `;
 
-        const url = `https://overpass-api.de/api/interpreter`;
-
-        console.log(`[Nearby] Querying Overpass for: ${category} within ${radius}m of ${lat},${lng}`);
-        
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000);
-        
-        const response = await fetch(url, { 
-            method: 'POST',
-            body: 'data=' + encodeURIComponent(query),
-            signal: controller.signal,
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'User-Agent': 'IncredibleIndiaApp/1.0'
-            }
-        });
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-            throw new Error(`Overpass returned ${response.status}`);
-        }
-
-        const data = await response.json();
+        console.log(`[Nearby] Querying Overpass for: ${normalizedCategory} within ${radiusMeters}m of ${latitude},${longitude}`);
+        const data = await fetchOverpassData(query);
 
         // Haversine formula to calculate distance in meters
         const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -79,7 +113,7 @@ const findNearby = async (req, res) => {
             const plat = el.lat || (el.center && el.center.lat);
             const plng = el.lon || (el.center && el.center.lon);
             
-            if (!plat || !plng) return null;
+            if (!Number.isFinite(plat) || !Number.isFinite(plng)) return null;
 
             const tags = el.tags || {};
             const addressParts = [
@@ -90,14 +124,14 @@ const findNearby = async (req, res) => {
 
             return {
                 id: el.id,
-                name: tags.name || tags.operator || `${category.charAt(0).toUpperCase() + category.slice(1)}`,
-                category: category,
+                name: tags.name || tags.operator || `${normalizedCategory.charAt(0).toUpperCase() + normalizedCategory.slice(1)}`,
+                category: normalizedCategory,
                 address: addressParts.length > 0 ? addressParts.join(', ') : (tags['addr:full'] || "Address available via map"),
                 phone: tags['phone'] || tags['contact:phone'] || "N/A",
-                distance: calculateDistance(parseFloat(lat), parseFloat(lng), plat, plng),
+                distance: calculateDistance(latitude, longitude, plat, plng),
                 open24Hours: tags['opening_hours'] === '24/7',
                 verified: true,
-                rating: 4.0,
+                rating: 0,
                 lat: plat,
                 lng: plng
             };
@@ -105,31 +139,23 @@ const findNearby = async (req, res) => {
 
         // Sort by closest
         places.sort((a, b) => a.distance - b.distance);
-        
-        if (places.length === 0) {
-            return res.json({ 
-                places: [], 
-                message: `No ${category} found within ${radius/1000}km. Try a larger search area.` 
-            });
+
+        const payload = places.length === 0
+            ? { places, message: `No ${normalizedCategory} found within ${radiusMeters / 1000}km. Try a larger search area.` }
+            : { places };
+        nearbyCache.set(cacheKey, { payload, expiresAt: Date.now() + NEARBY_CACHE_TTL_MS });
+        if (nearbyCache.size > 500) {
+            for (const [key, entry] of nearbyCache) {
+                if (entry.expiresAt <= Date.now()) nearbyCache.delete(key);
+            }
         }
 
         console.log(`[Nearby] Found ${places.length} precise POIs from Overpass`);
-        res.json({ places });
-
-        if (places.length === 0) {
-            return res.json({ 
-                places: [], 
-                message: `No ${amenity} found nearby. Try increasing the radius.` 
-            });
-        }
-
-        console.log(`[Nearby] Found ${places.length} real places from Nominatim`);
-        res.json({ places });
+        return res.json(payload);
     } catch (error) {
         console.error('[Nearby API Error]', error.message);
-        res.status(500).json({ 
-            message: 'Unable to fetch nearby places. Please try again later.',
-            error: error.message 
+        return res.status(503).json({
+            message: 'Nearby search is temporarily unavailable. Please try again shortly.'
         });
     }
 };

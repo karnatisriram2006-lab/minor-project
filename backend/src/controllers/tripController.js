@@ -123,7 +123,10 @@ const getUserTrips = async (req, res) => {
             if (!userId) {
                 return res.status(401).json({ message: 'User not identified' });
             }
-            const query = { userId };
+            // Older Firebase-authenticated trips may be stored against the Firebase
+            // UID, while current trips use the Mongo user _id.
+            const ownerIds = [userId, req.user?.firebaseUid].filter(Boolean);
+            const query = { userId: { $in: ownerIds } };
             
             trips = await Trip.find(query)
                 .sort({ createdAt: -1 })

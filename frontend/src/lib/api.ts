@@ -5,6 +5,7 @@ import { auth } from "@/lib/firebase"
 declare module 'axios' {
   interface InternalAxiosRequestConfig {
     _suppressRedirect?: boolean;
+    _authRetried?: boolean;
   }
 }
 
@@ -60,12 +61,31 @@ api.interceptors.request.use(
 // Add a response interceptor to handle 401 errors (Unauthorized)
 api.interceptors.response.use(
   (response: AxiosResponse) => response,
-  (error: AxiosError) => {
+  async (error: AxiosError) => {
     if (error.response?.status === 401) {
+      const request = error.config;
+      const currentUser = auth.currentUser;
+
+      // A cached Firebase token can be rejected after revocation or backend key changes.
+      // Refresh it once before surfacing the unauthorized response.
+      if (request && !request._authRetried && currentUser) {
+        request._authRetried = true;
+        try {
+          const freshToken = await currentUser.getIdToken(true);
+          request.headers.Authorization = `Bearer ${freshToken}`;
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('token', freshToken);
+          }
+          return api.request(request);
+        } catch {
+          // Keep the original 401 as the actionable failure.
+        }
+      }
+
       // Log the unauthorized error but do NOT auto-redirect.
       // Individual pages should handle auth state — the global redirect
       // was causing login loops when tokens weren't ready yet on mount.
-      console.warn("API 401 Unauthorized:", error.config?.url);
+      console.warn("API 401 Unauthorized:", error.config?.url, error.response.data);
     }
     return Promise.reject(error);
   }

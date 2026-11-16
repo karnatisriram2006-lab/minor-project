@@ -23,9 +23,6 @@ const messagesRoutes = require('./routes/messages');
 const profileRoutes = require('./routes/profileRoutes');
 const connectionRoutes = require('./routes/connectionRoutes');
 
-// Connect to database
-connectDB();
-
 const app = express();
 
 // Global Request/Response Logger for Debugging
@@ -44,16 +41,37 @@ const allowedOriginsList = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim()).filter(Boolean)
     : [];
 
-console.log('[Server] CORS Allowed Origins:', allowedOriginsList.length ? allowedOriginsList.join(', ') : 'localhost only (no ALLOWED_ORIGINS set)');
+const isAllowedDevelopmentOrigin = (origin) => {
+    if (process.env.NODE_ENV === 'production') return false;
+
+    try {
+        const { protocol, hostname } = new URL(origin);
+        if (!['http:', 'https:'].includes(protocol)) return false;
+
+        const normalizedHost = hostname.replace(/^\[|\]$/g, '').toLowerCase();
+        if (['localhost', '127.0.0.1', '::1'].includes(normalizedHost)) return true;
+
+        const octets = normalizedHost.split('.').map(Number);
+        if (octets.length !== 4 || octets.some((part) => !Number.isInteger(part) || part < 0 || part > 255)) {
+            return false;
+        }
+
+        return octets[0] === 10 ||
+            (octets[0] === 192 && octets[1] === 168) ||
+            (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31);
+    } catch {
+        return false;
+    }
+};
+
+console.log('[Server] CORS Allowed Origins:', allowedOriginsList.length ? allowedOriginsList.join(', ') : 'localhost and private LAN origins in development');
 
 app.use(cors({
     origin: (origin, callback) => {
         // Allow requests with no origin (curl, Postman, same-origin server calls)
         if (!origin) return callback(null, true);
-        // Always allow localhost in development
-        if (process.env.NODE_ENV !== 'production' && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
-            return callback(null, true);
-        }
+        // Allow the local frontend whether it is opened on localhost or a LAN IP.
+        if (isAllowedDevelopmentOrigin(origin)) return callback(null, true);
         if (allowedOriginsList.includes(origin)) return callback(null, true);
         console.warn(`[CORS] Blocked request from origin: ${origin}`);
         return callback(new Error(`CORS: origin '${origin}' not allowed`));
@@ -108,6 +126,15 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+
+const startServer = async () => {
+    await connectDB();
+    app.listen(PORT, () => {
+        console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+    });
+};
+
+startServer().catch((error) => {
+    console.error(`[Server] Startup failed: ${error.message}`);
+    process.exit(1);
 });

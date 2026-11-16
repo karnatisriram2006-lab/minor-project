@@ -29,6 +29,8 @@ export default function CommunityPage() {
   const { user } = useAuth();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [retryCount, setRetryCount] = useState(0);
 
   const getAvatarHash = (name: string) => {
     let hash = 0;
@@ -42,6 +44,8 @@ export default function CommunityPage() {
 
   useEffect(() => {
     const fetchCommunityTrips = async () => {
+      setLoading(true);
+      setLoadError("");
       try {
         const res = await api.get("/trips/community");
         
@@ -58,13 +62,17 @@ export default function CommunityPage() {
 
         setTrips(enriched);
       } catch (err) {
-        console.error('Failed to load community feed:', err);
+        const status = (err as any)?.response?.status;
+        setLoadError(status
+          ? `The community feed could not be loaded (HTTP ${status}).`
+          : "Can't connect to the travel service. Make sure the backend is running, then try again.");
+        console.warn("Community feed request failed:", (err as any)?.message || err);
       } finally {
         setLoading(false);
       }
     };
     fetchCommunityTrips();
-  }, [user]);
+  }, [user, retryCount]);
 
   const toggleLike = async (tripId: string, idx: number) => {
     if (!user) return alert("Log in to like trips!");
@@ -133,7 +141,19 @@ export default function CommunityPage() {
           </div>
         </div>
 
-        {trips.length === 0 ? (
+        {loadError ? (
+          <div role="alert" className="rounded-3xl border border-[#EBEBEB] bg-white px-6 py-16 text-center shadow-sm dark:border-[#2A2A2A] dark:bg-[#1A1A1A]">
+            <h3 className="text-xl font-bold tracking-tight">Community feed unavailable</h3>
+            <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-[#767676] dark:text-[#A0A0A0]">{loadError}</p>
+            <button
+              type="button"
+              onClick={() => setRetryCount((count) => count + 1)}
+              className="mt-6 rounded-xl bg-[#484848] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#333] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5A5F] focus-visible:ring-offset-2"
+            >
+              Try again
+            </button>
+          </div>
+        ) : trips.length === 0 ? (
           <div className="text-center py-24 bg-white dark:bg-[#1A1A1A] rounded-3xl border border-[#EBEBEB] dark:border-[#2A2A2A] shadow-sm relative overflow-hidden">
              <div className="absolute top-0 right-0 w-64 h-64 bg-[#FF5A5F]/5 rounded-full blur-3xl -z-10" />
             <MapPin className="h-16 w-16 text-[#EBEBEB] dark:text-[#2A2A2A] mx-auto mb-6" />

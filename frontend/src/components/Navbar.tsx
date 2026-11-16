@@ -87,8 +87,11 @@ export default function Navbar() {
           const { data } = await apiClient.get("/connections/pending")
           setPendingCount(data.length)
         } catch (err) {
-          // Silently fail — background polling, not critical
-          console.warn("Could not fetch pending connection requests", err)
+          // Pending requests are background data; the shared API client reports
+          // auth failures once after its token refresh attempt.
+          if ((err as any)?.response?.status !== 401) {
+            console.warn("Could not fetch pending connection requests", err)
+          }
         }
       }
       fetchPending()

@@ -2,7 +2,6 @@
  * Seed script to populate MongoDB with sample POIs, Hostels, and Restaurants.
  * Run: node src/seed/seedPOIs.js
  */
-require('dotenv').config({ path: '../../.env' });
 const mongoose = require('mongoose');
 const POI = require('../models/POI');
 const Hostel = require('../models/Hostel');
@@ -118,7 +117,7 @@ const sampleData = {
 
 const seed = async () => {
     try {
-        await connectDB();
+        await connectDB({ required: true });
         console.log('🗑️ Clearing old data...');
         await POI.deleteMany({});
         await Hostel.deleteMany({});
@@ -132,10 +131,11 @@ const seed = async () => {
         await Restaurant.insertMany(sampleData.restaurants);
 
         console.log('✅ Database seeded successfully!');
-        process.exit(0);
     } catch (error) {
-        console.error('❌ Seed failed:', error);
-        process.exit(1);
+        console.error('❌ Seed failed:', error.message);
+        process.exitCode = 1;
+    } finally {
+        await mongoose.disconnect();
     }
 };
 

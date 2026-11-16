@@ -729,6 +729,7 @@ export default function Dashboard() {
                       src={trip.placeImage || "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800&q=80"}
                       alt={trip.title || trip.destination || "Trip image"}
                       fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent flex justify-between items-end">
